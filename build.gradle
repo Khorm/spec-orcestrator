@@ -27,6 +27,8 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 //	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.kafka:spring-kafka'
+	// https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
+	implementation("org.codehaus.groovy:groovy-all:3.0.24")
 	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'//, version: '2.7.10'
 	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.6'
 

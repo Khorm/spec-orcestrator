@@ -1,6 +1,5 @@
 package com.petra.lib.transaction;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -40,12 +39,13 @@ class TransactionManagerImpl implements TransactionManager {
     }
 
     @Override
-    public void executeInTransaction(TransactionRunnable task) {
+    public void executeInTransaction(TransactionRunnable task, Isolation transactionDefinition) {
         DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
         definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
         definition.setReadOnly(true);
         TransactionStatus transactionStatus = jpaTransactionManager.getTransaction(definition);
+
         Transaction transaction = new Transaction(transactionStatus, jpaTransactionManager);
         try {
             task.run(transaction);
