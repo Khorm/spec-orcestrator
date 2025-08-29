@@ -1,7 +1,7 @@
 package com.petra.lib.block.workflow;
 
-import com.petra.lib.block.enums.ExecutionStatus;
-import com.petra.lib.block.model.Identifier;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.block.workflow.model.ActionWorkflowHistory;
 import com.petra.lib.transaction.TransactionManager;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

@@ -1,16 +1,15 @@
 package com.petra.lib.block.action;
 
 import com.petra.lib.block.Block;
-import com.petra.lib.block.action.executor.UserExecutor;
-import com.petra.lib.block.action.executor.handler.UserActionHandler;
-import com.petra.lib.block.action.finisher.FinishManager;
-import com.petra.lib.block.action.repo.ActionRepo;
-import com.petra.lib.block.action.repo.ActivityRepoImpl;
-import com.petra.lib.block.model.Identifier;
-import com.petra.lib.sender.Sender;
+import com.petra.lib.context.block.operations.executor.BlockUserOperation;
+import com.petra.lib.context.block.operations.executor.handler.UserActionHandler;
+import com.petra.lib.context.block.operations.AnswerOperation;
+import com.petra.lib.context.repo.ContextRepo;
+import com.petra.lib.context.repo.ContextRepoImpl;
+import com.petra.lib.context.model.Identifier;
+import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.transaction.TransactionManager;
-import com.petra.lib.variable.VariableFactory;
 
 public class ActionFactory {
 
@@ -18,16 +17,16 @@ public class ActionFactory {
                                      TransactionManager transactionManager, Sender sender,
                                      UserActionHandler userActionHandler){
         Identifier actionId = new Identifier(actionModel.getId(), actionModel.getVersion());
-        ActionRepo actionRepo = new ActivityRepoImpl(transactionManager);
-        UserExecutor userExecutor = new UserExecutor(transactionManager, userActionHandler, actionRepo);
-        FinishManager finishManager = new FinishManager(sender, transactionManager,actionRepo);
+        ContextRepo contextRepo = new ContextRepoImpl(transactionManager);
+        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userActionHandler, contextRepo);
+        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager, contextRepo);
 
         return new Action(
                 threadController,
                 actionId,
-                actionRepo,
-                userExecutor,
-                finishManager,
+                contextRepo,
+                blockUserOperation,
+                answerOperation,
                 transactionManager,
                 sender
         );

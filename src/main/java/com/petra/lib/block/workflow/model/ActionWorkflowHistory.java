@@ -1,6 +1,6 @@
 package com.petra.lib.block.workflow.model;
 
-import com.petra.lib.block.enums.ExecutionStatus;
+import com.petra.lib.context.enums.ExecutionStatus;
 
 import java.util.UUID;
 

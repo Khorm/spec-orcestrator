@@ -43,7 +43,6 @@ class TransactionManagerImpl implements TransactionManager {
         DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
         definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
         definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        definition.setReadOnly(true);
         TransactionStatus transactionStatus = jpaTransactionManager.getTransaction(definition);
 
         Transaction transaction = new Transaction(transactionStatus, jpaTransactionManager);

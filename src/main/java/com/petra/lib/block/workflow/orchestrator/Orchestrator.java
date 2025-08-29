@@ -2,10 +2,10 @@ package com.petra.lib.block.workflow.orchestrator;
 
 import com.petra.lib.block.ExecuteCallback;
 import com.petra.lib.block.action.context.ActionContext;
-import com.petra.lib.block.dto.BlockResponseDto;
+import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.block.enums.BlockManager;
-import com.petra.lib.block.enums.ExecutionStatus;
-import com.petra.lib.block.model.Identifier;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.block.workflow.model.ActionWorkflowHistory;
 
 import java.util.Collection;
@@ -70,9 +70,9 @@ public class Orchestrator {
         startBlock.request(workflowContext.getScenarioId(), workflowContext.getConsumerValuesJson(), executeCallback);
     }
 
-    public void blockAnswer(BlockResponseDto blockResponseDto, ExecuteCallback executeCallback) {
-        blocksById.get(new Identifier(blockResponseDto.getConsumerBlockId(), blockResponseDto.getConsumerBlockVersion()))
-                .answer(blockResponseDto, executeCallback);
+    public void blockAnswer(MessageDto messageDto, ExecuteCallback executeCallback) {
+        blocksById.get(new Identifier(messageDto.getConsumerBlockId(), messageDto.getReceiverVersion()))
+                .answer(messageDto, executeCallback);
     }
 
     private Optional<ClientBlock> getNotExecutedBlockOnStart(Set<Identifier> executedBlockIds, ClientBlock clientBlock) {

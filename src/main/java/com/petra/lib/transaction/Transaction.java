@@ -7,11 +7,16 @@ import org.springframework.transaction.TransactionStatus;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-@RequiredArgsConstructor
+
 public class Transaction {
     private final TransactionStatus transactionStatus;
     private final JpaTransactionManager jpaTransactionManager;
     private boolean commitTransaction = true;
+
+    public Transaction(TransactionStatus transactionStatus, JpaTransactionManager jpaTransactionManager) {
+        this.transactionStatus = transactionStatus;
+        this.jpaTransactionManager = jpaTransactionManager;
+    }
 
     public void rollback(){
         commitTransaction = false;

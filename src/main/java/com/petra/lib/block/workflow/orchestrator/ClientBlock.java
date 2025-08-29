@@ -3,17 +3,17 @@ package com.petra.lib.block.workflow.orchestrator;
 import com.petra.lib.PetraException;
 import com.petra.lib.block.ExecuteCallback;
 import com.petra.lib.block.dto.BlockRequestDto;
-import com.petra.lib.block.dto.BlockResponseDto;
+import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.block.enums.BlockManager;
-import com.petra.lib.block.enums.ExecutionStatus;
-import com.petra.lib.block.model.Identifier;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.block.workflow.ActionWorkflowRepo;
-import com.petra.lib.sender.Sender;
-import com.petra.lib.sender.SenderCallback;
+import com.petra.lib.remote.Sender;
+import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.VariableManager;
-import com.petra.lib.variable.value.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerImpl;
 import org.springframework.transaction.annotation.Isolation;
 
 import java.util.UUID;
@@ -52,7 +52,7 @@ public class ClientBlock {
 
         blockVariableManager.execute(previousBlockValues, scenarioId, new VariableCallback() {
             @Override
-            public void loaded(ValueContainer valueContainer) {
+            public void loaded(ValueContainerImpl valueContainer) {
                 BlockRequestDto blockRequestDto = new BlockRequestDto(
                         scenarioId,
                         clientId.getId(),
@@ -64,7 +64,7 @@ public class ClientBlock {
 
                 );
 
-                sender.sendToBlock(blockRequestDto, consumerServiceURL, new SenderCallback<Void>() {
+                sender.requestBlockExecution(blockRequestDto, consumerServiceURL, new SenderCallback<Void>() {
                     @Override
                     public void answer(Void dto) {
                         //await answer from bloque
@@ -88,24 +88,24 @@ public class ClientBlock {
         });
     }
 
-    public void answer(BlockResponseDto blockResponseDto, ExecuteCallback executeCallback) {
-        if (blockResponseDto.getStatus() == ExecutionStatus.OK) {
-            boolean isNotRepeated = saveStatus(blockResponseDto.getScenarioId(), workflowId, blockResponseDto.getConsumerBlockValues(), ExecutionStatus.OK);
+    public void answer(MessageDto messageDto, ExecuteCallback executeCallback) {
+        if (messageDto.getStatus() == ExecutionStatus.OK) {
+            boolean isNotRepeated = saveStatus(messageDto.getScenarioId(), workflowId, messageDto.getTransmittedValues(), ExecutionStatus.OK);
             if (!isNotRepeated) {
                 return;
             }
 
             if (nextBlock != null) {
-                nextBlock.request(blockResponseDto.getScenarioId(), blockResponseDto.getConsumerBlockValues(), executeCallback);
+                nextBlock.request(messageDto.getScenarioId(), messageDto.getTransmittedValues(), executeCallback);
             } else {
-                executeCallback.executeNext(blockResponseDto.getScenarioId(), BlockManager.WORKFLOW_ORCHESTRATOR);
+                executeCallback.executeNext(messageDto.getScenarioId(), BlockManager.WORKFLOW_ORCHESTRATOR);
             }
         } else {
-            boolean isNotRepeated = saveStatus(blockResponseDto.getScenarioId(), workflowId, null, ExecutionStatus.ERROR);
+            boolean isNotRepeated = saveStatus(messageDto.getScenarioId(), workflowId, null, ExecutionStatus.ERROR);
             if (!isNotRepeated) {
                 return;
             }
-            executeCallback.error(new PetraException("Error in block " + clientName), blockResponseDto.getScenarioId());
+            executeCallback.error(new PetraException("Error in block " + clientName), messageDto.getScenarioId());
         }
     }
 

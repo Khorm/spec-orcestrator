@@ -4,19 +4,19 @@ import com.petra.lib.block.Block;
 import com.petra.lib.block.ExecuteCallback;
 import com.petra.lib.block.action.context.ActionContext;
 import com.petra.lib.block.action.context.LoadedContext;
-import com.petra.lib.block.action.finisher.FinishManager;
-import com.petra.lib.block.action.repo.ActionRepo;
+import com.petra.lib.context.block.operations.AnswerOperation;
+import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.block.dto.BlockRequestDto;
-import com.petra.lib.block.dto.BlockResponseDto;
+import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.block.enums.BlockManager;
-import com.petra.lib.block.enums.BlockState;
-import com.petra.lib.block.enums.ExecutionStatus;
-import com.petra.lib.block.enums.HistoryType;
-import com.petra.lib.block.model.Identifier;
+import com.petra.lib.context.ContextState;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.context.enums.BlockType;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.block.workflow.model.ActionWorkflowHistory;
 import com.petra.lib.block.workflow.orchestrator.Orchestrator;
-import com.petra.lib.sender.Sender;
-import com.petra.lib.sender.SenderCallback;
+import com.petra.lib.remote.Sender;
+import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.transaction.TransactionManager;
 import org.springframework.transaction.annotation.Isolation;
@@ -29,21 +29,21 @@ public class Workflow implements Block, ExecuteCallback {
 
     private final ThreadController threadController;
     private final Identifier workflowId;
-    private final ActionRepo actionRepo;
+    private final ContextRepo contextRepo;
     private final ActionWorkflowRepo actionWorkflowRepo;
-    private final FinishManager finishManager;
+    private final AnswerOperation answerOperation;
     private final TransactionManager transactionManager;
     private final Sender sender;
     private final Orchestrator orchestrator;
 
     public Workflow(ThreadController threadController, Identifier workflowId,
-                    ActionRepo actionRepo, ActionWorkflowRepo actionWorkflowRepo,
-                    FinishManager finishManager, TransactionManager transactionManager, Sender sender, Orchestrator orchestrator) {
+                    ContextRepo contextRepo, ActionWorkflowRepo actionWorkflowRepo,
+                    AnswerOperation answerOperation, TransactionManager transactionManager, Sender sender, Orchestrator orchestrator) {
         this.threadController = threadController;
         this.workflowId = workflowId;
-        this.actionRepo = actionRepo;
+        this.contextRepo = contextRepo;
         this.actionWorkflowRepo = actionWorkflowRepo;
-        this.finishManager = finishManager;
+        this.answerOperation = answerOperation;
         this.transactionManager = transactionManager;
         this.sender = sender;
         this.orchestrator = orchestrator;
@@ -55,22 +55,22 @@ public class Workflow implements Block, ExecuteCallback {
         Identifier producerId = new Identifier(blockRequestDto.getProducerBlockId(), blockRequestDto.getProducerBlockVersion());
         ActionContext workflowContext = new ActionContext(blockRequestDto.getScenarioId(), workflowId,
                 blockRequestDto.getProducerServiceUrl(), producerId,
-                HistoryType.WORKFLOW, blockRequestDto.getBlockValues());
+                BlockType.WORKFLOW, blockRequestDto.getBlockValues());
 
 
         transactionManager.executeInTransaction(transaction -> {
-            Optional<LoadedContext> loadedContextOpt = actionRepo.findContext(blockRequestDto.getScenarioId(), workflowId);
+            Optional<LoadedContext> loadedContextOpt = contextRepo.findContext(blockRequestDto.getScenarioId(), workflowId);
             if (loadedContextOpt.isPresent()) {
                 LoadedContext loadedContext = loadedContextOpt.get();
-                if (loadedContext.getConsumerStatus() == BlockState.DONE) {
-                    BlockResponseDto blockResponseDto = new BlockResponseDto(
+                if (loadedContext.getConsumerStatus() == ContextState.DONE) {
+                    MessageDto messageDto = new MessageDto(
                             loadedContext.getScenarioId(),
                             loadedContext.getConsumerBlockId(),
                             loadedContext.getConsumerValuesJson(),
                             loadedContext.getProducerBlockId(),
                             loadedContext.getExecutionStatus()
                     );
-                    sender.answerFromBlock(blockResponseDto, loadedContext.getProducerServiceUrl(), new SenderCallback<Void>() {
+                    sender.answerFromBlock(messageDto, loadedContext.getProducerServiceUrl(), new SenderCallback<Void>() {
                         @Override
                         public void answer(Void dto) {
                             //do nothin
@@ -83,7 +83,7 @@ public class Workflow implements Block, ExecuteCallback {
                     });
                 }
             } else {
-                actionRepo.createContext(workflowContext, HistoryType.WORKFLOW);
+                contextRepo.createContext(workflowContext, BlockType.WORKFLOW);
                 executeNext(workflowContext, null);
             }
         }, Isolation.SERIALIZABLE);
@@ -91,9 +91,9 @@ public class Workflow implements Block, ExecuteCallback {
 
     @Override
     public void start() {
-        Collection<LoadedContext> contexts = actionRepo.findNotCompletedContexts(workflowId, HistoryType.WORKFLOW);
+        Collection<LoadedContext> contexts = contextRepo.findNotCompletedContexts(workflowId, BlockType.WORKFLOW);
         for (LoadedContext loadedContext : contexts) {
-            if (loadedContext.getConsumerStatus() != BlockState.DONE) {
+            if (loadedContext.getConsumerStatus() != ContextState.DONE) {
                 if (loadedContext.getConsumerContextValues().isEmpty()) {
                     executeNext(loadedContext, null);
                 } else {
@@ -105,8 +105,8 @@ public class Workflow implements Block, ExecuteCallback {
     }
 
     @Override
-    public void answer(BlockResponseDto blockResponseDto) {
-        orchestrator.blockAnswer(blockResponseDto, this);
+    public void answer(MessageDto messageDto) {
+        orchestrator.blockAnswer(messageDto, this);
     }
 
     @Override
@@ -115,13 +115,10 @@ public class Workflow implements Block, ExecuteCallback {
 
             try {
                 if (executedManager == null) {
-//                    variableManager.execute(actionContext, this);
-//                } else if (executedManager == BlockManager.VARIABLE_MANAGER) {
                     orchestrator.execute(actionContext, this);
                 } else if (executedManager == BlockManager.WORKFLOW_ORCHESTRATOR) {
-                    finishManager.finish(actionContext, this, ExecutionStatus.OK);
+                    answerOperation.finish(actionContext, this, ExecutionStatus.OK);
                 } else if (executedManager == BlockManager.FINISH) {
-//                    finishManager.finish(actionContext, this, ExecutionStatus.OK);
                     throw new IllegalStateException("Workflow in state FINISH");
                 }
             } catch (Exception e) {
@@ -133,7 +130,7 @@ public class Workflow implements Block, ExecuteCallback {
 
     @Override
     public void executeNext(UUID scenarioId, BlockManager executedManager) {
-        Optional<LoadedContext> loadedContextOpt = actionRepo.findContext(scenarioId, workflowId);
+        Optional<LoadedContext> loadedContextOpt = contextRepo.findContext(scenarioId, workflowId);
         if (loadedContextOpt.isEmpty()) {
             throw new NullPointerException("Context not found in workflow " + scenarioId);
         }
@@ -143,16 +140,16 @@ public class Workflow implements Block, ExecuteCallback {
 
     @Override
     public void error(Exception e, UUID scenarioId) {
-        Optional<LoadedContext> loadedContextOpt = actionRepo.findContext(scenarioId, workflowId);
+        Optional<LoadedContext> loadedContextOpt = contextRepo.findContext(scenarioId, workflowId);
         if (loadedContextOpt.isEmpty()) {
             throw new NullPointerException("Context not found in workflow " + scenarioId);
         }
 
-        finishManager.finish(loadedContextOpt.get(), this, ExecutionStatus.ERROR);
+        answerOperation.finish(loadedContextOpt.get(), this, ExecutionStatus.ERROR);
     }
 
     @Override
     public void error(Exception e, ActionContext actionContext) {
-        finishManager.finish(actionContext, this, ExecutionStatus.ERROR);
+        answerOperation.finish(actionContext, this, ExecutionStatus.ERROR);
     }
 }
