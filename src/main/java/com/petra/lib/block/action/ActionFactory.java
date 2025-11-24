@@ -1,9 +1,9 @@
 package com.petra.lib.block.action;
 
 import com.petra.lib.block.Block;
-import com.petra.lib.context.block.operations.executor.BlockUserOperation;
-import com.petra.lib.context.block.operations.executor.handler.UserActionHandler;
-import com.petra.lib.context.block.operations.AnswerOperation;
+import com.petra.lib.operation.operations.executor.BlockUserOperation;
+import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
+import com.petra.lib.operation.operations.AnswerOperation;
 import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.context.repo.ContextRepoImpl;
 import com.petra.lib.context.model.Identifier;

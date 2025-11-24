@@ -1,38 +1,51 @@
 package com.petra.lib.context.model;
 
 import com.petra.lib.context.enums.BlockType;
-import com.petra.lib.context.block.operations.executor.handler.UserActionHandler;
+import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.variable.context.ValueContextModel;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.model.ValueModel;
 
+import javax.persistence.Id;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LocalConsumer {
-    private final ModelIdentifier identifier;
+    private final ConsumerIdentifier identifier;
     private final BlockType blockType;
     private final String name;
     private final ValueContextModel startedLoaders;
-    private final UserActionHandler userActionHandler;
-    private final Map<String, ValueModel> contextOuterValues;
 
-    public LocalConsumer(ModelIdentifier identifier, BlockType blockType, String name,
+    //TODO контекст должен изначально заполнятся всеми переменными, просто незаполненные должны быть пустыми
+    private final Collection<ValueModel> contextValues;
+
+    public LocalConsumer(ConsumerIdentifier identifier, BlockType blockType, String name,
                          ValueContextModel startedLoaders,
-                         UserActionHandler userActionHandler, Collection<ValueModel> contextOuterValues) {
+                         List<ValueModel> contextValues,
+                         List<ValueModel> inputValues) {
         this.identifier = identifier;
         this.blockType = blockType;
         this.name = name;
         this.startedLoaders = startedLoaders;
-        this.userActionHandler = userActionHandler;
-        this.contextOuterValues = contextOuterValues.stream().collect(Collectors.toMap(ValueModel::getName, Function.identity()));
+        this.contextValues = contextValues;
+        this.contextValues.addAll(inputValues);
 
     }
 
-    public ModelIdentifier getIdentifier() {
+    public ConsumerIdentifier getIdentifier() {
         return identifier;
+    }
+
+    public Identifier getConsumerId(){
+        return identifier.getConsumerId();
+    }
+
+    public Identifier getWorkflowId(){
+        return identifier.getWorkflowId();
     }
 
     public BlockType getBlockType() {
@@ -43,19 +56,13 @@ public class LocalConsumer {
         return name;
     }
 
-    public Collection<ValueLoader> getStartedLoaders() {
-        return startedLoaders.getStarterLoaders();
+    public ValueContextModel getStartedLoaders() {
+        return startedLoaders;
     }
 
-    public int getValuesCount() {
-        return startedLoaders.getValuesCount();
-    }
 
-    public UserActionHandler getUserActionHandler() {
-        return userActionHandler;
-    }
 
-    public Map<String, ValueModel> getContextOuterValues() {
-        return contextOuterValues;
-    }
+//    public Map<String, ValueModel> getContextOuterValues() {
+//        return contextOuterValues;
+//    }
 }

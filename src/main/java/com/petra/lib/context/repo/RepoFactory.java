@@ -8,7 +8,4 @@ public final class RepoFactory {
         return new ContextRepoImpl(transactionManager);
     }
 
-    public static WorkflowContextRepo createWorkflowRepo(TransactionManager transactionManager){
-
-    }
 }

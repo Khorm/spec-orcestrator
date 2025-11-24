@@ -1,4 +1,4 @@
-package com.petra.lib.context.block.operations.executor;
+package com.petra.lib.operation.operations.executor;
 
 import javax.persistence.EntityManager;
 import java.util.List;

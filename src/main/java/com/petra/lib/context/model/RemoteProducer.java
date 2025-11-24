@@ -3,19 +3,20 @@ package com.petra.lib.context.model;
 import com.petra.lib.variable.container.ValueContainer;
 
 public final class RemoteProducer {
-    private final ModelIdentifier identifier;
+    private final Identifier identifier;
     private final String serviceName;
-    private final ValueContainer valuesContainer;
-    private final ModelIdentifier consumerId;
+    private final ValueContainer sendValuesContainer;
+    private final Identifier consumerId;
 
-    public RemoteProducer(ModelIdentifier identifier, String serviceName, ValueContainer valuesContainer, ModelIdentifier consumerId) {
+    public RemoteProducer(Identifier identifier, String serviceName,
+                          ValueContainer sendValuesContainer, Identifier consumerId) {
         this.identifier = identifier;
         this.serviceName = serviceName;
-        this.valuesContainer = valuesContainer;
+        this.sendValuesContainer = sendValuesContainer;
         this.consumerId = consumerId;
     }
 
-    public ModelIdentifier getIdentifier() {
+    public Identifier getIdentifier() {
         return identifier;
     }
 
@@ -32,10 +33,10 @@ public final class RemoteProducer {
     }
 
     public ValueContainer getValuesContainer() {
-        return valuesContainer.clone();
+        return sendValuesContainer.clone();
     }
 
-    public ModelIdentifier getConsumerId() {
+    public Identifier getConsumerId() {
         return consumerId;
     }
 }

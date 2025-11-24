@@ -4,7 +4,7 @@ import com.petra.lib.block.Block;
 import com.petra.lib.block.ExecuteCallback;
 import com.petra.lib.block.action.context.ActionContext;
 import com.petra.lib.block.action.context.LoadedContext;
-import com.petra.lib.context.block.operations.AnswerOperation;
+import com.petra.lib.operation.operations.AnswerOperation;
 import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.block.dto.BlockRequestDto;
 import com.petra.lib.remote.dto.MessageDto;

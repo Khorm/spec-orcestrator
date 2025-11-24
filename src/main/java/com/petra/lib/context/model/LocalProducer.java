@@ -1,49 +1,46 @@
 package com.petra.lib.context.model;
 
+import com.petra.lib.context.Context;
+import com.petra.lib.context.ContextState;
+import com.petra.lib.context.repo.ContextRepo;
+import com.petra.lib.operation.OperationService;
+import com.petra.lib.variable.VariableCallback;
+import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.context.ValueContextModel;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 public class LocalProducer {
-    private final ModelIdentifier identifier;
-    private final List<RemoteConsumer> workflowConsumers;
-    private final String name;
-    private final ValueContextModel lastWorkflowBlockOuterParser;
+    private final Identifier workflowId;
+    private final RemoteConsumer firstConsumer;
+    private final OperationService operationService;
+    private final ContextRepo contextRepo;
 
-    public LocalProducer(ModelIdentifier identifier, List<RemoteConsumer> workflowConsumers,
-                         String name, ValueContextModel lastWorkflowBlockOuterParser) {
-        this.identifier = identifier;
-        this.workflowConsumers = workflowConsumers;
-        this.name = name;
-        this.lastWorkflowBlockOuterParser = lastWorkflowBlockOuterParser;
+
+    public LocalProducer(Identifier workflowId,
+                         RemoteConsumer firstConsumer, OperationService operationService, ContextRepo contextRepo) {
+        this.workflowId = workflowId;
+        this.firstConsumer = firstConsumer;
+        this.operationService = operationService;
+        this.contextRepo = contextRepo;
     }
 
-    public ModelIdentifier getIdentifier() {
-        return identifier;
+    public void start(Context context) {
+        firstConsumer.execute(context.getContextValues(), context.getScenarioId());
     }
 
-    public List<RemoteConsumer> getWorkflowConsumers() {
-        return workflowConsumers;
-    }
 
-    public String getName() {
-        return name;
-    }
-
-    public Optional<RemoteConsumer> getNextConsumer(RemoteConsumer currentConsumer) {
-        Iterator<RemoteConsumer> iter = workflowConsumers.listIterator();
-        while (iter.hasNext()) {
-            if (iter.next().getIdentifier().equals(currentConsumer.getIdentifier())) {
-                return Optional.of(iter.next());
+    public void answerFromBlock(ValueContainer answerContainer, Identifier answerBlockId, UUID scenarioId) {
+        RemoteConsumer workConsumer = firstConsumer;
+        ConsumerIdentifier consumerIdentifier = new ConsumerIdentifier(answerBlockId, workflowId);
+        do {
+            if (workConsumer.getId().equals(consumerIdentifier)) {
+                workConsumer.answer(scenarioId, answerContainer);
+                workConsumer.next().execute(answerContainer, scenarioId);
+                return;
             }
-        }
-        return Optional.empty();
-
-    }
-
-    public ValueContextModel getLastWorkflowBlockOuterParser() {
-        return lastWorkflowBlockOuterParser;
+            workConsumer = workConsumer.next();
+        } while (workConsumer.hasNext());
+        operationService.executeState(contextRepo.findContext(scenarioId, workflowId).get());
     }
 }

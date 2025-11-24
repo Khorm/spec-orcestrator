@@ -10,8 +10,8 @@ import com.petra.lib.variable.context.ValueContextModel;
 import java.util.Optional;
 import java.util.UUID;
 
-
-public interface WorkflowContext extends Context {
+@Deprecated
+interface WorkflowContext extends Context {
     UUID getScenarioId();
 
     void setState(ValueContainer values, ContextState executedState);
@@ -27,5 +27,7 @@ public interface WorkflowContext extends Context {
     Optional<RemoteConsumer> getNextConsumer();
 
     ValueContextModel getLastWorkflowBlockOuterParser();
-    WorkflowContextExecutor getExecutor();
+
+
+//    WorkflowContextExecutor getExecutor();
 }

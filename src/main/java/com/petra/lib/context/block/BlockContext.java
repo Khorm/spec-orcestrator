@@ -10,7 +10,8 @@ import com.petra.lib.variable.context.ValueContextModel;
 
 import java.util.UUID;
 
-public interface BlockContext extends Context {
+@Deprecated
+interface BlockContext extends Context {
 
     UUID getScenarioId();
 
@@ -20,8 +21,8 @@ public interface BlockContext extends Context {
 
     ContextState getContextState();
 
-    ValueContainer getContextInputContainer();
-    ValueContainer getContextOutputContainer();
+    ValueContainer getContextInputValues();
+    ValueContainer getContextValues();
 
     void run();
 
@@ -29,7 +30,7 @@ public interface BlockContext extends Context {
 
     void setState(ValueContainer values, ContextState executedState);
 
-    void error(Exception e);
+    void saveError(Exception e);
 
     ValueContextModel getValueContextModel();
 }

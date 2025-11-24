@@ -1,14 +1,14 @@
 package com.petra.lib.context.block;
 
 import com.petra.lib.constructor.model.LocalConsumerModel;
-import com.petra.lib.context.block.operations.AnswerOperation;
-import com.petra.lib.context.block.operations.ValueParsingOperation;
-import com.petra.lib.context.block.operations.executor.BlockUserOperation;
-import com.petra.lib.context.block.operations.executor.handler.UserActionHandler;
+import com.petra.lib.operation.operations.AnswerOperation;
+import com.petra.lib.operation.operations.WorkflowExecutingOperation;
+import com.petra.lib.operation.operations.executor.BlockUserOperation;
+import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.LocalConsumer;
-import com.petra.lib.context.operation.OperationServiceImpl;
+import com.petra.lib.operation.OperationService;
 import com.petra.lib.context.repo.RepoFactory;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
@@ -28,21 +28,22 @@ public final class BlockContextExecutorFactory {
     public static BlockContextExecutor createBlockContextExecutor(Collection<LocalConsumerModel> consumerModels,
                                                                   TransactionManager transactionManager, ThreadController threadController,
                                                                   Sender sender, String serviceName,
-                                                                  Map<String, UserActionHandler> userActionHandlerMap) {
+                                                                  Map<String, UserActionHandler> userActionHandlerMap,
+                                                                  ) {
 
-        ValueParsingOperation valueParsingOperation = new ValueParsingOperation();
+        WorkflowExecutingOperation workflowExecutingOperation = new WorkflowExecutingOperation(localProducer);
         AnswerOperation answerOperation = new AnswerOperation(sender, serviceName);
-        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager);
+        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userHandlers);
 
-        OperationServiceImpl<BlockContext> operationService = new OperationServiceImpl<>(threadController,
-                valueParsingOperation, answerOperation, blockUserOperation);
+        OperationService<BlockContext> operationService = new OperationService<>(threadController,
+                workflowExecutingOperation, answerOperation, blockUserOperation);
 
         return new BlockContextExecutor(
                 transactionManager,
                 RepoFactory.createBlockRepo(transactionManager),
                 operationService,
-                createLocalConsumers(consumerModels, threadController, sender, userActionHandlerMap)
-        );
+                createLocalConsumers(consumerModels, threadController, sender, userActionHandlerMap),
+                producerMap);
     }
 
     private static Collection<LocalConsumer> createLocalConsumers(Collection<LocalConsumerModel> consumerModels,

@@ -1,7 +1,7 @@
 package com.petra.lib.block.workflow;
 
 import com.petra.lib.block.Block;
-import com.petra.lib.context.block.operations.AnswerOperation;
+import com.petra.lib.operation.operations.AnswerOperation;
 import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.block.workflow.model.WorkflowBlockModel;

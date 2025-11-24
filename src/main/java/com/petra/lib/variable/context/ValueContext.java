@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.UUID;
 
 public class ValueContext {
-
     private final ValueContainer valueContextValues;
     private final ValueContainer blockContextValues;
     private final VariableCallback variableCallback;
@@ -19,13 +18,14 @@ public class ValueContext {
     private final UUID scenarioId;
 
     public ValueContext(ValueContainer blockContextValues,
-                        ValueContextModel valueContextModel,
+                        int valuesCount,
+                        Collection<ValueLoader> starterLoaders,
                         UUID scenarioId,
                         VariableCallback variableCallback) {
         this.blockContextValues = blockContextValues;
         this.variableCallback = variableCallback;
-        this.loaderManager = new LoaderManager(this, valueContextModel.getValuesCount());
-        this.starterLoaders = valueContextModel.getStarterLoaders();
+        this.loaderManager = new LoaderManager(this, valuesCount);
+        this.starterLoaders = starterLoaders;
         this.scenarioId = scenarioId;
         valueContextValues = ValueContainerFactory.getSimpleContainer();
     }

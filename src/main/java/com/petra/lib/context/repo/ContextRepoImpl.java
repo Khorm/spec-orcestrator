@@ -1,13 +1,17 @@
 package com.petra.lib.context.repo;
 
 import com.petra.lib.context.ContextState;
-import com.petra.lib.context.model.Identifier;
+import com.petra.lib.context.block.BlockContextImpl;
 import com.petra.lib.context.block.ContextEntity;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.transaction.TransactionManager;
+import com.petra.lib.variable.container.ValueContainer;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -21,31 +25,63 @@ public class ContextRepoImpl implements ContextRepo {
         this.transactionManager = transactionManager;
     }
 
-    public void createContext(ContextEntity contextEntity) {
-        String sql = "INSERT INTO block_history VALUES (:scenarioId, :consumerId, :consumerVersion, :consumerType," +
-                " :contextState, :contextExecutionStatus, :contextValues, " +
-                " :producerId, :producerVersion, :producerServiceName, :producerValues)";
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate
-                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+//    public void createContext(ContextEntity contextEntity) {
+//        String sql = "INSERT INTO block_history VALUES (:scenarioId, :consumerId, :consumerVersion, :consumerType," +
+//                " :contextState, :contextExecutionStatus, :contextValues, " +
+//                " :producerId, :producerVersion, :producerServiceName, :producerValues)";
+//        NamedParameterJdbcTemplate namedParameterJdbcTemplate
+//                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+//
+//        SqlParameterSource updateParams = new MapSqlParameterSource()
+//                .addValue("scenarioId", contextEntity.getScenarioId())
+//                .addValue("consumerId", contextEntity.getConsumer().getId())
+//                .addValue("consumerVersion ", contextEntity.getConsumer().getVersion())
+//                .addValue("consumerType", contextEntity.getConsumer().getBlockType())
+//                .addValue("contextState", contextEntity.getState().name())
+//                .addValue("contextExecutionStatus", contextEntity.getExecutionStatus().name())
+//                .addValue("contextValues", contextEntity.getInputContextValues().getJson())
+//                .addValue("producerId", contextEntity.getProducer().getId())
+//                .addValue("producerVersion", contextEntity.getProducer().getVersion())
+//                .addValue("producerServiceName ", contextEntity.getProducer().getServiceName())
+//                .addValue("producerValues", contextEntity.getProducer().getValuesContainer().getJson());
+//
+//        namedParameterJdbcTemplate.update(sql, updateParams);
+//    }
 
-        SqlParameterSource updateParams = new MapSqlParameterSource()
-                .addValue("scenarioId", contextEntity.getScenarioId())
-                .addValue("consumerId", contextEntity.getConsumer().getId())
-                .addValue("consumerVersion ", contextEntity.getConsumer().getVersion())
-                .addValue("consumerType", contextEntity.getConsumer().getBlockType())
-                .addValue("contextState", contextEntity.getState().name())
-                .addValue("contextExecutionStatus", contextEntity.getExecutionStatus().name())
-                .addValue("contextValues", contextEntity.getInputContextValues().getJson())
-                .addValue("producerId", contextEntity.getProducer().getId())
-                .addValue("producerVersion", contextEntity.getProducer().getVersion())
-                .addValue("producerServiceName ", contextEntity.getProducer().getServiceName())
-                .addValue("producerValues", contextEntity.getProducer().getValuesContainer().getJson());
+    // java
+    @Override
+    public void insertContext(ContextEntity context) {
+        String sql = "INSERT INTO block_context (scenario_id, consumer_id, consumer_version, consumer_type, " +
+                "context_state, context_execution_status, context_values, " +
+                "producer_id, producer_version, producer_service_name, producer_values) " +
+                "VALUES (:scenarioId, :consumerId, :consumerVersion, :consumerType, " +
+                ":contextState, :contextExecutionStatus, :contextValues, " +
+                ":producerId, :producerVersion, :producerServiceName, :producerValues)";
 
-        namedParameterJdbcTemplate.update(sql, updateParams);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate =
+                new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+
+        Identifier consumerId = context.getConsumerId();
+
+        SqlParameterSource insertParams = new MapSqlParameterSource()
+                .addValue("scenarioId", context.getScenarioId())
+                .addValue("consumerId", consumerId != null ? consumerId.getId() : null)
+                .addValue("consumerVersion", consumerId != null ? consumerId.getVersion() : null)
+                .addValue("consumerType", context.getBlockType() != null ? context.getBlockType() : null)
+                .addValue("contextState", context.getState() != null ? context.getState().name() : null)
+                .addValue("contextExecutionStatus", context.getExecutionStatus() != null ? context.getExecutionStatus().name() : null)
+                .addValue("contextValues", context.getInputContextValues() != null ? context.getInputContextValues().getJson() : null)
+                .addValue("producerId", context.getProducer() != null ? context.getProducer().getId() : null)
+                .addValue("producerVersion", context.getProducer() != null ? context.getProducer().getVersion() : null)
+                .addValue("producerServiceName", context.getProducer() != null ? context.getProducer().getServiceName() : null)
+                .addValue("producerValues", context.getProducer() != null && context.getProducer().getValuesContainer() != null
+                        ? context.getProducer().getValuesContainer().getJson() : null);
+
+        namedParameterJdbcTemplate.update(sql, insertParams);
     }
 
     @Override
-    public Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId) {
+    public Optional<BlockContextImpl> findContext(UUID scenarioId, Identifier consumerId) {
         NamedParameterJdbcTemplate namedParameterJdbcTemplate
                 = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
 
@@ -60,33 +96,132 @@ public class ContextRepoImpl implements ContextRepo {
                 namedParameters, (ResultSetExtractor<ContextEntity>) new LoadedContextRowMapper()));
     }
 
-    @Override
-    public void updateContext(ContextEntity entity) {
-        String updateSql = "UPDATE block_context SET context_state = :state AND context_values = :values " +
-                " where consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId;";
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate
-                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
-        SqlParameterSource updateParams = new MapSqlParameterSource()
-                .addValue("consumerId", entity.getConsumer().getId())
-                .addValue("consumerVersion", entity.getConsumer().getVersion())
-                .addValue("scenarioId", entity.getScenarioId())
-                .addValue("values", entity.getInputContextValues().getJson())
-                .addValue("state", entity.getState());
-        namedParameterJdbcTemplate.update(updateSql, updateParams);
-    }
 
     @Override
-    public ContextState getState(ContextEntity entity) {
-        String updateSql = "SELECT context_state FROM block_context " +
-                " where consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId;";
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate
-                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("consumerId", entity.getConsumer().getId())
-                .addValue("consumerVersion", entity.getConsumer().getVersion())
-                .addValue("scenarioId", entity.getScenarioId());
-        return ContextState.valueOf(namedParameterJdbcTemplate.queryForObject(updateSql, params, String.class));
+    public void updateStateAndValues(ContextEntity entity, ContextState state, ValueContainer outValues) {
+        transactionManager.executeInTransaction((tx) -> {
+            NamedParameterJdbcTemplate namedParameterJdbcTemplate =
+                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+
+            Identifier consumer = entity.getConsumerId();
+            SqlParameterSource keyParams = new MapSqlParameterSource()
+                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
+                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("scenarioId", entity.getScenarioId());
+
+            // Блокировка строки и получение текущего состояния из БД в рамках транзакции
+            String lockSql = "SELECT context_state FROM block_context " +
+                    "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId FOR UPDATE";
+
+            String dbState;
+            try {
+                dbState = namedParameterJdbcTemplate.queryForObject(lockSql, keyParams, String.class);
+            } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+                throw new IllegalStateException("Context not found for locking", e);
+            }
+
+            ContextState dbStateEn = ContextState.valueOf(dbState);
+            if (entity.getState() != dbStateEn) {
+                throw new IllegalStateException("State mismatch: expected=" + dbStateEn.name() + " but was=" + dbState);
+            }
+
+            // Выполняем обновление (значение и при необходимости состояние)
+            String updateSql = "UPDATE block_context SET context_state = :state, context_values = :values " +
+                    "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
+            SqlParameterSource updateParams = new MapSqlParameterSource()
+                    .addValue("state", state.name())
+                    .addValue("values", outValues != null ? outValues.getJson() : null)
+                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
+                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("scenarioId", entity.getScenarioId());
+
+            namedParameterJdbcTemplate.update(updateSql, updateParams);
+
+            // Обновление полей в объекте в памяти
+            entity.setState(state);
+            entity.setOutContextValues(outValues);
+        }, Isolation.READ_COMMITTED);
     }
+
+
+    @Override
+    public void updateExecutionStatus(ContextEntity entity, ContextState state, ExecutionStatus executionStatus) {
+        transactionManager.executeInTransaction((tx) -> {
+            NamedParameterJdbcTemplate namedParameterJdbcTemplate =
+                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+
+            Identifier consumer = entity.getConsumerId();
+            SqlParameterSource keyParams = new MapSqlParameterSource()
+                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
+                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("scenarioId", entity.getScenarioId());
+
+            // Блокировка строки и получение текущего значения context_execution_status в рамках транзакции
+            String lockSql = "SELECT context_execution_status FROM block_context " +
+                    "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId FOR UPDATE";
+
+            String dbExecutionStatus;
+            try {
+                dbExecutionStatus = namedParameterJdbcTemplate.queryForObject(lockSql, keyParams, String.class);
+            } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+                throw new IllegalStateException("Context not found for locking", e);
+            }
+
+            // Если поле уже заполнено — отменяем операцию
+            if (dbExecutionStatus != null && !dbExecutionStatus.isEmpty()) {
+                throw new IllegalStateException("Execution status is already set: " + dbExecutionStatus);
+            }
+
+            // Обновление состояния и статуса выполнения
+            String updateSql = "UPDATE block_context SET context_state = :state, context_execution_status = :executionStatus " +
+                    "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
+            SqlParameterSource updateParams = new MapSqlParameterSource()
+                    .addValue("state", state != null ? state.name() : null)
+                    .addValue("executionStatus", executionStatus != null ? executionStatus.name() : null)
+                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
+                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("scenarioId", entity.getScenarioId());
+
+            namedParameterJdbcTemplate.update(updateSql, updateParams);
+
+            // Обновить поля в объекте в памяти
+            if (state != null) {
+                entity.setState(state);
+            }
+            if (executionStatus != null) {
+                entity.setExecutionStatus(executionStatus);
+            }
+        }, Isolation.READ_COMMITTED);
+    }
+
+//
+//    @Override
+//    public void updateContext(ContextEntity entity) {
+//        String updateSql = "UPDATE block_context SET context_state = :state AND context_values = :values " +
+//                " where consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId;";
+//        NamedParameterJdbcTemplate namedParameterJdbcTemplate
+//                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+//        SqlParameterSource updateParams = new MapSqlParameterSource()
+//                .addValue("consumerId", entity.getConsumer().getId())
+//                .addValue("consumerVersion", entity.getConsumer().getVersion())
+//                .addValue("scenarioId", entity.getScenarioId())
+//                .addValue("values", entity.getInputContextValues().getJson())
+//                .addValue("state", entity.getState());
+//        namedParameterJdbcTemplate.update(updateSql, updateParams);
+//    }
+//
+//    @Override
+//    public ContextState getState(ContextEntity entity) {
+//        String updateSql = "SELECT context_state FROM block_context " +
+//                " where consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId;";
+//        NamedParameterJdbcTemplate namedParameterJdbcTemplate
+//                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+//        SqlParameterSource params = new MapSqlParameterSource()
+//                .addValue("consumerId", entity.getConsumer().getId())
+//                .addValue("consumerVersion", entity.getConsumer().getVersion())
+//                .addValue("scenarioId", entity.getScenarioId());
+//        return ContextState.valueOf(namedParameterJdbcTemplate.queryForObject(updateSql, params, String.class));
+//    }
 
 //    @Override
 //    public ContextState findCurrentState(UUID scenarioId, Identifier blockId) {

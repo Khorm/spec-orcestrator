@@ -7,6 +7,8 @@ public class RemoteConsumerModel {
 
     private Long workflowId;
 
+    private String workflowVersion;
+
     public Long getId() {
         return id;
     }
@@ -21,5 +23,9 @@ public class RemoteConsumerModel {
 
     public Long getWorkflowId() {
         return workflowId;
+    }
+
+    public String getWorkflowVersion() {
+        return workflowVersion;
     }
 }

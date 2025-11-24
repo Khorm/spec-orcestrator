@@ -8,20 +8,29 @@ public class MessageDto {
     private UUID scenarioId;
     private Long receiverId;
     private String receiverVersion;
-    private Long workflowId;
     private String transmittedValues;
     private Long senderId;
     private String senderVersion;
     private String senderServiceName;
     private ExecutionStatus status;
 
-    public MessageDto(UUID scenarioId, Long receiverId, String receiverVersion, Long workflowId,
+    /**
+     *
+     * @param scenarioId - айди текущего сценария
+     * @param receiverId -
+     * @param receiverVersion
+     * @param transmittedValues
+     * @param senderId
+     * @param senderVersion
+     * @param senderServiceName - имя сервиса, отправляющего сообщение
+     * @param status - результат оработки сообщения
+     */
+    public MessageDto(UUID scenarioId, Long receiverId, String receiverVersion,
                       String transmittedValues, Long senderId, String senderVersion, String senderServiceName, ExecutionStatus status) {
         this.scenarioId = scenarioId;
         this.receiverId = receiverId;
         this.receiverVersion = receiverVersion;
         this.transmittedValues = transmittedValues;
-        this.workflowId = workflowId;
         this.senderId = senderId;
         this.senderVersion = senderVersion;
         this.senderServiceName = senderServiceName;
@@ -67,7 +76,4 @@ public class MessageDto {
         this.transmittedValues = transmittedValues;
     }
 
-    public Long getWorkflowId() {
-        return workflowId;
-    }
 }

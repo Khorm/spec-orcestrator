@@ -1,8 +1,9 @@
 package com.petra.lib.context.block;
 
+import com.petra.lib.context.ContextState;
+import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.ContextState;
 import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
@@ -17,12 +18,12 @@ public class ContextEntity {
 
     private final RemoteProducer producer;
 
-    private final Identifier consumerId;
-
     /**
      * Список входящих и загруженых переменных контекста
      */
-    private ValueContainer inputContextValues;
+    private final ValueContainer inputContextValues;
+
+    private final BlockType blockType;
 
     /**
      * Список исходящих переменных контекста
@@ -47,22 +48,22 @@ public class ContextEntity {
                          String values,
                          ContextState contextState,
                          ExecutionStatus executionStatus,
-                         String producerValues
+                         String producerValues, BlockType blockType
     ) {
         this.scenarioId = scenarioId;
         this.state = contextState;
         this.inputContextValues = ValueContainerFactory.getSimpleContainer(values);
-        this.consumerId = consumerId;
+        this.blockType = blockType;
         this.producer = new RemoteProducer(producerBlockId, producerServiceName,
                 ValueContainerFactory.getSimpleContainer(producerValues), consumerId);
         this.executionStatus = executionStatus;
     }
 
-    public ContextEntity(UUID scenarioId, RemoteProducer producer, Identifier consumerId,
+    public ContextEntity(UUID scenarioId, RemoteProducer producer, BlockType blockType,
                          ContextState state) {
         this.scenarioId = scenarioId;
         this.producer = producer;
-        this.consumerId = consumerId;
+        this.blockType = blockType;
         this.inputContextValues = ValueContainerFactory.getSimpleContainer();
         this.state = state;
     }
@@ -76,7 +77,7 @@ public class ContextEntity {
     }
 
     public Identifier getConsumerId() {
-        return consumerId;
+        return producer.getConsumerId();
     }
 
     public ValueContainer getInputContextValues() {
@@ -99,9 +100,6 @@ public class ContextEntity {
         this.state = state;
     }
 
-    public void setInputContextValues(ValueContainer inputContextValues) {
-        this.inputContextValues = inputContextValues;
-    }
 
     public void setExecutionStatus(ExecutionStatus executionStatus) {
         this.executionStatus = executionStatus;
@@ -109,5 +107,9 @@ public class ContextEntity {
 
     public void setOutContextValues(ValueContainer outContextValues) {
         this.outContextValues = outContextValues;
+    }
+
+    public BlockType getBlockType() {
+        return blockType;
     }
 }

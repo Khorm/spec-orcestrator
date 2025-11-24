@@ -1,22 +1,22 @@
 package com.petra.lib.constructor;
 
+import com.petra.lib.constructor.model.RemoteConsumerModel;
+import com.petra.lib.context.ContextState;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.constructor.model.ConstructorModel;
 import com.petra.lib.constructor.model.LocalProducerModel;
 import com.petra.lib.constructor.model.LocalSourceModel;
 import com.petra.lib.context.block.BlockContextExecutor;
-import com.petra.lib.context.block.operations.executor.handler.UserActionHandler;
+import com.petra.lib.operation.OperationFactory;
+import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.context.model.LocalProducer;
 import com.petra.lib.context.model.LocalSource;
 import com.petra.lib.context.model.RemoteConsumer;
-import com.petra.lib.context.operation.OperationServiceImpl;
+import com.petra.lib.operation.OperationService;
 import com.petra.lib.context.repo.RepoFactory;
 import com.petra.lib.context.source.SourceContextExecutor;
 import com.petra.lib.context.source.SourceUserHandler;
-import com.petra.lib.context.workflow.WorkflowContext;
 import com.petra.lib.context.workflow.WorkflowContextExecutor;
-import com.petra.lib.context.workflow.operations.WorkflowAnswerOperation;
-import com.petra.lib.context.workflow.operations.WorkflowSendOperation;
 import com.petra.lib.controller.Controller;
 import com.petra.lib.remote.HttpListener;
 import com.petra.lib.remote.HttpSender;
@@ -45,6 +45,8 @@ public class Constructor {
         TransactionManager transactionManager = TransactionManagerFactory.createTransactionManager(jpaTransactionManager);
         ThreadController threadController = new ThreadController(petraProperties.getThreadCount());
         Sender sender = new HttpSender(threadController);
+        OperationFactory operationFactory = new OperationFactory(sender, petraProperties.getServiceName(),
+                transactionManager, operationService);
 
         BlockContextExecutor blockContextExecutor = createBlockContextExecutor(constructorModel.getConsumers(), transactionManager,
                 threadController, sender, petraProperties.getServiceName(), userActionHandlerMap);
@@ -53,7 +55,7 @@ public class Constructor {
                 jpaTransactionManager.getEntityManagerFactory(), sourceUserHandlerMap);
 
         WorkflowContextExecutor workflowContextExecutor = createWorkflowContextExecutor(transactionManager,
-                threadController, blockContextExecutor, sender, constructorModel.getProducers(), petraProperties.getServiceName());
+                threadController,  sender, constructorModel.getProducers(),operationFactory);
 
 
         return new Controller(blockContextExecutor, workflowContextExecutor, sourceContextExecutor);
@@ -82,14 +84,17 @@ public class Constructor {
 
     private WorkflowContextExecutor createWorkflowContextExecutor(TransactionManager transactionManager,
                                                                   ThreadController threadController,
-                                                                  BlockContextExecutor blockContextExecutor,
+//                                                                  BlockContextExecutor blockContextExecutor,
                                                                   Sender sender, Collection<LocalProducerModel> localProducerModels,
-                                                                  String currentServiceName) {
+//                                                                  String currentServiceName,
+                                                                  OperationFactory operationFactory) {
 
-        WorkflowAnswerOperation workflowAnswerOperation = new WorkflowAnswerOperation(transactionManager, blockContextExecutor);
-        WorkflowSendOperation workflowSendOperation = new WorkflowSendOperation(sender, currentServiceName);
-        OperationServiceImpl<WorkflowContext> operationService =
-                new OperationServiceImpl<>(threadController, workflowSendOperation, workflowAnswerOperation);
+//        WorkflowAnswerOperation workflowAnswerOperation = new WorkflowAnswerOperation(transactionManager, blockContextExecutor);
+//        WorkflowSendOperation workflowSendOperation = new WorkflowSendOperation(sender, currentServiceName);
+        OperationService operationService =
+                new OperationService(threadController,operationFactory,
+                        ContextState.BLOCK_CREATING, ContextState.WORKFLOW_STARTING, ContextState.WORKFLOW_LOADING_VARIABLES,
+                        ContextState.WORKFLOW_EXECUTING, ContextState.BLOCK_ANSWERING);
 
         Collection<LocalProducer> localProducers = new ArrayList<>();
         for (LocalProducerModel localProducerModel : localProducerModels) {
@@ -98,10 +103,10 @@ public class Constructor {
                     threadController, sender);
             localProducers.add(new LocalProducer(
                     new Identifier(localProducerModel.getId(), localProducerModel.getVersion()),
-                    localProducerModel.getConsumers().stream().map(RemoteConsumer::new).collect(Collectors.toList()),
+                    localProducerModel.getConsumers().stream().map((RemoteConsumerModel remoteConsumerModel) -> new RemoteConsumer(remoteConsumerModel, currentServiceName, nextConsumer, sender, valueContextModel, workflowContextRepo)).collect(Collectors.toList()),
                     localProducerModel.getName(),
-                    valueContextModel
-            ));
+                    valueContextModel,
+                    workflowContextRepo));
         }
 
         return new WorkflowContextExecutor(

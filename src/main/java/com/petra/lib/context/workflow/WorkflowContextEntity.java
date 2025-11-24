@@ -1,45 +1,47 @@
 package com.petra.lib.context.workflow;
 
+import com.petra.lib.context.Context;
+import com.petra.lib.context.model.ConsumerIdentifier;
 import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.ContextState;
 import com.petra.lib.variable.container.ValueContainer;
 
 import java.util.UUID;
 
+
 public class WorkflowContextEntity {
-    private final Identifier consumerId;
-    private final Identifier producerId;
+
+    private final ConsumerIdentifier consumerIdentifier;
     private final UUID scenarioId;
-    private ContextState workflowState = ContextState.CREATED;
+    private WorkflowContextState workflowState = WorkflowContextState.START;
     private ValueContainer resultValues;
 
-    public WorkflowContextEntity(Identifier consumerId, Identifier producerId, UUID scenarioId) {
-        this.consumerId = consumerId;
-        this.producerId = producerId;
+    public WorkflowContextEntity(ConsumerIdentifier consumerIdentifier, UUID scenarioId) {
+        this.consumerIdentifier = consumerIdentifier;
         this.scenarioId = scenarioId;
     }
 
-    public ContextState getWorkflowState() {
-        return workflowState;
-    }
 
     public ValueContainer getResultValues() {
         return resultValues;
-    }
-
-    public Identifier getConsumerId() {
-        return consumerId;
     }
 
     public UUID getScenarioId() {
         return scenarioId;
     }
 
-    public void setWorkflowState(ContextState workflowState) {
+    public void setResultValues(ValueContainer resultValues) {
+        this.resultValues = resultValues;
+    }
+
+    public WorkflowContextState getWorkflowState() {
+        return workflowState;
+    }
+
+    public void setWorkflowState(WorkflowContextState workflowState) {
         this.workflowState = workflowState;
     }
 
-    public void setResultValues(ValueContainer resultValues) {
-        this.resultValues = resultValues;
+    public ConsumerIdentifier getConsumerIdentifier() {
+        return consumerIdentifier;
     }
 }
