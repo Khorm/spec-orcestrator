@@ -1,15 +1,5 @@
 package com.petra.lib.operation.operations;
 
-import com.petra.lib.operation.Operation;
-import com.petra.lib.remote.dto.MessageDto;
-import com.petra.lib.context.ContextState;
-import com.petra.lib.context.model.LocalProducer;
-import com.petra.lib.context.model.RemoteConsumer;
-import com.petra.lib.context.workflow.WorkflowContext;
-import com.petra.lib.remote.MessageResponse;
-import com.petra.lib.remote.Sender;
-import com.petra.lib.remote.SenderCallback;
-
 @Deprecated
 class WorkflowSendOperation /*implements Operation<WorkflowContext>*/ {
 

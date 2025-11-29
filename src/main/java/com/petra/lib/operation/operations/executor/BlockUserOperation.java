@@ -23,12 +23,11 @@ public class BlockUserOperation implements Operation {
     private final ContextState CURRENT_STATE = ContextState.EXECUTED;
 
     private final Map<Identifier, UserActionHandler> userHandlers;
-    private final OperationService operationService;
+//    private final OperationService operationService;
 
-    public BlockUserOperation(TransactionManager transactionManager, Map<Identifier, UserActionHandler> userHandlers, OperationService operationService) {
+    public BlockUserOperation(TransactionManager transactionManager, Map<Identifier, UserActionHandler> userHandlers) {
         this.transactionManager = transactionManager;
         this.userHandlers = userHandlers;
-        this.operationService = operationService;
     }
 
 
@@ -52,7 +51,7 @@ public class BlockUserOperation implements Operation {
                 blockContext.save();
             } catch (Exception e) {
                 blockContext.saveError(e);
-                operationService.executeState(blockContext);
+//                operationService.executeState(blockContext);
             }
         }, Isolation.SERIALIZABLE);
 

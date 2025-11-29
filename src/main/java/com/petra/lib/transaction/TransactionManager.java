@@ -11,4 +11,6 @@ public interface TransactionManager {
     void executeInTransaction(TransactionRunnable task, Isolation transactionDefinition);
 
     JpaTransactionManager getJpaTransactionManager();
+
+
 }

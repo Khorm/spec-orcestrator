@@ -1,5 +1,7 @@
 package com.petra.lib.constructor.model;
 
+import java.util.Collection;
+
 public class RemoteConsumerModel {
     private Long id;
     private String version;
@@ -8,6 +10,8 @@ public class RemoteConsumerModel {
     private Long workflowId;
 
     private String workflowVersion;
+    private ValuesCollectionModel blockValues;
+
 
     public Long getId() {
         return id;
@@ -27,5 +31,9 @@ public class RemoteConsumerModel {
 
     public String getWorkflowVersion() {
         return workflowVersion;
+    }
+
+    public ValuesCollectionModel getBlockValues() {
+        return blockValues;
     }
 }

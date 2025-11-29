@@ -12,12 +12,12 @@ import java.util.Map;
 /**
  * Отвечает за вызов операций переключающий стейты
  */
-public class OperationService {
+public abstract class OperationService {
     private final Map<ContextState, Operation> operationsByStates = new HashMap<>();
     private final ThreadController threadController;
     private final List<ContextState> executingStates = new ArrayList<>();
 
-    public OperationService(ThreadController threadController) {
+    OperationService(ThreadController threadController) {
         this.threadController = threadController;
     }
 
@@ -37,9 +37,9 @@ public class OperationService {
         });
     }
 
-    void addOperation(Operation operation, ContextState state){
-        operationsByStates.put(state, operation);
-        executingStates.add(state);
+    public void addOperation(Operation operation){
+        operationsByStates.put(operation.getState(), operation);
+        executingStates.add(operation.getState());
     }
 
 

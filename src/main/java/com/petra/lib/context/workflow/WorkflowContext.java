@@ -5,7 +5,7 @@ import com.petra.lib.context.ContextState;
 import com.petra.lib.context.model.LocalProducer;
 import com.petra.lib.context.model.RemoteConsumer;
 import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.context.ValueContextModel;
+import com.petra.lib.variable.context.ValueContextManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +26,7 @@ interface WorkflowContext extends Context {
 
     Optional<RemoteConsumer> getNextConsumer();
 
-    ValueContextModel getLastWorkflowBlockOuterParser();
+    ValueContextManager getLastWorkflowBlockOuterParser();
 
 
 //    WorkflowContextExecutor getExecutor();

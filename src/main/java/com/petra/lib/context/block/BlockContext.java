@@ -6,7 +6,7 @@ import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.model.LocalConsumer;
 import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.context.ValueContextModel;
+import com.petra.lib.variable.context.ValueContextManager;
 
 import java.util.UUID;
 
@@ -32,5 +32,5 @@ interface BlockContext extends Context {
 
     void saveError(Exception e);
 
-    ValueContextModel getValueContextModel();
+    ValueContextManager getValueContextModel();
 }

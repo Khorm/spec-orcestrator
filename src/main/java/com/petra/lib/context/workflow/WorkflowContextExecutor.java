@@ -21,39 +21,39 @@ import java.util.stream.Collectors;
  */
 @Deprecated
 class WorkflowContextExecutor {
-    private final WorkflowContextRepo workflowContextRepo;
-    private final TransactionManager transactionManager;
-    private final OperationService workflowOperationService;
-    private final Map<ConsumerIdentifier, LocalProducer> workflowProducers;
-
-
-    public WorkflowContextExecutor(WorkflowContextRepo workflowContextRepo, TransactionManager transactionManager,
-                                   OperationService workflowOperationService,
-                                   Collection<LocalProducer> workflowProducers) {
-        this.workflowContextRepo = workflowContextRepo;
-        this.transactionManager = transactionManager;
-        this.workflowOperationService = workflowOperationService;
-        this.workflowProducers = workflowProducers.stream().collect(Collectors.toMap(LocalProducer::getIdentifier, Function.identity()));
-    }
-
-    public void loadContext(RemoteConsumer remoteConsumer, ValueContainer resultValues, UUID scenarioId) {
-        loadContext(remoteConsumer.getIdentifier(), resultValues, scenarioId, null);
-    }
-
-    public void loadContext(WorkflowContext previousContext) {
-        loadContext(previousContext.getLocalProducer().getIdentifier(), null,
-                previousContext.getScenarioId(), previousContext.getWorkflowOutputValues());
-    }
-
-    /**
-     * выгрузка контекста и подготовка к исполнению
-     * @param producerId           - айди текущего блока воркфлоу
-     * @param outputWorkflowValues - исходящие переменные текущего блока воркфлоу
-     * @param scenarioId           - айди выполняемого сценария
-     * @param inputWorkflowValues  - входящие в воркфлоу переменные
-     */
-    private void loadContext(ConsumerIdentifier producerId, ValueContainer outputWorkflowValues, UUID scenarioId,
-                             ValueContainer inputWorkflowValues) {
+//    private final WorkflowContextRepo workflowContextRepo;
+//    private final TransactionManager transactionManager;
+//    private final OperationService workflowOperationService;
+//    private final Map<ConsumerIdentifier, LocalProducer> workflowProducers;
+//
+//
+//    public WorkflowContextExecutor(WorkflowContextRepo workflowContextRepo, TransactionManager transactionManager,
+//                                   OperationService workflowOperationService,
+//                                   Collection<LocalProducer> workflowProducers) {
+//        this.workflowContextRepo = workflowContextRepo;
+//        this.transactionManager = transactionManager;
+//        this.workflowOperationService = workflowOperationService;
+//        this.workflowProducers = workflowProducers.stream().collect(Collectors.toMap(LocalProducer::getIdentifier, Function.identity()));
+//    }
+//
+//    public void loadContext(RemoteConsumer remoteConsumer, ValueContainer resultValues, UUID scenarioId) {
+//        loadContext(remoteConsumer.getIdentifier(), resultValues, scenarioId, null);
+//    }
+//
+//    public void loadContext(WorkflowContext previousContext) {
+//        loadContext(previousContext.getLocalProducer().getIdentifier(), null,
+//                previousContext.getScenarioId(), previousContext.getWorkflowOutputValues());
+//    }
+//
+//    /**
+//     * выгрузка контекста и подготовка к исполнению
+//     * @param producerId           - айди текущего блока воркфлоу
+//     * @param outputWorkflowValues - исходящие переменные текущего блока воркфлоу
+//     * @param scenarioId           - айди выполняемого сценария
+//     * @param inputWorkflowValues  - входящие в воркфлоу переменные
+//     */
+//    private void loadContext(ConsumerIdentifier producerId, ValueContainer outputWorkflowValues, UUID scenarioId,
+//                             ValueContainer inputWorkflowValues) {
 
 
 
@@ -100,13 +100,13 @@ class WorkflowContextExecutor {
 //                workflowOperationService,
 //                transactionManager,
 //                this).run();
-    }
+//    }
 
 
-    private WorkflowContextEntity createContextEntity(RemoteConsumer contextRemoteConsumer,
-                                                      LocalProducer localProducer, UUID scenarioId) {
-        return new WorkflowContextEntity(contextRemoteConsumer.getIdentifier(), localProducer.getIdentifier(), scenarioId);
-    }
+//    private WorkflowContextEntity createContextEntity(RemoteConsumer contextRemoteConsumer,
+//                                                      LocalProducer localProducer, UUID scenarioId) {
+//        return new WorkflowContextEntity(contextRemoteConsumer.getIdentifier(), localProducer.getIdentifier(), scenarioId);
+//    }
 
 
 }

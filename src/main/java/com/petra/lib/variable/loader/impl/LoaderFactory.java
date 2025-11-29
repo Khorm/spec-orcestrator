@@ -1,7 +1,7 @@
 package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.context.model.Identifier;
-import com.petra.lib.constructor.model.ValueLoaderModel;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.loader.ValueLoader;
@@ -14,55 +14,55 @@ import java.util.stream.Collectors;
 
 public class LoaderFactory {
 
-    public static ValueLoader createLoader(ValueLoaderModel valueLoaderModel, ThreadController threadController, Sender sender){
-        switch (valueLoaderModel.getLoaderType()){
+    public static ValueLoader createLoader(ValueModel valueModel, ThreadController threadController, Sender sender){
+        switch (valueModel.getLoaderType()){
             case EMPTY_LOADER:
                 return createEmptyLoader(
-                        valueLoaderModel.getId(),
-                        valueLoaderModel.getName(),
-                        valueLoaderModel.getMultiplicity(),
-                        valueLoaderModel.getParents(),
-                        valueLoaderModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModel.getId(),
+                        valueModel.getName(),
+                        valueModel.getMultiplicity(),
+                        valueModel.getParents(),
+                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
                         threadController
                 );
             case INPUT_LOADER:
                 return createInputLoader(
-                        valueLoaderModel.getId(),
-                        valueLoaderModel.getName(),
-                        valueLoaderModel.getInputValueId(),
-                        valueLoaderModel.getMultiplicity(),
-                        valueLoaderModel.getParents(),
-                        valueLoaderModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModel.getId(),
+                        valueModel.getName(),
+                        valueModel.getInputValueId(),
+                        valueModel.getMultiplicity(),
+                        valueModel.getParents(),
+                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueLoaderModel.getExtractionString(),
+                        valueModel.getExtractionString(),
                         threadController
                 );
             case SCRIPT_LOADER:
                 return createScriptLoader(
-                        valueLoaderModel.getScript(),
-                        valueLoaderModel.getId(),
-                        valueLoaderModel.getName(),
-                        valueLoaderModel.getMultiplicity(),
-                        valueLoaderModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModel.getScript(),
+                        valueModel.getId(),
+                        valueModel.getName(),
+                        valueModel.getMultiplicity(),
+                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueLoaderModel.getParents(),
+                        valueModel.getParents(),
                         threadController
                 );
 
             case SOURCE_LOADER:
                 return createSourceLoader(
-                        valueLoaderModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueLoaderModel.getParents(),
+                        valueModel.getParents(),
                         sender,
-                        valueLoaderModel.getMultiplicity(),
-                        new Identifier(valueLoaderModel.getSourceId(), valueLoaderModel.getSourceVersion()),
-                        valueLoaderModel.getSourceName(),
-                        valueLoaderModel.getId(),
-                        valueLoaderModel.getName(),
+                        valueModel.getMultiplicity(),
+                        new Identifier(valueModel.getSourceId(), valueModel.getSourceVersion()),
+                        valueModel.getSourceName(),
+                        valueModel.getId(),
+                        valueModel.getName(),
                         threadController,
-                        valueLoaderModel.getSourceInputVariableModels().stream().map(SourceInputVariable::new)
+                        valueModel.getSourceInputVariableModels().stream().map(SourceInputVariable::new)
                                 .collect(Collectors.toList())
                 );
 

@@ -1,18 +1,25 @@
 package com.petra.lib.context.repo;
 
+import com.petra.lib.context.Context;
 import com.petra.lib.context.ContextState;
 import com.petra.lib.context.block.BlockContextImpl;
 import com.petra.lib.context.block.ContextEntity;
+import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.model.Identifier;
+import com.petra.lib.context.model.RemoteProducer;
+import com.petra.lib.operation.ActivityOperationService;
+import com.petra.lib.operation.WorkflowOperationService;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.variable.container.ValueContainer;
-import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.transaction.annotation.Isolation;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +27,7 @@ import java.util.UUID;
 public class ContextRepoImpl implements ContextRepo {
 
     private final TransactionManager transactionManager;
+
 
     public ContextRepoImpl(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
@@ -81,7 +89,7 @@ public class ContextRepoImpl implements ContextRepo {
     }
 
     @Override
-    public Optional<BlockContextImpl> findContext(UUID scenarioId, Identifier consumerId) {
+    public Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId) {
         NamedParameterJdbcTemplate namedParameterJdbcTemplate
                 = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
 
@@ -90,10 +98,17 @@ public class ContextRepoImpl implements ContextRepo {
                 .addValue("consumerVersion", consumerId.getVersion())
                 .addValue("scenarioId", scenarioId);
 
-        return Optional.ofNullable(namedParameterJdbcTemplate.query("SELECT * FROM block_context " +
+
+        List<ContextEntity> contextEntity = namedParameterJdbcTemplate.query("SELECT * FROM block_context " +
                         " WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND" +
                         " scenario_id = ':scenarioId ",
-                namedParameters, (ResultSetExtractor<ContextEntity>) new LoadedContextRowMapper()));
+                namedParameters, (RowMapper<ContextEntity>) new LoadedContextRowMapper());
+
+        if (contextEntity.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(contextEntity.get(0));
+        }
     }
 
 
@@ -116,8 +131,11 @@ public class ContextRepoImpl implements ContextRepo {
             String dbState;
             try {
                 dbState = namedParameterJdbcTemplate.queryForObject(lockSql, keyParams, String.class);
-            } catch (org.springframework.dao.EmptyResultDataAccessException e) {
-                throw new IllegalStateException("Context not found for locking", e);
+            } catch (EmptyResultDataAccessException e) {
+                entity.setState(state);
+                entity.setOutContextValues(outValues);
+                insertContext(entity);
+                return;
             }
 
             ContextState dbStateEn = ContextState.valueOf(dbState);
@@ -163,7 +181,7 @@ public class ContextRepoImpl implements ContextRepo {
             String dbExecutionStatus;
             try {
                 dbExecutionStatus = namedParameterJdbcTemplate.queryForObject(lockSql, keyParams, String.class);
-            } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            } catch (EmptyResultDataAccessException e) {
                 throw new IllegalStateException("Context not found for locking", e);
             }
 
@@ -193,6 +211,8 @@ public class ContextRepoImpl implements ContextRepo {
             }
         }, Isolation.READ_COMMITTED);
     }
+
+
 
 //
 //    @Override

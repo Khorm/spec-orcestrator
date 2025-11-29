@@ -1,16 +1,5 @@
 package com.petra.lib.operation.operations;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
-import com.petra.lib.operation.Operation;
-import com.petra.lib.context.workflow.WorkflowContext;
-import com.petra.lib.operation.OperationService;
-import com.petra.lib.transaction.TransactionManager;
-import com.petra.lib.variable.VariableCallback;
-import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.context.ValueContext;
-import org.springframework.transaction.annotation.Isolation;
-
 @Deprecated
 class WorkflowAnswerOperation /*implements Operation*/ {
 //    private final TransactionManager transactionManager;

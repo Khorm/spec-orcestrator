@@ -1,17 +1,15 @@
 package com.petra.lib.controller;
 
-import com.petra.lib.remote.dto.MessageDto;
-import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.block.BlockContextExecutor;
+import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.context.source.SourceContextExecutor;
-import com.petra.lib.context.workflow.WorkflowContextExecutor;
+import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 
 public class Controller {
     private final BlockContextExecutor blockContextExecutor;
-//    private final WorkflowContextExecutor workflowContextExecutor;
     private final SourceContextExecutor sourceContextExecutor;
 
     public Controller(BlockContextExecutor blockContextExecutor, SourceContextExecutor sourceContextExecutor) {
@@ -31,7 +29,6 @@ public class Controller {
     }
 
     public void blockAnswer(MessageDto messageDto) {
-//        workflowContextExecutor.loadContext(createProducer(messageDto), messageDto.getScenarioId());
         Identifier blockId = new Identifier(messageDto.getSenderId(), messageDto.getSenderVersion());
         Identifier workflowId = new Identifier(messageDto.getReceiverId(), messageDto.getReceiverVersion());
 

@@ -13,22 +13,22 @@ import com.petra.lib.transaction.TransactionManager;
 
 public class ActionFactory {
 
-    public static Block createAction(ActionModel actionModel, ThreadController threadController,
-                                     TransactionManager transactionManager, Sender sender,
-                                     UserActionHandler userActionHandler){
-        Identifier actionId = new Identifier(actionModel.getId(), actionModel.getVersion());
-        ContextRepo contextRepo = new ContextRepoImpl(transactionManager);
-        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userActionHandler, contextRepo);
-        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager, contextRepo);
-
-        return new Action(
-                threadController,
-                actionId,
-                contextRepo,
-                blockUserOperation,
-                answerOperation,
-                transactionManager,
-                sender
-        );
-    }
+//    public static Block createAction(ActionModel actionModel, ThreadController threadController,
+//                                     TransactionManager transactionManager, Sender sender,
+//                                     UserActionHandler userActionHandler){
+//        Identifier actionId = new Identifier(actionModel.getId(), actionModel.getVersion());
+//        ContextRepo contextRepo = new ContextRepoImpl(transactionManager);
+//        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userActionHandler, contextRepo);
+//        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager, contextRepo);
+//
+//        return new Action(
+//                threadController,
+//                actionId,
+//                contextRepo,
+//                blockUserOperation,
+//                answerOperation,
+//                transactionManager,
+//                sender
+//        );
+//    }
 }

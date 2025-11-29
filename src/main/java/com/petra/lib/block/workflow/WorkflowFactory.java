@@ -19,69 +19,69 @@ import java.util.Map;
 
 public class WorkflowFactory {
 
-    public static Block createWorkflow(ThreadController threadController, WorkflowModel workflowModel,
-                                       ContextRepo contextRepo, ActionWorkflowRepo actionWorkflowRepo, Sender sender,
-                                       TransactionManager transactionManager, String producerServiceUrl) {
-
-        Identifier identifier = new Identifier(workflowModel.getId(), workflowModel.getVersion());
-        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager, contextRepo);
-
-
-        Map<Identifier, ClientBlock> blockMap = new HashMap<>();
-//        WorkflowSignal startSignal = createSignal(workflowModel.getSignals(), workflowModel.getBlocks(), workflowModel.getStartSignal().getId(), workflowModel.getStartSignal().getVersion(),
-//                producerServiceUrl, sender, threadController, actionRepo, identifier, actionWorkflowRepo, transactionManager, blockMap);
-        ClientBlock startBlock = createBlock(workflowModel.getBlocks(), workflowModel.getProducerServiceUrl(), workflowModel.getStartBlock().getId(),
-                workflowModel.getStartBlock().getVersion(), sender, actionWorkflowRepo, transactionManager, threadController,
-                contextRepo, identifier, blockMap);
-        Orchestrator orchestrator = new Orchestrator(startBlock, blockMap);
-
-        return new Workflow(
-                threadController,
-                identifier,
-                contextRepo,
-                actionWorkflowRepo,
-//                VariableFactory.createVariableManager(workflowModel.getVariableModel(),
-//                        sender, workflowModel.getProducerServiceUrl(), threadController),
-                answerOperation,
-                transactionManager,
-                sender,
-                orchestrator
-        );
-    }
-
-    private static ClientBlock createBlock(List<WorkflowBlockModel> workflowBlockModels,
-                                           String producerServiceUrl, Long nextBlockId, String nextBlockVersion, Sender sender,
-                                           ActionWorkflowRepo actionWorkflowRepo, TransactionManager transactionManager, ThreadController threadController,
-                                           ContextRepo contextRepo, Identifier workflowId, Map<Identifier, ClientBlock> blockMap) {
-
-        WorkflowBlockModel blockModel = null;
-        for (WorkflowBlockModel workflowBlockModel : workflowBlockModels) {
-            if (workflowBlockModel.getId().equals(nextBlockId) && workflowBlockModel.getVersion().equals(nextBlockVersion)) {
-                blockModel = workflowBlockModel;
-                break;
-            }
-        }
-
-        if (blockModel == null) throw new NullPointerException("Block not found ");
-
-        Identifier id = new Identifier(nextBlockId, nextBlockVersion);
-        ClientBlock clientBlock = new ClientBlock(
-                id,
-                producerServiceUrl,
-                createBlock(workflowBlockModels, producerServiceUrl,
-                        blockModel.getNextBlock().getId(), blockModel.getNextBlock().getVersion(),
-                        sender, actionWorkflowRepo, transactionManager, threadController, contextRepo,
-                        workflowId, blockMap),
-                blockModel.getName(),
-                sender,
-                blockModel.getConsumerServiceURL(),
-                actionWorkflowRepo,
-                transactionManager,
-                VariableFactory.createVariableManager(blockModel.getVariableModel(), sender, producerServiceUrl, threadController, id),
-                workflowId);
-        blockMap.put(id, clientBlock);
-        return clientBlock;
-    }
+//    public static Block createWorkflow(ThreadController threadController, WorkflowModel workflowModel,
+//                                       ContextRepo contextRepo, ActionWorkflowRepo actionWorkflowRepo, Sender sender,
+//                                       TransactionManager transactionManager, String producerServiceUrl) {
+//
+//        Identifier identifier = new Identifier(workflowModel.getId(), workflowModel.getVersion());
+//        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager, contextRepo);
+//
+//
+//        Map<Identifier, ClientBlock> blockMap = new HashMap<>();
+////        WorkflowSignal startSignal = createSignal(workflowModel.getSignals(), workflowModel.getBlocks(), workflowModel.getStartSignal().getId(), workflowModel.getStartSignal().getVersion(),
+////                producerServiceUrl, sender, threadController, actionRepo, identifier, actionWorkflowRepo, transactionManager, blockMap);
+//        ClientBlock startBlock = createBlock(workflowModel.getBlocks(), workflowModel.getProducerServiceUrl(), workflowModel.getStartBlock().getId(),
+//                workflowModel.getStartBlock().getVersion(), sender, actionWorkflowRepo, transactionManager, threadController,
+//                contextRepo, identifier, blockMap);
+//        Orchestrator orchestrator = new Orchestrator(startBlock, blockMap);
+//
+//        return new Workflow(
+//                threadController,
+//                identifier,
+//                contextRepo,
+//                actionWorkflowRepo,
+////                VariableFactory.createVariableManager(workflowModel.getVariableModel(),
+////                        sender, workflowModel.getProducerServiceUrl(), threadController),
+//                answerOperation,
+//                transactionManager,
+//                sender,
+//                orchestrator
+//        );
+//    }
+//
+//    private static ClientBlock createBlock(List<WorkflowBlockModel> workflowBlockModels,
+//                                           String producerServiceUrl, Long nextBlockId, String nextBlockVersion, Sender sender,
+//                                           ActionWorkflowRepo actionWorkflowRepo, TransactionManager transactionManager, ThreadController threadController,
+//                                           ContextRepo contextRepo, Identifier workflowId, Map<Identifier, ClientBlock> blockMap) {
+//
+//        WorkflowBlockModel blockModel = null;
+//        for (WorkflowBlockModel workflowBlockModel : workflowBlockModels) {
+//            if (workflowBlockModel.getId().equals(nextBlockId) && workflowBlockModel.getVersion().equals(nextBlockVersion)) {
+//                blockModel = workflowBlockModel;
+//                break;
+//            }
+//        }
+//
+//        if (blockModel == null) throw new NullPointerException("Block not found ");
+//
+//        Identifier id = new Identifier(nextBlockId, nextBlockVersion);
+//        ClientBlock clientBlock = new ClientBlock(
+//                id,
+//                producerServiceUrl,
+//                createBlock(workflowBlockModels, producerServiceUrl,
+//                        blockModel.getNextBlock().getId(), blockModel.getNextBlock().getVersion(),
+//                        sender, actionWorkflowRepo, transactionManager, threadController, contextRepo,
+//                        workflowId, blockMap),
+//                blockModel.getName(),
+//                sender,
+//                blockModel.getConsumerServiceURL(),
+//                actionWorkflowRepo,
+//                transactionManager,
+//                VariableFactory.createVariableManager(blockModel.getVariableModel(), sender, producerServiceUrl, threadController, id),
+//                workflowId);
+//        blockMap.put(id, clientBlock);
+//        return clientBlock;
+//    }
 
 //    private static WorkflowSignal createSignal(List<WorkflowSignalModel> workflowSignalModels, List<WorkflowBlockModel> workflowBlockModels,
 //                                               Long nextSignalId, String nextSignalVersion, String producerServiceUrl, Sender sender,

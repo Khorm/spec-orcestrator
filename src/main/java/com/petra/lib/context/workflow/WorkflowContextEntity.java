@@ -1,8 +1,7 @@
 package com.petra.lib.context.workflow;
 
-import com.petra.lib.context.Context;
 import com.petra.lib.context.model.ConsumerIdentifier;
-import com.petra.lib.context.model.Identifier;
+import com.petra.lib.operation.WorkflowOperationService;
 import com.petra.lib.variable.container.ValueContainer;
 
 import java.util.UUID;
@@ -39,6 +38,7 @@ public class WorkflowContextEntity {
 
     public void setWorkflowState(WorkflowContextState workflowState) {
         this.workflowState = workflowState;
+
     }
 
     public ConsumerIdentifier getConsumerIdentifier() {

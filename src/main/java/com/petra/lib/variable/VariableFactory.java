@@ -1,10 +1,11 @@
 package com.petra.lib.variable;
 
 
-import com.petra.lib.constructor.model.ValueLoaderModel;
+import com.petra.lib.constructor.model.ValueModel;
+import com.petra.lib.constructor.model.ValuesCollectionModel;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
-import com.petra.lib.variable.context.ValueContextModel;
+import com.petra.lib.variable.context.ValueContextManager;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.loader.impl.LoaderFactory;
 
@@ -17,13 +18,13 @@ public final class VariableFactory {
     VariableFactory() {
     }
 
-    public static ValueContextModel createStartedLoaders(Collection<ValueLoaderModel> valueLoaderModels, int valuesCount,
-                                                         ThreadController threadController, Sender sender) {
+    public static ValueContextManager createStartedLoaders(ValuesCollectionModel valuesCollectionModel,
+                                                           ThreadController threadController, Sender sender) {
         Collection<ValueLoader> valueLoaders = new ArrayList<>();
-        for (ValueLoaderModel valueLoaderModel : valueLoaderModels) {
-            valueLoaders.add(LoaderFactory.createLoader(valueLoaderModel, threadController, sender));
+        for (ValueModel valueModel : valuesCollectionModel.getValues()) {
+            valueLoaders.add(LoaderFactory.createLoader(valueModel, threadController, sender));
         }
-        return new ValueContextModel(valuesCount, valueLoaders);
+        return new ValueContextManager(valuesCollectionModel.getValueCount(), valueLoaders);
     }
 
 

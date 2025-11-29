@@ -6,11 +6,26 @@ public class ConsumerIdentifier {
     private final Identifier consumerId;
     private final Identifier workflowId;
 
-    public ConsumerIdentifier(Long id, String version, Long workflowId, String workflowVersion) {
+    /**
+     * Создаёт идентификатор потребителя.
+     *
+     * @param id уникальный идентификатор потребителя (не null)
+     * @param version версия потребителя (не null)
+     * @param workflowId идентификатор связанного workflow (может быть null для некоторых случаев)
+     * @param workflowVersion версия workflow (может быть null, если workflowId null)
+     */
+    ConsumerIdentifier(Long id, String version, Long workflowId, String workflowVersion) {
         this.consumerId = new Identifier(id, version);
         this.workflowId = new Identifier(workflowId, workflowVersion);
     }
 
+
+    /**
+     * Создаёт идентификатор потребителя на основе готовых идентификаторов.
+     *
+     * @param consumerId идентификатор потребителя (не null)
+     * @param workflowId идентификатор workflow (может быть null)
+     */
     public ConsumerIdentifier(Identifier consumerId, Identifier workflowId) {
         this.consumerId = consumerId;
         this.workflowId = workflowId;

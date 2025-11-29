@@ -8,8 +8,7 @@ public class LocalProducerModel {
 
     private String name;
     private Collection<RemoteConsumerModel> consumers;
-    private Collection<ValueLoaderModel> lastWorkflowBlockValueParser;
-    private Integer lastWorkflowBlockValuesCount;
+    private ValuesCollectionModel exitValues;
 
     public Long getId() {
         return id;
@@ -27,11 +26,7 @@ public class LocalProducerModel {
         return name;
     }
 
-    public Integer getLastWorkflowBlockValuesCount() {
-        return lastWorkflowBlockValuesCount;
-    }
-
-    public Collection<ValueLoaderModel> getLastWorkflowBlockValueParser() {
-        return lastWorkflowBlockValueParser;
+    public ValuesCollectionModel getExitValues() {
+        return exitValues;
     }
 }
