@@ -1,7 +1,7 @@
 package com.petra.lib.variable.value;
 
 import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.model.ValueModel;
+import com.petra.lib.variable.container.ValueModel;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ public interface Value {
     <T> T getParsedValue(Class<T> clazz);
 
     String getExtractedJsonValue(String extractionString);
+    void setValue(Object value);
+    void setJsonValue(String jsonValue);
+    ValueModel getModel();
 
-    String getJsonValue();
-
-    Multiplicity getMultiplicity();
     Long getId();
     String getName();
 
-    ValueModel getModel();
+    Multiplicity getMultiplicity();
 }

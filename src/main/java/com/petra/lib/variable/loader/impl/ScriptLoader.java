@@ -1,6 +1,7 @@
 package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.enums.Multiplicity;
@@ -36,9 +37,9 @@ class ScriptLoader extends LoaderAbs {
             StringBuilder ret = new StringBuilder();
             Value value = context.getValue(aLong);
             return ret.append("def ")
-                    .append(value.getJsonValue())
+                    .append(value.getModel().getJsonValue())
                     .append(" = '")
-                    .append(value.getJsonValue())
+                    .append(value.getModel().getJsonValue())
                     .append("' ; ").toString();
 
         }).collect(Collectors.joining());
@@ -52,6 +53,7 @@ class ScriptLoader extends LoaderAbs {
         Binding binding = new Binding();
         GroovyShell shell = new GroovyShell(binding);
         String result = (String) shell.evaluate(script);
-        context.setValue(ValueFactory.createValue(variableId, name, multiplicity, result), this);
+        ValueModel valueModel = new ValueModel(variableId, name, multiplicity, result);
+        context.setValue(ValueFactory.createValue(valueModel), this);
     }
 }

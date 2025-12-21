@@ -27,7 +27,7 @@ public class AnswerOperation implements Operation {
                 blockContext.getScenarioId(),
                 blockContext.getProducer().getId(),
                 blockContext.getProducer().getVersion(),
-                blockContext.getContextValues().getJson(),
+                blockContext.getContextOutValues().getModels(),
                 blockContext.getCurrentBlockId().getId(),
                 blockContext.getCurrentBlockId().getVersion(),
                 blockContext.getProducerServiceName(),

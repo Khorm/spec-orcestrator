@@ -1,8 +1,10 @@
 package com.petra.lib.variable.container;
 
-import com.petra.lib.variable.model.ValueModel;
+import com.petra.lib.constructor.model.ValueDto;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public final class ValueContainerFactory {
 
@@ -10,13 +12,18 @@ public final class ValueContainerFactory {
         return new ValueContainerImpl();
     }
 
-    public static ValueContainer getSimpleContainer(String jsonValues) {
-        if (jsonValues != null && !jsonValues.isBlank()) {
-            return new ValueContainerImpl(jsonValues);
+    public static ValueContainer getSimpleContainer(List<ValueDto> jsonValues) {
+        if (jsonValues != null && !jsonValues.isEmpty()) {
+            Collection<ValueModel> valueModels = new ArrayList<>();
+            for (ValueDto valueDto : jsonValues) {
+                valueModels.add(new ValueModel(valueDto.getId(), valueDto.getName(), valueDto.getMultiplicityEnm(),null ));
+            }
+            return new ValueContainerImpl(valueModels);
         } else {
             return new ValueContainerImpl();
         }
     }
+
 
     public static ValueContainer getSimpleContainer(Collection<ValueModel> models){
         if (models != null) {
@@ -30,9 +37,8 @@ public final class ValueContainerFactory {
         return new ImmutableValueContainer(valueContainer);
     }
 
-    public static ValueContainer getImmutableContainer(String json) {
-        return new ImmutableValueContainer(getSimpleContainer(json));
+    public static ValueContainer getImmutableContainer(List<ValueModel> jsonValues) {
+        return new ImmutableValueContainer(getSimpleContainer(jsonValues));
     }
-
 
 }

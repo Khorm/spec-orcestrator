@@ -137,7 +137,7 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
                         .addValue("consumerId", consumerId.getId())
                         .addValue("consumerVersion", consumerId.getVersion())
                         .addValue("newState", contextEntity.getWorkflowState().name())
-                        .addValue("resultValues", contextEntity.getResultValues().getJson());
+                        .addValue("resultValues", contextEntity.getResultValues().getModels());
 
                 int updatedRows = template.update(updateSql, updateParams);
                 return updatedRows > 0;

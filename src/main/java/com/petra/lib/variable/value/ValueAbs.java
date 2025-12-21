@@ -1,86 +1,63 @@
 package com.petra.lib.variable.value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.PetraException;
+import com.petra.lib.utils.JsonUtils;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.model.ValueModel;
 
 abstract class ValueAbs implements Value {
 
-    protected static final ObjectMapper oj = new ObjectMapper();
+    protected ValueModel model;
+    protected final ObjectMapper oj = new ObjectMapper();
 
-    protected final String JSONvalue;
-    protected final Long id;
-    protected final String name;
-    protected final Multiplicity multiplicity;
-
-    ValueAbs(String jsoNvalue, Long id, String name, Multiplicity multiplicity) {
-        JSONvalue = jsoNvalue;
-        this.id = id;
-        this.name = name;
-        this.multiplicity = multiplicity;
+    ValueAbs(ValueModel model) {
+        this.model = model;
     }
 
     public String getExtractedJsonValue(String extractionString) {
-        if (extractionString == null || extractionString.isBlank()) {
-            return JSONvalue;
+        if (model.getMultiplicity() == Multiplicity.COLLECTION) {
+            throw new UnsupportedOperationException("Extraction is not aloud on COLLECTION in variable " + model.getName());
         }
-
-        if (multiplicity == Multiplicity.COLLECTION) {
-            throw new UnsupportedOperationException("Extraction is not aloud on COLLECTION in variable " + name);
-        }
-
-        String[] extractionArr = extractionString.split(".");
-        ObjectMapper extractMapper = new ObjectMapper();
-        JsonNode rootNode = null;
-        try {
-            rootNode = extractMapper.readTree(extractionString);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-        for (String extractValue : extractionArr) {
-            rootNode = rootNode.get(extractValue);
-            if (rootNode == null) {
-                String err = String.format("Wrong name in value parsing. %s is not found in variable %s", extractValue, name);
-                throw new PetraException(err);
-            }
-        }
-
-        if (rootNode.isObject() || rootNode.isArray()) {
-            return rootNode.toString();
-        } else {
-            return rootNode.asText();
-        }
+        return JsonUtils.getExtractedJsonValue(extractionString, model.getJsonValue());
     }
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getJsonValue() {
-        return JSONvalue;
-    }
-
-    public Multiplicity getMultiplicity() {
-        return multiplicity;
+    protected synchronized void updateModel(String jsonValue) {
+        model = new ValueModel(model.getId(), model.getName(), model.getMultiplicity(), jsonValue);
     }
 
     @Override
     public ValueModel getModel() {
-        return new ValueModel(
-                id,
-                name,
-                multiplicity,
-                JSONvalue
-        );
+        return model;
     }
+
+    @Override
+    public void setValue(Object value) {
+        try {
+            updateModel(oj.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setJsonValue(String jsonValue) {
+        updateModel(jsonValue);
+    }
+
+    @Override
+    public Long getId(){
+        return model.getId();
+    }
+
+    @Override
+    public String getName(){
+        return model.getName();
+    }
+
+    @Override
+    public Multiplicity getMultiplicity(){
+        return model.getMultiplicity();
+    }
+
 }

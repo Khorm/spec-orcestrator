@@ -18,7 +18,7 @@ public interface Context {
 
     RemoteProducer getProducer();
 
-    ValueContainer getContextValues();
+    ValueContainer getContextOutValues();
 
     ValueContainer getContextInputValues();
 

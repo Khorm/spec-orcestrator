@@ -39,8 +39,7 @@ public class ModelFactory {
     }
 
     public static LocalConsumer localConsumer(LocalConsumerModel localConsumerModel) {
-        ConsumerIdentifier consumerIdentifier = new ConsumerIdentifier(localConsumerModel.getId(), localConsumerModel.getVersion(),
-                localConsumerModel.getWorkflowId(), localConsumerModel.getWorkflowVersion());
+        Identifier consumerIdentifier = new Identifier(localConsumerModel.getId(), localConsumerModel.getVersion());
         return new LocalConsumer(consumerIdentifier, BlockType.valueOf(localConsumerModel.getBlockType()),
                 localConsumerModel.getName());
     }

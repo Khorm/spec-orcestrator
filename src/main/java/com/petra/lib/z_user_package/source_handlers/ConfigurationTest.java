@@ -1,22 +1,26 @@
 package com.petra.lib.z_user_package.source_handlers;
 
-import org.hibernate.jpa.HibernatePersistenceProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.constructor.Constructor;
+import com.petra.lib.constructor.PetraProperties;
+import com.petra.lib.constructor.model.ConstructorModel;
+import com.petra.lib.context.source.SourceUserHandler;
+import com.petra.lib.controller.PetraController;
+import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.Database;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 @Configuration
@@ -54,6 +58,26 @@ public class ConfigurationTest {
 //        return  adapter;
 //    }
 
+    @Value("${spring.datasource.url:jdbc:postgresql://192.168.0.10:5432/postgres}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username:your_user}")
+    private String username;
+
+    @Value("${spring.datasource.password:your_password}")
+    private String password;
+
+    @Bean
+    public DataSource dataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl(dbUrl);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        System.out.println("DataSource configured: " + dbUrl + " | User: " + username);
+        return dataSource;
+    }
+
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, JpaVendorAdapter jpaVendorAdapter) {
         System.out.println("DATASOURCE " + dataSource);
@@ -76,6 +100,26 @@ public class ConfigurationTest {
         return transactionManager;
     }
 
+    @Bean
+    public PetraController petraController(JpaTransactionManager transactionManager, PetraProperties petraProperties, Map<String, UserActionHandler> userActionHandlerMap,
+                                           Map<String, SourceUserHandler> sourceUserHandlerMap){
+        System.out.println("PetraTestAware");
+        Constructor constructor = new Constructor();
+        ObjectMapper objectMapper = new ObjectMapper();
+        ConstructorModel constructorModel = null;
+        try {
+            constructorModel = objectMapper.readValue(new File("src/main/resources/petra_config.json"), ConstructorModel.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+//        JpaTransactionManager transactionManager = applicationContext.getBean(JpaTransactionManager.class);
+//        PetraProperties petraProperties = applicationContext.getBean(PetraProperties.class);
+//        Map<String, UserActionHandler> userActionHandlerMap = applicationContext.getBeansOfType(UserActionHandler.class);
+//        Map<String, SourceUserHandler> sourceUserHandlerMap = applicationContext.getBeansOfType(SourceUserHandler.class);
+        return constructor.construct(constructorModel, transactionManager, petraProperties, userActionHandlerMap, sourceUserHandlerMap);
+    }
+
     private Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
@@ -85,4 +129,6 @@ public class ConfigurationTest {
 
         return properties;
     }
+
+
 }

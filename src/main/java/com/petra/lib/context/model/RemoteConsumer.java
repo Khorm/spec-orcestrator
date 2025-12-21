@@ -2,7 +2,6 @@ package com.petra.lib.context.model;
 
 import com.petra.lib.constructor.model.RemoteConsumerModel;
 import com.petra.lib.context.Context;
-import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.context.repo.WorkflowContextRepo;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.context.workflow.WorkflowContextState;
@@ -52,7 +51,7 @@ public class RemoteConsumer {
                         workflowBlockContext.getScenarioId(),
                         id.getWorkflowId().getId(),
                         id.getWorkflowId().getVersion(),
-                        inputValueContainer.getJson(),
+                        inputValueContainer.getModels(),
                         id.getConsumerId().getId(),
                         id.getConsumerId().getVersion(),
                         currentServiceName,

@@ -44,7 +44,7 @@ public class ValueContext {
 
     public synchronized void setValue(Value value, ValueLoader valueLoader) {
         valueContextValues.setValue(value);
-        loaderManager.addLoadedValue(valueLoader, value.getId());
+        loaderManager.registerLoadedValue(valueLoader, value.getModel().getId());
         if (loaderManager.areValuesLoaded()) {
             variableCallback.loaded(valueContextValues);
         }

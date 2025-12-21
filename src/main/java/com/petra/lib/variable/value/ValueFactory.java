@@ -4,61 +4,61 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.model.ValueModel;
+import com.petra.lib.variable.container.ValueModel;
+
+import java.util.Base64;
 
 public class ValueFactory {
 
+//    public static Value createValue(ValueModel valueModel) {
+//        return createValue(valueModel.getId(), valueModel.getName(), valueModel.getMultiplicity(), valueModel.getJsonValue());
+//    }
+
+//    public static Value createValue(ValueModel valueModel) {
+//        switch (valueModel.getMultiplicity()) {
+//            case SINGLE:
+//                return new ObjectValue(valueModel);
+//            case COLLECTION:
+//                return new ArrayValue(valueModel);
+//            default:
+//                throw new IllegalArgumentException("Wrong multiplicity " + valueModel.getMultiplicity()
+//                        + " on varibale " + valueModel.getName());
+//        }
+//    }
+
     public static Value createValue(ValueModel valueModel) {
-        return createValue(valueModel.getId(), valueModel.getName(), valueModel.getMultiplicity(), valueModel.getJsonValue());
-    }
-
-    public static Value createValue(Long id, String name, Multiplicity multiplicity, Object value) {
-        try {
-            switch (multiplicity) {
-                case SINGLE:
-                    return new ObjectValue(id, new ObjectMapper().writeValueAsString(value), multiplicity, name);
-                case COLLECTION:
-                    return new ArrayValue(new ObjectMapper().writeValueAsString(value), id, name, multiplicity);
-                default:
-                    throw new IllegalArgumentException("Wrong multiplicity " + multiplicity + " on varibale " + name);
-            }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Value createValue(Long id, String name, Multiplicity multiplicity, String valueJson) {
-        if (valueJson == null || valueJson.isBlank()) {
-            if (multiplicity == Multiplicity.SINGLE) {
-                return new SimpleValue(null, id, name, multiplicity);
+        if (valueModel.getJsonValue() == null || valueModel.getJsonValue().isBlank()) {
+            if (valueModel.getMultiplicity() == Multiplicity.SINGLE) {
+                return new SimpleValue(valueModel);
             } else {
-                return new ArrayValue(null, id, name, multiplicity);
+                return new ArrayValue(valueModel);
             }
         }
 
         ObjectMapper extractMapper = new ObjectMapper();
         JsonNode rootNode = null;
+        System.out.println("valueJson: " + valueModel.getJsonValue());
         try {
-            rootNode = extractMapper.readTree(valueJson);
+            rootNode = extractMapper.readTree(valueModel.getJsonValue());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         if (rootNode.isObject()) {
-            if (multiplicity != Multiplicity.SINGLE)
-                throw new IllegalArgumentException("Wrong multiplicity on variable " + name);
-            return new ObjectValue(id, valueJson, multiplicity, name);
+            if (valueModel.getMultiplicity() != Multiplicity.SINGLE)
+                throw new IllegalArgumentException("Wrong multiplicity on variable " + valueModel.getName());
+            return new ObjectValue(valueModel);
         }
 
         if (rootNode.isArray()) {
-            if (multiplicity != Multiplicity.COLLECTION)
-                throw new IllegalArgumentException("Wrong multiplicity on variable " + name);
-            return new ArrayValue(valueJson, id, name, multiplicity);
+            if (valueModel.getMultiplicity() != Multiplicity.COLLECTION)
+                throw new IllegalArgumentException("Wrong multiplicity on variable " + valueModel.getName());
+            return new ArrayValue(valueModel);
         }
+        System.out.println("rootNode: " + rootNode.toString());
 
-
-        if (multiplicity != Multiplicity.SINGLE)
-            throw new IllegalArgumentException("Wrong multiplicity on variable " + name);
-        return new SimpleValue(valueJson, id, name, multiplicity);
+        if (valueModel.getMultiplicity() != Multiplicity.SINGLE)
+            throw new IllegalArgumentException("Wrong multiplicity on variable " + valueModel.getName());
+        return new SimpleValue(valueModel);
 
     }
 }

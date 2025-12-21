@@ -33,8 +33,8 @@ class ImmutableValueContainer implements ValueContainer {
     }
 
     @Override
-    public String getJson() {
-        return valueContainer.getJson();
+    public List<ValueModel> getModels() {
+        return valueContainer.getModels();
     }
 
     @Override
@@ -50,5 +50,10 @@ class ImmutableValueContainer implements ValueContainer {
     @Override
     public ValueContainer clone() {
         return ValueContainerFactory.getImmutableContainer(valueContainer.clone());
+    }
+
+    @Override
+    public String toJson() {
+        return valueContainer.toJson();
     }
 }

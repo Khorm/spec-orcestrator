@@ -8,11 +8,11 @@ import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 
-public class Controller {
+public class PetraController {
     private final BlockContextExecutor blockContextExecutor;
     private final SourceContextExecutor sourceContextExecutor;
 
-    public Controller(BlockContextExecutor blockContextExecutor, SourceContextExecutor sourceContextExecutor) {
+    public PetraController(BlockContextExecutor blockContextExecutor, SourceContextExecutor sourceContextExecutor) {
         this.blockContextExecutor = blockContextExecutor;
         this.sourceContextExecutor = sourceContextExecutor;
     }
@@ -24,7 +24,7 @@ public class Controller {
 
     public MessageDto requestSource(MessageDto messageDto) {
         ValueContainer valueContainer = sourceContextExecutor.startContext(createProducer(messageDto));
-        messageDto.setTransmittedValues(valueContainer.getJson());
+        messageDto.setTransmittedValues(valueContainer.getModels());
         return messageDto;
     }
 

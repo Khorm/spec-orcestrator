@@ -48,6 +48,14 @@ public abstract class OperationService {
             return null;
         }
 
+        if (currentState == ContextState.STARTED) {
+            for (ContextState state : executingStates) {
+                if (state == ContextState.EXECUTED){
+                    return state;
+                }
+            }
+        }
+
         for (int i = 0; i < executingStates.size() ; i++) {
             if (executingStates.get(i) == currentState) {
                 return executingStates.get(i + 1);

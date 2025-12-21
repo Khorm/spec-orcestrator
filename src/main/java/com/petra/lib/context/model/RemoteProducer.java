@@ -32,11 +32,13 @@ public final class RemoteProducer {
         return identifier.getVersion();
     }
 
-    public ValueContainer getValuesContainer() {
+    public ValueContainer getSendValuesContainer() {
         return sendValuesContainer.clone();
     }
 
     public Identifier getConsumerId() {
         return consumerId;
     }
+
+
 }

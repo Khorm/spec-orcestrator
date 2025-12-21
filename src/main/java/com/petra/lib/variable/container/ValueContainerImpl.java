@@ -2,7 +2,6 @@ package com.petra.lib.variable.container;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.variable.model.ValueModel;
 import com.petra.lib.variable.value.Value;
 import com.petra.lib.variable.value.ValueFactory;
 
@@ -12,19 +11,18 @@ import java.util.stream.Collectors;
 
 class ValueContainerImpl implements ValueContainer {
 
-    private static final ObjectMapper oj = new ObjectMapper();
     private final Map<Long, Value> valuesById;
     private final Map<String, Value> valuesByName;
 
 
-    ValueContainerImpl(String JSONValues) {
-        if (JSONValues == null || JSONValues.isBlank()) {
+    ValueContainerImpl(List<ValueModel> valueModels) {
+        if (valueModels == null || valueModels.isEmpty()) {
             valuesByName = new HashMap<>();
             valuesById = new HashMap<>();
             return;
         }
 
-        List<Value> values = getValues(JSONValues);
+        List<Value> values = getValues(valueModels);
         valuesById = values.stream().collect(Collectors.toMap(Value::getId, Function.identity()));
         valuesByName = values.stream().collect(Collectors.toMap(Value::getName, Function.identity()));
     }
@@ -51,13 +49,19 @@ class ValueContainerImpl implements ValueContainer {
 
     @Override
     public ValueContainer clone() {
-        return ValueContainerFactory.getSimpleContainer(getJson());
+        return ValueContainerFactory.getSimpleContainer(getModels());
     }
 
-//    public void mixValues(String JSONValues) {
-//        List<Value> values = getValues(JSONValues);
-//        mixinValues(values);
-//    }
+    @Override
+    public String toJson() {
+        ObjectMapper oj = new ObjectMapper();
+        Collection<ValueModel> models = valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
+        try {
+            return oj.writeValueAsString(models);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     private void mixinValues(List<Value> values) {
@@ -87,19 +91,16 @@ class ValueContainerImpl implements ValueContainer {
 
     @Override
     public void setValue(String name, Object object) {
-        Value oldVal = valuesByName.get(name);
-        Value newVal = ValueFactory.createValue(oldVal.getId(), oldVal.getName(), oldVal.getMultiplicity(), object);
-        setValue(newVal);
+        valuesByName.get(name).setValue(object);
+//        oldVal.setValue(object);
+//        Value newVal = ValueFactory.createValue(oldVal.getId(), oldVal.getName(), oldVal.getMultiplicity(), object);
+//        setValue(newVal);
     }
 
+
     @Override
-    public String getJson() {
-        try {
-            Collection<ValueModel> valueModels = valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
-            return oj.writeValueAsString(valueModels);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    public List<ValueModel> getModels() {
+        return valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
     }
 
     @Override
@@ -107,15 +108,8 @@ class ValueContainerImpl implements ValueContainer {
         return new ArrayList<>(valuesById.values());
     }
 
-    private List<Value> getValues(String JSONValues) {
-        return parse(JSONValues).stream().map(ValueFactory::createValue).collect(Collectors.toList());
+    private List<Value> getValues(List<ValueModel> values) {
+        return values.stream().map(ValueFactory::createValue).collect(Collectors.toList());
     }
 
-    private List<ValueModel> parse(String JSONValues) {
-        try {
-            return oj.readValue(JSONValues, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

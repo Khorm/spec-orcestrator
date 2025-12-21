@@ -2,7 +2,9 @@ package com.petra.lib.remote.dto;
 
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
+import com.petra.lib.variable.container.ValueModel;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SourceRequestDto {
@@ -12,7 +14,7 @@ public class SourceRequestDto {
 
     private String consumerSourceVersion;
 
-    private String inputValues;
+    private List<ValueModel> inputValues;
 
 
 
@@ -21,7 +23,7 @@ public class SourceRequestDto {
         this.scenarioId = scenarioId;
         this.consumerSourceId = consumerSourceId;
         this.consumerSourceVersion = consumerSourceVersion;
-        this.inputValues = inputValues.getJson();
+        this.inputValues = inputValues.getModels();
 
     }
 

@@ -21,6 +21,7 @@ class SourceContext {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         SourceUserContext sourceUserContext = new SourceUserContext(inputValues, entityManager, source.getOutputEmptyContainer());
         source.getSourceUserHandler().executeSource(sourceUserContext);
+        System.out.println("SourceContext.execute() " + sourceUserContext.getOutputValues());
         return sourceUserContext.getOutputValues();
     }
 }

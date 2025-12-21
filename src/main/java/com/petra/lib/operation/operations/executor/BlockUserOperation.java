@@ -44,7 +44,7 @@ public class BlockUserOperation implements Operation {
                         .getTransactionalEntityManager(Objects.requireNonNull(transaction.getEntityManagerFactory()));
 
                 UserActionContextImpl userContext = new UserActionContextImpl(entityManager,
-                        blockContext.getContextValues().getValues());
+                        blockContext.getContextInputValues().getValues());
                 userHandlers.get(blockContext.getCurrentBlockId()).execute(userContext);
                 blockContext.setState(CURRENT_STATE);
                 blockContext.setOutValues(userContext.getContextContainer());

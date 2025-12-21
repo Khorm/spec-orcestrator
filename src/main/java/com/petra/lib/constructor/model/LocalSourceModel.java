@@ -1,13 +1,15 @@
 package com.petra.lib.constructor.model;
 
 import java.util.Collection;
+import java.util.List;
 
 public class LocalSourceModel {
     private Long id;
 
     private String version;
     private String name;
-    private Collection<ValueDto> outputModels;
+    private Collection<ValueDto> inputModels;
+    private ValueDto outputModels;
 
     public Long getId() {
         return id;
@@ -21,7 +23,11 @@ public class LocalSourceModel {
         return name;
     }
 
-    public Collection<ValueDto> getOutputModels() {
+    public ValueDto getOutputModels() {
         return outputModels;
+    }
+
+    public Collection<ValueDto> getInputModels() {
+        return inputModels;
     }
 }

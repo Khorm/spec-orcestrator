@@ -1,19 +1,20 @@
 petra:
-  kafka:
-    servers: localhost:29092
-  thread:
-    count: 4
-  services:
-    - name: service_one
-      url: 192.168.0.92
-    - name: service_two
-      url: 192.168.0.92
+#  kafka:
+#    servers: localhost:29092
+  thread-count: 4
+  service-name: TestService
+
+#  services:
+#    - name: service_one
+#      url: 192.168.0.92
+#    - name: service_two
+#      url: 192.168.0.92
 
 spring:
   datasource:
-    url: jdbc:postgresql://192.168.0.88:5432/petradb
-    username: ${dbUsername}
-    password: ${dbPassword}
+    url: jdbc:postgresql://192.168.0.10:5432/petralib
+    username: petra
+    password: petra4321
     driver-class-name: org.postgresql.Driver
 #  jpa:
 #    database-platform: org.hibernate.dialect.PostgreSQLDialect

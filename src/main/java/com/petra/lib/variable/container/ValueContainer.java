@@ -13,11 +13,12 @@ public interface ValueContainer {
 
     void setValue(String name, Object object);
 
-
-    String getJson();
+    List<ValueModel> getModels();
 
     List<Value> getValues();
     void mixinValueContainer(ValueContainer valueContainer);
 
     ValueContainer clone();
+
+    String toJson();
 }

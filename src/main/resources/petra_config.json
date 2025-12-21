@@ -1,124 +1,38 @@
 {
-  "signals": [
-    {
-      "signalId": 1,
-      "version": {
-        "major": 1,
-        "minor": 0,
-        "patch": 0
-      },
-      "signalName": "signal_one",
-      "serviceName": "testService",
-      "signalType": "HTTP",
-      "messageType": "RESPONSE"
+  "consumers" : [ {
+    "id" : 7,
+    "version" : "0",
+    "blockType" : "ACTION",
+    "name" : "FstAction",
+    "inputModels" : [ {
+      "id" : 17,
+      "name" : "FstIn",
+      "multiplicity" : "SINGLE"
+    } ],
+    "outputModels" : [ {
+      "id" : 18,
+      "name" : "FstOut",
+      "multiplicity" : "SINGLE"
+    } ]
+  } ],
+  "sources" : [ {
+    "id" : 6,
+    "version" : "0",
+    "name" : "TestSource",
+    "inputModels" : [ {
+      "id" : 13,
+      "name" : "InVarNumber",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 14,
+      "name" : "SecondInVarList",
+      "multiplicity" : "COLLECTION"
+    } ],
+    "outputModels" : {
+      "id" : 16,
+      "name" : "OutVat",
+      "multiplicity" : "SINGLE"
     }
-  ],
-  "sources": [
-    {
-      "id": 1,
-      "name": "test_source_1",
-      "variables": [
-        {
-          "id": 1,
-          "name": "fst_variable",
-          "variableSources": [2]
-        },
-        {
-          "id": 3,
-          "name": "scd_variable"
-        }
-
-      ],
-      "executionSignal": {
-        "id": 1,
-        "version": {
-          "major": 1,
-          "minor": 0,
-          "patch": 0
-        },
-        "name": "signal_one",
-        "requestVariableCollection": [
-          {
-            "id": 2,
-            "name": "signal_var_1"
-          }
-        ],
-        "responseVariableCollection": [],
-        "path": "petra_test"
-      }
-    }
-  ],
-
-  "actions": [
-    {
-      "id": 2,
-      "name": "test_action_1",
-      "variables": [
-        {
-          "id": 5,
-          "name": "fst_variable_from_source",
-          "variableSources": [9]
-        },
-        {
-          "id": 6,
-          "name": "scd_variable_from_source",
-          "variableSources": [3]
-        }
-      ],
-      "executionSignal": {
-        "id": 2,
-        "version": {
-          "major": 1,
-          "minor": 0,
-          "patch": 0
-        },
-        "name": "action_one",
-        "requestVariableCollection": [
-          {
-            "id": 9,
-            "name": "answer_signal_var_1"
-          }
-        ],
-        "responseVariableCollection": [
-          {
-            "id": 7,
-            "name": "answer_signal_var_1",
-            "variableSources": [5]
-          },
-          {
-            "id": 8,
-            "name": "answer_signal_var_2",
-            "variableSources": [6]
-          }
-        ],
-        "path": "action_one"
-      },
-      "sources": [
-        {
-          "id": 1,
-          "version": {
-            "major": 1,
-            "minor": 0,
-            "patch": 0
-          },
-          "name": "signal_one",
-          "requestVariableCollection": [
-            {
-              "id": 2,
-              "name": "signal_var_1",
-              "variableSources": [5]
-            }
-          ],
-          "responseVariableCollection": [
-            {
-              "id": 3,
-              "name": "next_signal_var_1"
-            }
-          ],
-          "path": "petra_test",
-          "serviceName": "http://localhost:8080/"
-        }
-      ]
-    }
-  ]
+  } ],
+  "producers" : [ ]
 }

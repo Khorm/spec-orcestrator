@@ -6,6 +6,9 @@ import com.petra.lib.variable.loader.ValueLoader;
 import java.util.Collection;
 import java.util.HashSet;
 
+/**
+ * Регистрирует уже загруженые переменные
+ */
 class LoaderManager {
     private final Collection<Long> loadedValues = new HashSet<>();
     private final ValueContext valueContext;
@@ -16,7 +19,7 @@ class LoaderManager {
         this.valuesCount = valuesCount;
     }
 
-    void addLoadedValue(ValueLoader valueLoader, Long valueId){
+    void registerLoadedValue(ValueLoader valueLoader, Long valueId){
         if (loadedValues.contains(valueId)){
             throw new IllegalStateException("Value is already loaded " + valueId);
         }

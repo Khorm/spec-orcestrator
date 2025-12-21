@@ -2,6 +2,7 @@ package com.petra.lib.context.model;
 
 import java.util.Objects;
 
+@Deprecated
 public class ConsumerIdentifier {
     private final Identifier consumerId;
     private final Identifier workflowId;

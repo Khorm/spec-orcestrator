@@ -5,34 +5,29 @@ import com.petra.lib.constructor.model.LocalSourceModel;
 import com.petra.lib.context.block.BlockContextExecutor;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.LocalSource;
-import com.petra.lib.context.repo.ContextRepo;
-import com.petra.lib.context.repo.RepoFactory;
-import com.petra.lib.context.repo.WorkflowContextRepo;
 import com.petra.lib.context.source.SourceContextExecutor;
 import com.petra.lib.context.source.SourceUserHandler;
-import com.petra.lib.controller.Controller;
+import com.petra.lib.controller.PetraController;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.remote.HttpSender;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.transaction.TransactionManagerFactory;
-import com.petra.lib.variable.model.ValueModel;
 import org.springframework.orm.jpa.JpaTransactionManager;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.petra.lib.context.block.BlockContextExecutorFactory.createBlockContextExecutor;
 
 public class Constructor {
 
-    public Controller construct(ConstructorModel constructorModel, JpaTransactionManager jpaTransactionManager,
-                                PetraProperties petraProperties, Map<String, UserActionHandler> userActionHandlerMap,
-                                Map<String, SourceUserHandler> sourceUserHandlerMap) {
+    public PetraController construct(ConstructorModel constructorModel, JpaTransactionManager jpaTransactionManager,
+                                     PetraProperties petraProperties, Map<String, UserActionHandler> userActionHandlerMap,
+                                     Map<String, SourceUserHandler> sourceUserHandlerMap) {
         TransactionManager transactionManager = TransactionManagerFactory.createTransactionManager(jpaTransactionManager);
 
         ThreadController threadController = new ThreadController(petraProperties.getThreadCount());
@@ -45,31 +40,26 @@ public class Constructor {
         SourceContextExecutor sourceContextExecutor = createSourceContextExecutor(constructorModel.getSources(),
                 jpaTransactionManager.getEntityManagerFactory(), sourceUserHandlerMap);
 
-//        WorkflowContextExecutor workflowContextExecutor = createWorkflowContextExecutor(transactionManager,
-//                threadController,  sender, constructorModel.getProducers(),operationFactory);
-
-
-        return new Controller(blockContextExecutor, sourceContextExecutor);
+        return new PetraController(blockContextExecutor, sourceContextExecutor);
     }
 
-    //    public HttpListener createListener(Controller controller, RequestMappingHandlerMapping handlerMapping) throws NoSuchMethodException {
-//        return new HttpListener(controller, handlerMapping);
-//    }
-//
-//
+
     private SourceContextExecutor createSourceContextExecutor(Collection<LocalSourceModel> localSourceModels,
                                                               EntityManagerFactory entityManagerFactory,
                                                               Map<String, SourceUserHandler> sourceUserHandlerMap) {
         Collection<LocalSource> localSources = new ArrayList<>();
         for (LocalSourceModel localSourceModel : localSourceModels) {
+            if (!sourceUserHandlerMap.containsKey(localSourceModel.getName())) {
+                throw new RuntimeException("Source user handler not found for " + localSourceModel.getName());
+            }
             localSources.add(new LocalSource(
                     new Identifier(localSourceModel.getId(), localSourceModel.getVersion()),
                     localSourceModel.getName(),
-                    localSourceModel.getOutputModels().stream().map(valueDto -> new ValueModel(valueDto.getId(), valueDto.getName(), valueDto.getMultiplicity(), null))
-                            .collect(Collectors.toList()),
+                    localSourceModel.getOutputModels(),
                     sourceUserHandlerMap.get(localSourceModel.getName())
             ));
         }
+
         return new SourceContextExecutor(localSources, entityManagerFactory);
     }
 //

@@ -24,7 +24,7 @@ public class SourceContextExecutor {
 
     public ValueContainer startContext(RemoteProducer remoteProducer) {
         LocalSource execSource = localSourceMap.get(remoteProducer.getConsumerId());
-        SourceContext sourceContext = new SourceContext(remoteProducer.getValuesContainer(), execSource, entityManagerFactory);
+        SourceContext sourceContext = new SourceContext(remoteProducer.getSendValuesContainer(), execSource, entityManagerFactory);
         return sourceContext.execute();
     }
 }

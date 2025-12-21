@@ -36,18 +36,19 @@ public class BlockContextExecutor {
         this.contextRepo = contextRepo;
         this.workflowOperationService = workflowOperationService;
         this.actionOperationService = actionOperationService;
-        this.consumerMap = consumers.stream().collect(Collectors.toMap(LocalConsumer::getConsumerId, Function.identity()));
+        this.consumerMap = consumers.stream().collect(Collectors.toMap(LocalConsumer::getIdentifier, Function.identity()));
         this.producerMap = producers.stream().collect(Collectors.toMap(LocalProducer::getWorkflowId, Function.identity()));
     }
 
     public void startContext(UUID scenarioId, RemoteProducer remoteProducer) {
         //выгружает контекст из базы и запускает обработку
         LocalConsumer consumer = consumerMap.get(remoteProducer.getConsumerId());
-        Optional<ContextEntity> optionalEntity = contextRepo.findContext(scenarioId, consumer.getIdentifier().getConsumerId());
+        Optional<ContextEntity> optionalEntity = contextRepo.findContext(scenarioId, consumer.getIdentifier());
         Context context;
         if (optionalEntity.isEmpty()) {
             BlockType type = consumerMap.containsKey(remoteProducer.getConsumerId()) ? BlockType.ACTION : BlockType.WORKFLOW;
-            context = new BlockContextImpl(new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED), contextRepo,
+            ContextEntity entity = new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED, remoteProducer.getSendValuesContainer());
+            context = new BlockContextImpl(entity, contextRepo,
                     type == BlockType.ACTION ? actionOperationService : workflowOperationService);
         }else {
             context = new BlockContextImpl(optionalEntity.get(), contextRepo,

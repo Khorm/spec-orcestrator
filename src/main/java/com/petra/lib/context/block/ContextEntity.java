@@ -7,7 +7,9 @@ import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
+import com.petra.lib.variable.container.ValueModel;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ContextEntity {
@@ -45,10 +47,10 @@ public class ContextEntity {
                          Identifier consumerId,
                          String producerServiceName,
                          Identifier producerBlockId,
-                         String values,
+                         List<ValueModel> values,
                          ContextState contextState,
                          ExecutionStatus executionStatus,
-                         String producerValues, BlockType blockType
+                         List<ValueModel> producerValues, BlockType blockType
     ) {
         this.scenarioId = scenarioId;
         this.state = contextState;
@@ -60,11 +62,11 @@ public class ContextEntity {
     }
 
     public ContextEntity(UUID scenarioId, RemoteProducer producer, BlockType blockType,
-                         ContextState state) {
+                         ContextState state, ValueContainer inputContextValues) {
         this.scenarioId = scenarioId;
         this.producer = producer;
         this.blockType = blockType;
-        this.inputContextValues = ValueContainerFactory.getSimpleContainer();
+        this.inputContextValues = inputContextValues;
         this.state = state;
     }
 

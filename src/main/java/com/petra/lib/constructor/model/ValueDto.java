@@ -1,5 +1,6 @@
 package com.petra.lib.constructor.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.petra.lib.variable.enums.Multiplicity;
 
 public class ValueDto {
@@ -15,7 +16,12 @@ public class ValueDto {
         return name;
     }
 
-    public Multiplicity getMultiplicity() {
+    @JsonIgnore
+    public Multiplicity getMultiplicityEnm() {
         return Multiplicity.valueOf(multiplicity);
+    }
+
+    public String getMultiplicity() {
+        return multiplicity;
     }
 }

@@ -1,69 +1,71 @@
 package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.context.model.Identifier;
-import com.petra.lib.constructor.model.ValueModel;
+import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.enums.Multiplicity;
 import com.petra.lib.variable.loader.impl.source.SourceInputVariable;
-import com.petra.lib.variable.loader.impl.source.SourceLoader;
+import com.petra.lib.variable.loader.impl.source.RemoteSource;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class LoaderFactory {
 
-    public static ValueLoader createLoader(ValueModel valueModel, ThreadController threadController, Sender sender){
-        switch (valueModel.getLoaderType()){
+    public static ValueLoader createLoader(ValueModelDto valueModelDto, ThreadController threadController, Sender sender){
+        switch (valueModelDto.getLoaderType()){
             case EMPTY_LOADER:
                 return createEmptyLoader(
-                        valueModel.getId(),
-                        valueModel.getName(),
-                        valueModel.getMultiplicity(),
-                        valueModel.getParents(),
-                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModelDto.getId(),
+                        valueModelDto.getName(),
+                        valueModelDto.getMultiplicity(),
+                        valueModelDto.getParents(),
+                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
                         threadController
                 );
             case INPUT_LOADER:
                 return createInputLoader(
-                        valueModel.getId(),
-                        valueModel.getName(),
-                        valueModel.getInputValueId(),
-                        valueModel.getMultiplicity(),
-                        valueModel.getParents(),
-                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModelDto.getId(),
+                        valueModelDto.getName(),
+                        valueModelDto.getInputValueId(),
+                        valueModelDto.getMultiplicity(),
+                        valueModelDto.getParents(),
+                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueModel.getExtractionString(),
+                        valueModelDto.getExtractionString(),
                         threadController
                 );
             case SCRIPT_LOADER:
                 return createScriptLoader(
-                        valueModel.getScript(),
-                        valueModel.getId(),
-                        valueModel.getName(),
-                        valueModel.getMultiplicity(),
-                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModelDto.getScript(),
+                        valueModelDto.getId(),
+                        valueModelDto.getName(),
+                        valueModelDto.getMultiplicity(),
+                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueModel.getParents(),
+                        valueModelDto.getParents(),
                         threadController
                 );
 
             case SOURCE_LOADER:
                 return createSourceLoader(
-                        valueModel.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
+                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
                                 .collect(Collectors.toList()),
-                        valueModel.getParents(),
+                        valueModelDto.getParents(),
                         sender,
-                        valueModel.getMultiplicity(),
-                        new Identifier(valueModel.getSourceId(), valueModel.getSourceVersion()),
-                        valueModel.getSourceName(),
-                        valueModel.getId(),
-                        valueModel.getName(),
+                        new Identifier(valueModelDto.getSourceId(), valueModelDto.getSourceVersion()),
+                        valueModelDto.getSourceName(),
+                        valueModelDto.getId(),
+                        valueModelDto.getName(),
                         threadController,
-                        valueModel.getSourceInputVariableModels().stream().map(SourceInputVariable::new)
-                                .collect(Collectors.toList())
+                        valueModelDto.getMultiplicity(),
+                        valueModelDto.getSourceInputVariableModels().stream().map(SourceInputVariable::new)
+                                .collect(Collectors.toList()),
+                        valueModelDto.getExtractionString()
                 );
 
             default:
@@ -74,7 +76,8 @@ public class LoaderFactory {
     public static ValueLoader createInputLoader(Long id, String name, Long inputValueId, Multiplicity multiplicity,
                                                 List<Long> parents, List<ValueLoader> children, String extractionString,
                                                 ThreadController threadController) {
-        return new InputLoader(inputValueId, children, id, parents, name, extractionString, multiplicity, threadController);
+        ValueModel valueModel = new ValueModel(id, name, multiplicity, null);
+        return new InputLoader(inputValueId, children, parents, extractionString, threadController,valueModel);
     }
 
     public static ValueLoader createScriptLoader(String groovyScript, Long variableId, String name,
@@ -85,16 +88,20 @@ public class LoaderFactory {
     }
 
     public static ValueLoader createSourceLoader(List<ValueLoader> childValues, List<Long> parentValues, Sender sender,
-                                                 Multiplicity currentMultiplicity,
                                                  Identifier sourceId, String sourceName,
                                                  Long currentVariableId, String currentVariableName, ThreadController threadController,
-                                                 List<SourceInputVariable> sourceInputVariables) {
-        return new SourceLoader(childValues, parentValues, sender, sourceId, sourceName, currentVariableId, currentVariableName,
-                threadController, currentMultiplicity,  sourceInputVariables);
+                                                 Multiplicity currentMultiplicity,
+                                                 List<SourceInputVariable> sourceInputVariables, String extractionString) {
+        return new RemoteSource(childValues, parentValues, sender,
+                sourceId, sourceName,
+                currentVariableId, currentVariableName,
+                threadController, currentMultiplicity,
+                sourceInputVariables, extractionString);
     }
 
     public static ValueLoader createEmptyLoader(Long id, String name, Multiplicity multiplicity,
                                                 List<Long> parents, List<ValueLoader> children, ThreadController threadController){
-        return new EmptyLoader(id, children, parents, name, multiplicity, threadController);
+        ValueModel valueModel = new ValueModel(id, name, multiplicity, null);
+        return new EmptyLoader(children, parents, threadController, valueModel);
     }
 }

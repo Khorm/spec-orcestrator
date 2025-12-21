@@ -69,12 +69,11 @@ public class BlockContextImpl implements Context {
     }
 
     @Override
-    public ValueContainer getContextValues() {
+    public ValueContainer getContextOutValues() {
         if (values != null) {
             return values;
         }
         ValueContainer newCont = contextEntity.getOutContextValues();
-        newCont.mixinValueContainer(contextEntity.getInputContextValues());
         return newCont;
     }
 
@@ -90,7 +89,7 @@ public class BlockContextImpl implements Context {
 
     @Override
     public void save() {
-        contextRepo.updateStateAndValues(contextEntity, contextState, values);
+        contextRepo.updateStateAndValues(contextEntity, getCurrentState(), getContextOutValues());
         blockOperationService.executeState(this);
     }
 

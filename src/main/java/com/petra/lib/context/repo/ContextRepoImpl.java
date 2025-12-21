@@ -1,15 +1,9 @@
 package com.petra.lib.context.repo;
 
-import com.petra.lib.context.Context;
 import com.petra.lib.context.ContextState;
-import com.petra.lib.context.block.BlockContextImpl;
 import com.petra.lib.context.block.ContextEntity;
-import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.model.RemoteProducer;
-import com.petra.lib.operation.ActivityOperationService;
-import com.petra.lib.operation.WorkflowOperationService;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.variable.container.ValueContainer;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -33,30 +27,6 @@ public class ContextRepoImpl implements ContextRepo {
         this.transactionManager = transactionManager;
     }
 
-//    public void createContext(ContextEntity contextEntity) {
-//        String sql = "INSERT INTO block_history VALUES (:scenarioId, :consumerId, :consumerVersion, :consumerType," +
-//                " :contextState, :contextExecutionStatus, :contextValues, " +
-//                " :producerId, :producerVersion, :producerServiceName, :producerValues)";
-//        NamedParameterJdbcTemplate namedParameterJdbcTemplate
-//                = new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
-//
-//        SqlParameterSource updateParams = new MapSqlParameterSource()
-//                .addValue("scenarioId", contextEntity.getScenarioId())
-//                .addValue("consumerId", contextEntity.getConsumer().getId())
-//                .addValue("consumerVersion ", contextEntity.getConsumer().getVersion())
-//                .addValue("consumerType", contextEntity.getConsumer().getBlockType())
-//                .addValue("contextState", contextEntity.getState().name())
-//                .addValue("contextExecutionStatus", contextEntity.getExecutionStatus().name())
-//                .addValue("contextValues", contextEntity.getInputContextValues().getJson())
-//                .addValue("producerId", contextEntity.getProducer().getId())
-//                .addValue("producerVersion", contextEntity.getProducer().getVersion())
-//                .addValue("producerServiceName ", contextEntity.getProducer().getServiceName())
-//                .addValue("producerValues", contextEntity.getProducer().getValuesContainer().getJson());
-//
-//        namedParameterJdbcTemplate.update(sql, updateParams);
-//    }
-
-    // java
     @Override
     public void insertContext(ContextEntity context) {
         String sql = "INSERT INTO block_context (scenario_id, consumer_id, consumer_version, consumer_type, " +
@@ -73,17 +43,16 @@ public class ContextRepoImpl implements ContextRepo {
 
         SqlParameterSource insertParams = new MapSqlParameterSource()
                 .addValue("scenarioId", context.getScenarioId())
-                .addValue("consumerId", consumerId != null ? consumerId.getId() : null)
-                .addValue("consumerVersion", consumerId != null ? consumerId.getVersion() : null)
-                .addValue("consumerType", context.getBlockType() != null ? context.getBlockType() : null)
-                .addValue("contextState", context.getState() != null ? context.getState().name() : null)
-                .addValue("contextExecutionStatus", context.getExecutionStatus() != null ? context.getExecutionStatus().name() : null)
-                .addValue("contextValues", context.getInputContextValues() != null ? context.getInputContextValues().getJson() : null)
-                .addValue("producerId", context.getProducer() != null ? context.getProducer().getId() : null)
-                .addValue("producerVersion", context.getProducer() != null ? context.getProducer().getVersion() : null)
-                .addValue("producerServiceName", context.getProducer() != null ? context.getProducer().getServiceName() : null)
-                .addValue("producerValues", context.getProducer() != null && context.getProducer().getValuesContainer() != null
-                        ? context.getProducer().getValuesContainer().getJson() : null);
+                .addValue("consumerId", consumerId.getId())
+                .addValue("consumerVersion", consumerId.getVersion())
+                .addValue("consumerType", context.getBlockType().name() )
+                .addValue("contextState", context.getState().name() )
+                .addValue("contextExecutionStatus",  null)
+                .addValue("contextValues",  null)
+                .addValue("producerId", context.getProducer().getId() )
+                .addValue("producerVersion", context.getProducer().getVersion())
+                .addValue("producerServiceName",context.getProducer().getServiceName())
+                .addValue("producerValues", context.getInputContextValues().toJson());
 
         namedParameterJdbcTemplate.update(sql, insertParams);
     }
@@ -101,7 +70,7 @@ public class ContextRepoImpl implements ContextRepo {
 
         List<ContextEntity> contextEntity = namedParameterJdbcTemplate.query("SELECT * FROM block_context " +
                         " WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND" +
-                        " scenario_id = ':scenarioId ",
+                        " scenario_id = :scenarioId ",
                 namedParameters, (RowMapper<ContextEntity>) new LoadedContextRowMapper());
 
         if (contextEntity.isEmpty()) {
@@ -148,7 +117,7 @@ public class ContextRepoImpl implements ContextRepo {
                     "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
             SqlParameterSource updateParams = new MapSqlParameterSource()
                     .addValue("state", state.name())
-                    .addValue("values", outValues != null ? outValues.getJson() : null)
+                    .addValue("values", outValues != null ? outValues.getModels() : null)
                     .addValue("consumerId", consumer != null ? consumer.getId() : null)
                     .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
                     .addValue("scenarioId", entity.getScenarioId());

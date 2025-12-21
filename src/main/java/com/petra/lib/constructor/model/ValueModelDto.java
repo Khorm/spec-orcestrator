@@ -6,16 +6,17 @@ import com.petra.lib.variable.enums.Multiplicity;
 import java.util.Collection;
 import java.util.List;
 
-public class ValueModel {
+public class ValueModelDto {
     private Long id;
     private String name;
     private String multiplicity;
     private List<Long> parents;
     private String loaderType;
-    private Collection<ValueModel> children;
+    private Collection<ValueModelDto> children;
     private Long inputValueId;
     private String extractionString;
     private String script;
+
     private Long sourceId;
     private String sourceVersion;
     private String sourceName;
@@ -42,7 +43,7 @@ public class ValueModel {
         return parents;
     }
 
-    public Collection<ValueModel> getChildren() {
+    public Collection<ValueModelDto> getChildren() {
         return children;
     }
 

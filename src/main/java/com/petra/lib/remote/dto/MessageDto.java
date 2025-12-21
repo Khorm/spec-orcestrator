@@ -1,14 +1,16 @@
 package com.petra.lib.remote.dto;
 
 import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.variable.container.ValueModel;
 
+import java.util.List;
 import java.util.UUID;
 
 public class MessageDto {
     private UUID scenarioId;
     private Long receiverId;
     private String receiverVersion;
-    private String transmittedValues;
+    private List<ValueModel> transmittedValues;
     private Long senderId;
     private String senderVersion;
     private String senderServiceName;
@@ -26,7 +28,7 @@ public class MessageDto {
      * @param status - результат оработки сообщения
      */
     public MessageDto(UUID scenarioId, Long receiverId, String receiverVersion,
-                      String transmittedValues, Long senderId, String senderVersion, String senderServiceName, ExecutionStatus status) {
+                      List<ValueModel> transmittedValues, Long senderId, String senderVersion, String senderServiceName, ExecutionStatus status) {
         this.scenarioId = scenarioId;
         this.receiverId = receiverId;
         this.receiverVersion = receiverVersion;
@@ -52,7 +54,7 @@ public class MessageDto {
         return receiverVersion;
     }
 
-    public String getTransmittedValues() {
+    public List<ValueModel> getTransmittedValues() {
         return transmittedValues;
     }
 
@@ -72,8 +74,21 @@ public class MessageDto {
         return senderServiceName;
     }
 
-    public void setTransmittedValues(String transmittedValues) {
+    public void setTransmittedValues(List<ValueModel> transmittedValues) {
         this.transmittedValues = transmittedValues;
     }
 
+    @Override
+    public String toString() {
+        return "MessageDto{" +
+                "scenarioId=" + scenarioId +
+                ", receiverId=" + receiverId +
+                ", receiverVersion='" + receiverVersion + '\'' +
+                ", transmittedValues='" + transmittedValues + '\'' +
+                ", senderId=" + senderId +
+                ", senderVersion='" + senderVersion + '\'' +
+                ", senderServiceName='" + senderServiceName + '\'' +
+                ", status=" + status +
+                '}';
+    }
 }

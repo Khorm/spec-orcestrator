@@ -1,20 +1,22 @@
 package com.petra.lib.context.model;
 
+import com.petra.lib.constructor.model.ValueDto;
 import com.petra.lib.context.source.SourceUserHandler;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.model.ValueModel;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class LocalSource {
 
     private final Identifier id;
     private final String name;
-    private final Collection<ValueModel> outputModels;
+    private final ValueDto outputModels;
     private final SourceUserHandler sourceUserHandler;
 
-    public LocalSource(Identifier id, String name, Collection<ValueModel> outputModels, SourceUserHandler sourceUserHandler) {
+    public LocalSource(Identifier id, String name, ValueDto outputModels, SourceUserHandler sourceUserHandler) {
         this.id = id;
         this.name = name;
         this.outputModels = outputModels;
@@ -22,7 +24,7 @@ public class LocalSource {
     }
 
     public ValueContainer getOutputEmptyContainer() {
-        return ValueContainerFactory.getSimpleContainer(outputModels);
+        return ValueContainerFactory.getSimpleContainer(Collections.singletonList(outputModels));
     }
 
     public SourceUserHandler getSourceUserHandler() {

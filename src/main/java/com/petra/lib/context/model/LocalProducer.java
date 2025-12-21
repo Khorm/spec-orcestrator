@@ -25,7 +25,7 @@ public class LocalProducer {
     }
 
     public void start(Context context) {
-        firstConsumer.execute(context.getContextValues(), context);
+        firstConsumer.execute(context.getContextInputValues(), context);
     }
 
 

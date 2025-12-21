@@ -2,6 +2,7 @@ package com.petra.lib.variable.value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.petra.lib.PetraException;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.enums.Multiplicity;
 
 import java.util.List;
@@ -11,27 +12,22 @@ import java.util.List;
  */
 class ObjectValue extends ValueAbs {
 
-    private transient Object objValue;
 
-
-    ObjectValue(long id, String JSONvalue, Multiplicity multiplicity, String name) {
-        super(JSONvalue, id, name, multiplicity);
+    ObjectValue(ValueModel model) {
+        super(model);
     }
 
     @Override
     public <T> List<T> getParsedList(Class<T> clazz) {
-        throw new PetraException("Trying to get list from Object value " + name);
+        throw new PetraException("Trying to get list from Object value " + model.getName());
     }
 
     public <T> T getParsedValue(Class<T> clazz) {
-        if (objValue == null) {
-            try {
-                objValue = oj.readValue(JSONvalue, clazz);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            return oj.readValue(model.getJsonValue(), clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        return (T) objValue;
     }
 
 }

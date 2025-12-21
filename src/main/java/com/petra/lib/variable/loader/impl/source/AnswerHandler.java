@@ -3,6 +3,7 @@ package com.petra.lib.variable.loader.impl.source;
 import com.petra.lib.PetraException;
 import com.petra.lib.remote.dto.SourceResponseDto;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.enums.Multiplicity;
 import com.petra.lib.variable.value.Value;
@@ -10,6 +11,7 @@ import com.petra.lib.variable.value.ValueFactory;
 
 import java.util.Optional;
 
+@Deprecated
 class AnswerHandler {
 
     private final ValueContext context;
@@ -18,12 +20,12 @@ class AnswerHandler {
     private final String variableName;
     private final Multiplicity multiplicity;
     private final String sourceName;
-    private final SourceLoader thisLoader;
+    private final RemoteSource thisLoader;
     private final Optional<SourceResponseDto> answer;
 
     AnswerHandler(ValueContext context, ThreadController threadController,
-                          Long variableId, String variableName, Multiplicity multiplicity,
-                          String sourceName, SourceLoader thisLoader, Optional<SourceResponseDto> answer) {
+                  Long variableId, String variableName, Multiplicity multiplicity,
+                  String sourceName, RemoteSource thisLoader, Optional<SourceResponseDto> answer) {
         this.context = context;
         this.threadController = threadController;
         this.variableId = variableId;
@@ -39,7 +41,8 @@ class AnswerHandler {
             threadController.executeLimitedPoolTask(() -> {
                 try {
                     String sourceJsonAnswer = answer.get().getConsumerSourceValues();
-                    Value contextValue = ValueFactory.createValue(variableId, variableName, multiplicity, sourceJsonAnswer);
+                    ValueModel valueModel = new ValueModel(variableId, variableName, multiplicity, sourceJsonAnswer);
+                    Value contextValue = ValueFactory.createValue(valueModel);
                     context.setValue(contextValue, thisLoader);
                 } catch (Exception e) {
                     context.error(e);
