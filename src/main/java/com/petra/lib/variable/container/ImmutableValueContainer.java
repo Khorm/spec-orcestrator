@@ -43,11 +43,6 @@ class ImmutableValueContainer implements ValueContainer {
     }
 
     @Override
-    public void mixinValueContainer(ValueContainer valueContainer) {
-        throw new PetraException("Value container is immutable");
-    }
-
-    @Override
     public ValueContainer clone() {
         return ValueContainerFactory.getImmutableContainer(valueContainer.clone());
     }
@@ -55,5 +50,10 @@ class ImmutableValueContainer implements ValueContainer {
     @Override
     public String toJson() {
         return valueContainer.toJson();
+    }
+
+    @Override
+    public boolean containsValue(String name) {
+        return valueContainer.containsValue(name);
     }
 }

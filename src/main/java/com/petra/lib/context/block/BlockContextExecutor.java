@@ -10,7 +10,9 @@ import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.operation.ActivityOperationService;
 import com.petra.lib.operation.WorkflowOperationService;
+import com.petra.lib.variable.VariableFactory;
 import com.petra.lib.variable.container.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -47,7 +49,8 @@ public class BlockContextExecutor {
         Context context;
         if (optionalEntity.isEmpty()) {
             BlockType type = consumerMap.containsKey(remoteProducer.getConsumerId()) ? BlockType.ACTION : BlockType.WORKFLOW;
-            ContextEntity entity = new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED, remoteProducer.getSendValuesContainer());
+            ContextEntity entity = new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED,
+                    remoteProducer.getSendValuesContainer(), ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables()));
             context = new BlockContextImpl(entity, contextRepo,
                     type == BlockType.ACTION ? actionOperationService : workflowOperationService);
         }else {

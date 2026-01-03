@@ -24,7 +24,7 @@ public class HttpSender implements Sender {
     }
 
     @Override
-    public void answerAboutBlockExecution(MessageDto messageDto, String serviceName, SenderCallback senderCallback) {
+    public void answerBlockExecution(MessageDto messageDto, String serviceName, SenderCallback senderCallback) {
         sendToBlock(messageDto, serviceName, senderCallback, "answer_block");
     }
 

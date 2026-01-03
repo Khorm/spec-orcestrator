@@ -45,13 +45,13 @@ public class ContextRepoImpl implements ContextRepo {
                 .addValue("scenarioId", context.getScenarioId())
                 .addValue("consumerId", consumerId.getId())
                 .addValue("consumerVersion", consumerId.getVersion())
-                .addValue("consumerType", context.getBlockType().name() )
-                .addValue("contextState", context.getState().name() )
-                .addValue("contextExecutionStatus",  null)
-                .addValue("contextValues",  null)
-                .addValue("producerId", context.getProducer().getId() )
+                .addValue("consumerType", context.getBlockType().name())
+                .addValue("contextState", context.getState().name())
+                .addValue("contextExecutionStatus", null)
+                .addValue("contextValues", null)
+                .addValue("producerId", context.getProducer().getId())
                 .addValue("producerVersion", context.getProducer().getVersion())
-                .addValue("producerServiceName",context.getProducer().getServiceName())
+                .addValue("producerServiceName", context.getProducer().getServiceName())
                 .addValue("producerValues", context.getInputContextValues().toJson());
 
         namedParameterJdbcTemplate.update(sql, insertParams);
@@ -117,9 +117,9 @@ public class ContextRepoImpl implements ContextRepo {
                     "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
             SqlParameterSource updateParams = new MapSqlParameterSource()
                     .addValue("state", state.name())
-                    .addValue("values", outValues != null ? outValues.getModels() : null)
-                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
-                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("values", outValues.toJson())
+                    .addValue("consumerId", consumer.getId())
+                    .addValue("consumerVersion", consumer.getVersion())
                     .addValue("scenarioId", entity.getScenarioId());
 
             namedParameterJdbcTemplate.update(updateSql, updateParams);
@@ -139,8 +139,8 @@ public class ContextRepoImpl implements ContextRepo {
 
             Identifier consumer = entity.getConsumerId();
             SqlParameterSource keyParams = new MapSqlParameterSource()
-                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
-                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("consumerId", consumer.getId())
+                    .addValue("consumerVersion", consumer.getVersion())
                     .addValue("scenarioId", entity.getScenarioId());
 
             // Блокировка строки и получение текущего значения context_execution_status в рамках транзакции
@@ -163,10 +163,10 @@ public class ContextRepoImpl implements ContextRepo {
             String updateSql = "UPDATE block_context SET context_state = :state, context_execution_status = :executionStatus " +
                     "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
             SqlParameterSource updateParams = new MapSqlParameterSource()
-                    .addValue("state", state != null ? state.name() : null)
-                    .addValue("executionStatus", executionStatus != null ? executionStatus.name() : null)
-                    .addValue("consumerId", consumer != null ? consumer.getId() : null)
-                    .addValue("consumerVersion", consumer != null ? consumer.getVersion() : null)
+                    .addValue("state", state.name())
+                    .addValue("executionStatus", executionStatus.name())
+                    .addValue("consumerId", consumer.getId())
+                    .addValue("consumerVersion", consumer.getVersion())
                     .addValue("scenarioId", entity.getScenarioId());
 
             namedParameterJdbcTemplate.update(updateSql, updateParams);
@@ -180,7 +180,6 @@ public class ContextRepoImpl implements ContextRepo {
             }
         }, Isolation.READ_COMMITTED);
     }
-
 
 
 //

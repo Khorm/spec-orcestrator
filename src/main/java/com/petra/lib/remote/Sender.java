@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface Sender {
     void requestBlockExecution(MessageDto messageDto, String requestServiceName, SenderCallback senderCallback);
-    void answerAboutBlockExecution(MessageDto messageDto, String requestServiceName, SenderCallback senderCallback);
+    void answerBlockExecution(MessageDto messageDto, String requestServiceName, SenderCallback senderCallback);
     Optional<SourceResponseDto> sendToSource(SourceRequestDto sourceRequestDto, String serviceUrl);
 }

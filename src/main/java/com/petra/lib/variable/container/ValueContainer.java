@@ -16,9 +16,10 @@ public interface ValueContainer {
     List<ValueModel> getModels();
 
     List<Value> getValues();
-    void mixinValueContainer(ValueContainer valueContainer);
+//    void mixinValueContainer(ValueContainer valueContainer);
 
     ValueContainer clone();
 
     String toJson();
+    boolean containsValue(String name);
 }

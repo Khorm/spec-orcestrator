@@ -10,6 +10,11 @@ petra:
 #    - name: service_two
 #      url: 192.168.0.92
 
+
+logging:
+  level:
+    root: DEBUG
+
 spring:
   datasource:
     url: jdbc:postgresql://192.168.0.10:5432/petralib

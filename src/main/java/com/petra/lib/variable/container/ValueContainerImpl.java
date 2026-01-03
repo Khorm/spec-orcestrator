@@ -63,6 +63,11 @@ class ValueContainerImpl implements ValueContainer {
         }
     }
 
+    @Override
+    public boolean containsValue(String name) {
+        return valuesByName.containsKey(name);
+    }
+
 
     private void mixinValues(List<Value> values) {
         values = values.stream().filter(value -> !valuesById.containsKey(value.getId())).collect(Collectors.toList());

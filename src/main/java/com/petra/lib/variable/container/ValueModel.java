@@ -64,9 +64,9 @@ public class ValueModel {
         return new String(Base64.getDecoder().decode(jsonVariable.getBytes()));
     }
 
-    public void setJsonVariable(String jsonVariable) {
-        this.jsonVariable = Base64.getEncoder().encodeToString(jsonVariable.getBytes());
-    }
+//    public void setJsonVariable(String jsonVariable) {
+//        this.jsonVariable = Base64.getEncoder().encodeToString(jsonVariable.getBytes());
+//    }
 
     @JsonProperty("multiplicity")
     public String getMultiplicityName() {

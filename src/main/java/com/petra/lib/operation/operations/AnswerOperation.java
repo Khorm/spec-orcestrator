@@ -7,12 +7,17 @@ import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.remote.dto.MessageDto;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Отвечает за ответ об успешном или неуспешном выполнении
  */
 public class AnswerOperation implements Operation {
 
+    private static final Logger log = LogManager.getLogger(AnswerOperation.class);
     private final Sender sender;
     private final ContextState CURRENT_STATE = ContextState.ANSWERED;
 
@@ -39,15 +44,30 @@ public class AnswerOperation implements Operation {
             public void answer(MessageResponse messageResponse) {
                 blockContext.setState(CURRENT_STATE);
                 blockContext.save();
+                log.info("Answer sent successfully for scenarioId: {}, blockId: {}",
+                        blockContext.getScenarioId(), blockContext.getCurrentBlockId());
+
             }
 
             @Override
             public void error(Exception e, MessageResponse messageResponse) {
-                sender.answerAboutBlockExecution(messageDto, blockContext.getProducer().getServiceName(), this);
+                log.error("Failed to send answer for scenarioId: {}, blockId: {}. Error: {}",
+                        blockContext.getScenarioId(),
+                        blockContext.getCurrentBlockId(),
+                        e.getMessage(), e);
+                try {
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                sender.answerBlockExecution(messageDto, blockContext.getProducer().getServiceName(), this);
             }
         };
 
-        sender.answerAboutBlockExecution(messageDto, blockContext.getProducer().getServiceName(), senderCallback);
+        log.debug("Sending answer for scenarioId: {}, producer: {}",
+                blockContext.getScenarioId(), blockContext.getProducer().getServiceName());
+
+        sender.answerBlockExecution(messageDto, blockContext.getProducer().getServiceName(), senderCallback);
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.petra.lib.context.model.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.value.Value;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public class ContextEntity {
     /**
      * Список исходящих переменных контекста
      */
-    private ValueContainer outContextValues;
+    private final ValueContainer outContextValues;
 
     /**
      * Стейт в котором находтся котекст
@@ -47,27 +48,28 @@ public class ContextEntity {
                          Identifier consumerId,
                          String producerServiceName,
                          Identifier producerBlockId,
-                         List<ValueModel> values,
                          ContextState contextState,
                          ExecutionStatus executionStatus,
-                         List<ValueModel> producerValues, BlockType blockType
+                         List<ValueModel> producerValues, BlockType blockType, List<ValueModel> outValues
     ) {
         this.scenarioId = scenarioId;
         this.state = contextState;
-        this.inputContextValues = ValueContainerFactory.getSimpleContainer(values);
+        this.inputContextValues = ValueContainerFactory.getSimpleContainer(producerValues);
         this.blockType = blockType;
+        this.outContextValues = ValueContainerFactory.getSimpleContainer(outValues);
         this.producer = new RemoteProducer(producerBlockId, producerServiceName,
                 ValueContainerFactory.getSimpleContainer(producerValues), consumerId);
         this.executionStatus = executionStatus;
     }
 
     public ContextEntity(UUID scenarioId, RemoteProducer producer, BlockType blockType,
-                         ContextState state, ValueContainer inputContextValues) {
+                         ContextState state, ValueContainer inputContextValues, ValueContainer outContextValues) {
         this.scenarioId = scenarioId;
         this.producer = producer;
         this.blockType = blockType;
         this.inputContextValues = inputContextValues;
         this.state = state;
+        this.outContextValues = outContextValues;
     }
 
     public UUID getScenarioId() {
@@ -107,11 +109,16 @@ public class ContextEntity {
         this.executionStatus = executionStatus;
     }
 
-    public void setOutContextValues(ValueContainer outContextValues) {
-        this.outContextValues = outContextValues;
-    }
+
 
     public BlockType getBlockType() {
         return blockType;
+    }
+
+
+    public void setOutContextValues(ValueContainer outValues) {
+        for(Value value : outValues.getValues()) {
+            outContextValues.setValue(value);
+        }
     }
 }

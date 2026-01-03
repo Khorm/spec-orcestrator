@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="warn">
+<Configuration>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d %p [%c] - %m%n"/>
         </Console>
-        <File name="File" fileName="logs/myapp.log">
-            <PatternLayout pattern="%d %p [%c] - %m%n"/>
-        </File>
+<!--        <File name="File" fileName="logs/myapp.log">-->
+<!--            <PatternLayout pattern="%d %p [%c] - %m%n"/>-->
+<!--        </File>-->
     </Appenders>
     <Loggers>
         <Root level="info">
