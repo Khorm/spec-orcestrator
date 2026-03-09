@@ -6,7 +6,7 @@ import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import org.springframework.stereotype.Service;
 
 //@WorkflowHandler(name = "test_action_1")
-@Service
+//@Service
 public class ActionActionHandler implements UserActionHandler {
     @Override
     public void execute(UserActionContext variableUserActionContext) {

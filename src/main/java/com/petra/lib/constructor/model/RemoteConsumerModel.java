@@ -1,7 +1,10 @@
 package com.petra.lib.constructor.model;
 
+import lombok.Getter;
+
 import java.util.Collection;
 
+@Getter
 public class RemoteConsumerModel {
     private Long id;
     private String version;
@@ -10,7 +13,7 @@ public class RemoteConsumerModel {
     private Long workflowId;
 
     private String workflowVersion;
-    private ValuesCollectionModel blockValues;
+    private Collection<ValueModelDto> blockValues;
 
 
     public Long getId() {
@@ -33,7 +36,5 @@ public class RemoteConsumerModel {
         return workflowVersion;
     }
 
-    public ValuesCollectionModel getBlockValues() {
-        return blockValues;
-    }
+
 }

@@ -1,43 +1,47 @@
 package com.petra.lib.variable.loader.impl;
 
+import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
-import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.enums.Multiplicity;
+import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
 import com.petra.lib.variable.value.ValueFactory;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 class ScriptLoader extends LoaderAbs {
 
-    private final String groovyScript;
-    private final Long variableId;
-    private final String name;
-    private final Multiplicity multiplicity;
+    String groovyScript;
+    String name;
+    Multiplicity multiplicity;
 
 
-    ScriptLoader(String groovyScript, Long variableId, String name,
-                 Multiplicity multiplicity, List<ValueLoader> childValues, List<Long> parentValues, ThreadController threadController) {
-        super(childValues, parentValues, threadController);
-        this.groovyScript = groovyScript;
-        this.variableId = variableId;
-        this.name = name;
-        this.multiplicity = multiplicity;
+    ScriptLoader(ValueModelDto valueModel,
+                 ThreadController threadController,
+                 List<Long> parents, List<ValueLoader> children) {
+        super(threadController,valueModel, parents, children);
+        this.groovyScript = valueModel.getScript();
+        this.name = valueModel.getName();
+        this.multiplicity = valueModel.getMultiplicity();
     }
 
 
     @Override
-    protected void executeLoad(ValueContext context) {
-        String valuesScript = getParentValues().stream().map(aLong -> {
+    protected Value executeLoad(ValueContext context) {
+
+        String valuesScript = getParents().stream().map(aLong -> {
             StringBuilder ret = new StringBuilder();
             Value value = context.getValue(aLong);
             return ret.append("def ")
-                    .append(value.getModel().getJsonValue())
+                    .append(value.getModel().getName())
                     .append(" = '")
                     .append(value.getModel().getJsonValue())
                     .append("' ; ").toString();
@@ -53,7 +57,7 @@ class ScriptLoader extends LoaderAbs {
         Binding binding = new Binding();
         GroovyShell shell = new GroovyShell(binding);
         String result = (String) shell.evaluate(script);
-        ValueModel valueModel = new ValueModel(variableId, name, multiplicity, result);
-        context.setValue(ValueFactory.createValue(valueModel), this);
+        ValueModel valueModel = new ValueModel(getVariableId(), name, multiplicity, result);
+        return ValueFactory.createValue(valueModel);
     }
 }

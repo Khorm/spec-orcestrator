@@ -4,7 +4,7 @@ import com.petra.lib.variable.enums.Multiplicity;
 
 public class SourceInputVariableModel {
     private Long sourceVariable;
-    private Long currentBlockVariable;
+    private Long producerVariable;
     private String extractionString;
     private String sourceValueName;
     private String sourceValueMultiplicity;
@@ -13,8 +13,8 @@ public class SourceInputVariableModel {
         return sourceVariable;
     }
 
-    public Long getCurrentBlockVariable() {
-        return currentBlockVariable;
+    public Long getProdeucerVariable() {
+        return producerVariable;
     }
 
     public String getExtractionString() {

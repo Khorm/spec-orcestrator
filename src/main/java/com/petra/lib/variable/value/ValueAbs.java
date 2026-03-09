@@ -22,7 +22,7 @@ abstract class ValueAbs implements Value {
         return JsonUtils.getExtractedJsonValue(extractionString, model.getJsonValue());
     }
 
-    protected synchronized void updateModel(String jsonValue) {
+    protected synchronized void updateValue(String jsonValue) {
         model = new ValueModel(model.getId(), model.getName(), model.getMultiplicity(), jsonValue);
     }
 
@@ -34,7 +34,7 @@ abstract class ValueAbs implements Value {
     @Override
     public void setValue(Object value) {
         try {
-            updateModel(oj.writeValueAsString(value));
+            updateValue(oj.writeValueAsString(value));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -42,7 +42,7 @@ abstract class ValueAbs implements Value {
 
     @Override
     public void setJsonValue(String jsonValue) {
-        updateModel(jsonValue);
+        updateValue(jsonValue);
     }
 
     @Override

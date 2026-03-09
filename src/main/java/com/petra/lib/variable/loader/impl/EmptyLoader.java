@@ -1,29 +1,36 @@
 package com.petra.lib.variable.loader.impl;
 
+import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.thread.ThreadController;
-import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
-import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.value.ValueFactory;
+import com.petra.lib.variable.value.Value;
 
 import java.util.List;
 
 class EmptyLoader extends LoaderAbs {
+    protected EmptyLoader(ThreadController threadController, ValueModelDto valueModel, List<Long> parents, List<ValueLoader> children) {
+        super(threadController, valueModel, parents, children);
+    }
+
+    @Override
+    protected Value executeLoad(ValueContext context) {
+        return null;
+    }
 //    private final long variableId;
 //    private final String name;
 //    private final Multiplicity multiplicity;
 
-    private final ValueModel valueModel;
-    EmptyLoader(List<ValueLoader> childValues, List<Long> parentValues,
-                ThreadController threadController, ValueModel valueModel) {
-        super(childValues, parentValues, threadController);
-        this.valueModel = valueModel;
-    }
-
-
-    @Override
-    protected void executeLoad(ValueContext context) {
-        context.setValue(ValueFactory.createValue(valueModel), this);
-    }
+//    EmptyLoader(ThreadController threadController, ValueModelDto valueModel,
+//                List<Long> parents, List<LoaderAbs> children) {
+//        super(threadController, valueModel);
+//    }
+//
+//
+//    @Override
+//    protected void executeLoad(ValueContext context) {
+//        ValueModel valueModel = new ValueModel(getValueModel().getId(), getValueModel().getName(),
+//                getValueModel().getMultiplicity(),null);
+//        context.registerLoadedValue(ValueFactory.createValue(valueModel), this);
+//    }
 }

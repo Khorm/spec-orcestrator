@@ -1,7 +1,10 @@
 package com.petra.lib.variable;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,9 +20,14 @@ public final class GenericParsers {
         PARSERS.put(BigDecimal.class, BigDecimal::new);
         PARSERS.put(Boolean.class, Boolean::parseBoolean);
         PARSERS.put(LocalDate.class, LocalDate::parse);
+        PARSERS.put(LocalDateTime.class, LocalDateTime::parse);
     }
 
     public static Function<String, ?> getParser(Class<?> clazz){
-        return PARSERS.get(clazz);
+        Function<String, ?> parser = PARSERS.get(clazz);
+        if (parser == null) {
+            return (Function<String, Object>) s -> new ObjectMapper().convertValue(s, clazz);
+        }
+        return parser;
     }
 }

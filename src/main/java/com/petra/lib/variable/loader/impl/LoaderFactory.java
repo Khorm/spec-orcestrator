@@ -1,107 +1,139 @@
 package com.petra.lib.variable.loader.impl;
 
-import com.petra.lib.context.model.Identifier;
+import com.petra.lib.constructor.model.SourceInputVariableModel;
 import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
-import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.loader.ValueLoader;
-import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.loader.impl.source.SourceInputVariable;
 import com.petra.lib.variable.loader.impl.source.RemoteSource;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class LoaderFactory {
 
-    public static ValueLoader createLoader(ValueModelDto valueModelDto, ThreadController threadController, Sender sender){
-        switch (valueModelDto.getLoaderType()){
-            case EMPTY_LOADER:
-                return createEmptyLoader(
-                        valueModelDto.getId(),
-                        valueModelDto.getName(),
-                        valueModelDto.getMultiplicity(),
-                        valueModelDto.getParents(),
-                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
-                                .collect(Collectors.toList()),
-                        threadController
-                );
-            case INPUT_LOADER:
-                return createInputLoader(
-                        valueModelDto.getId(),
-                        valueModelDto.getName(),
-                        valueModelDto.getInputValueId(),
-                        valueModelDto.getMultiplicity(),
-                        valueModelDto.getParents(),
-                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
-                                .collect(Collectors.toList()),
-                        valueModelDto.getExtractionString(),
-                        threadController
-                );
-            case SCRIPT_LOADER:
-                return createScriptLoader(
-                        valueModelDto.getScript(),
-                        valueModelDto.getId(),
-                        valueModelDto.getName(),
-                        valueModelDto.getMultiplicity(),
-                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
-                                .collect(Collectors.toList()),
-                        valueModelDto.getParents(),
-                        threadController
-                );
+    static class FactoryContext {
+        ThreadController threadController;
+        Sender sender;
+        Collection<ValueModelDto> variables;
+        Collection<ValueLoader> createdLoaders = new ArrayList<>();
 
-            case SOURCE_LOADER:
-                return createSourceLoader(
-                        valueModelDto.getChildren().stream().map(loaderModel ->  createLoader(loaderModel, threadController, sender))
-                                .collect(Collectors.toList()),
-                        valueModelDto.getParents(),
-                        sender,
-                        new Identifier(valueModelDto.getSourceId(), valueModelDto.getSourceVersion()),
-                        valueModelDto.getSourceName(),
-                        valueModelDto.getId(),
-                        valueModelDto.getName(),
-                        threadController,
-                        valueModelDto.getMultiplicity(),
-                        valueModelDto.getSourceInputVariableModels().stream().map(SourceInputVariable::new)
-                                .collect(Collectors.toList()),
-                        valueModelDto.getExtractionString()
-                );
+        public FactoryContext(ThreadController threadController, Sender sender, Collection<ValueModelDto> variables) {
+            this.threadController = threadController;
+            this.sender = sender;
+            this.variables = variables;
+        }
 
-            default:
-                throw  new NullPointerException("Source loader type not found");
+        ValueLoader getOrCreateLoader(ValueModelDto variableToCreate) {
+            for (ValueLoader valueLoader : createdLoaders) {
+                if (valueLoader.getVariableId().equals(variableToCreate.getId())) {
+                    return valueLoader;
+                }
+            }
+
+            ValueLoader createdLoader;
+            switch (variableToCreate.getLoaderType()) {
+//            case EMPTY_LOADER:
+//                return createEmptyLoader(
+//                        threadController,
+//                        valueModelDto
+//                );
+                case INPUT_LOADER:
+                    createdLoader = createInputLoader(
+                            this,
+                            variableToCreate
+                    );
+                    break;
+
+                case SCRIPT_LOADER:
+                    createdLoader = createScriptLoader(
+                            this,
+                            variableToCreate
+                    );
+                    break;
+
+                case SOURCE_LOADER:
+                    createdLoader = createSourceLoader(
+                            this,
+                            variableToCreate
+                    );
+                    break;
+
+                default:
+                    throw new NullPointerException("Source loader type not found");
+            }
+            createdLoaders.add(createdLoader);
+            return createdLoader;
+        }
+
+        public ThreadController getThreadController() {
+            return threadController;
+        }
+
+        public Sender getSender() {
+            return sender;
+        }
+
+        public Collection<ValueModelDto> getVariables() {
+            return variables;
         }
     }
 
-    public static ValueLoader createInputLoader(Long id, String name, Long inputValueId, Multiplicity multiplicity,
-                                                List<Long> parents, List<ValueLoader> children, String extractionString,
-                                                ThreadController threadController) {
-        ValueModel valueModel = new ValueModel(id, name, multiplicity, null);
-        return new InputLoader(inputValueId, children, parents, extractionString, threadController,valueModel);
+    public static Collection<ValueLoader> createLoaders(Collection<ValueModelDto> modelDtos, ThreadController threadController,
+                                                 Sender sender) {
+        FactoryContext factoryContext = new FactoryContext(threadController, sender, modelDtos);
+        for (ValueModelDto valueModelDto : modelDtos) {
+            factoryContext.getOrCreateLoader(valueModelDto);
+        }
+        return factoryContext.createdLoaders;
     }
 
-    public static ValueLoader createScriptLoader(String groovyScript, Long variableId, String name,
-                                                 Multiplicity multiplicity, List<ValueLoader> childValues,
-                                                 List<Long> parentValues,
-                                                 ThreadController threadController) {
-        return new ScriptLoader(groovyScript, variableId, name, multiplicity, childValues, parentValues, threadController);
+    private static ValueLoader createInputLoader(FactoryContext factoryContext, ValueModelDto valueModel) {
+        List<Long> parents = new ArrayList<>();
+        parents.add(valueModel.getInputValueId());
+
+        List<ValueLoader> children = getChildren(factoryContext, valueModel.getId());
+
+        return new InputLoader(factoryContext.getThreadController(), valueModel,
+                parents, children);
     }
 
-    public static ValueLoader createSourceLoader(List<ValueLoader> childValues, List<Long> parentValues, Sender sender,
-                                                 Identifier sourceId, String sourceName,
-                                                 Long currentVariableId, String currentVariableName, ThreadController threadController,
-                                                 Multiplicity currentMultiplicity,
-                                                 List<SourceInputVariable> sourceInputVariables, String extractionString) {
-        return new RemoteSource(childValues, parentValues, sender,
-                sourceId, sourceName,
-                currentVariableId, currentVariableName,
-                threadController, currentMultiplicity,
-                sourceInputVariables, extractionString);
+
+    private static ValueLoader createScriptLoader(FactoryContext factoryContext, ValueModelDto valueModel) {
+        List<Long> parents = getVariablesParents(valueModel);
+        List<ValueLoader> children = getChildren(factoryContext, valueModel.getId());
+        return new ScriptLoader(valueModel, factoryContext.getThreadController(), parents, children);
     }
 
-    public static ValueLoader createEmptyLoader(Long id, String name, Multiplicity multiplicity,
-                                                List<Long> parents, List<ValueLoader> children, ThreadController threadController){
-        ValueModel valueModel = new ValueModel(id, name, multiplicity, null);
-        return new EmptyLoader(children, parents, threadController, valueModel);
+
+    private static ValueLoader createSourceLoader(FactoryContext factoryContext,
+                                                  ValueModelDto valueModelDto) {
+
+        List<Long> parents = getVariablesParents(valueModelDto);
+        List<ValueLoader> children = getChildren(factoryContext, valueModelDto.getId());
+        return new RemoteSource(factoryContext.getSender(),
+                factoryContext.getThreadController(),
+                valueModelDto.getSourceInputVariableModels(),
+                valueModelDto,
+                parents, children);
     }
+
+//    private static ValueLoader createEmptyLoader(ThreadController threadController, ValueModelDto valueModel) {
+//        return new EmptyLoader(threadController, valueModel);
+//    }
+
+    private static List<ValueLoader> getChildren(FactoryContext factoryContext, Long parentId) {
+        return factoryContext.getVariables().stream()
+                .filter(model -> model.isChildOf(parentId))
+                .map(factoryContext::getOrCreateLoader)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Long> getVariablesParents(ValueModelDto valueModelDto) {
+        return valueModelDto.getSourceInputVariableModels().stream()
+                .mapToLong(SourceInputVariableModel::getProdeucerVariable).boxed().collect(Collectors.toList());
+    }
+
 }

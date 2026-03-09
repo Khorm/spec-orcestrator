@@ -83,9 +83,10 @@ public final class BlockContextExecutorFactory {
 
         WorkflowOperationService workflowOperationService = OperationConstructor.createWorkflowOperationService(threadController, workflowExecutingOperation,
                 answerOperation);
-        ActivityOperationService activityOperationService = OperationConstructor.createBlockOperationService(threadController,
+        ActivityOperationService activityOperationService = OperationConstructor.createActionOperationService(threadController,
                 answerOperation, blockUserOperation, sender, serviceName);
-        System.out.println("localActions = " + localConsumers.size());
+        System.out.println("localConsumers = " + localConsumers.size());
+        System.out.println("localProducers = " + localProducers.size());
         return new BlockContextExecutor(
                 contextRepo, workflowOperationService,activityOperationService, localConsumers, localProducers
         );

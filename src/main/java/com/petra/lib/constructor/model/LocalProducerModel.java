@@ -1,14 +1,17 @@
 package com.petra.lib.constructor.model;
 
+import lombok.Getter;
+
 import java.util.Collection;
 
+@Getter
 public class LocalProducerModel {
     private Long id;
     private String version;
 
     private String name;
     private Collection<RemoteConsumerModel> consumers;
-    private ValuesCollectionModel exitValues;
+    private Collection<ValueModelDto> exitValues;
 
     public Long getId() {
         return id;
@@ -26,7 +29,5 @@ public class LocalProducerModel {
         return name;
     }
 
-    public ValuesCollectionModel getExitValues() {
-        return exitValues;
-    }
+
 }

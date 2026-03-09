@@ -59,7 +59,7 @@ public class Constructor {
                     sourceUserHandlerMap.get(localSourceModel.getName())
             ));
         }
-
+        System.out.println("localSources = " + localSources.size());
         return new SourceContextExecutor(localSources, entityManagerFactory);
     }
 //

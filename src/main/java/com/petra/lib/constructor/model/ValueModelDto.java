@@ -2,24 +2,43 @@ package com.petra.lib.constructor.model;
 
 import com.petra.lib.constructor.enums.LoaderType;
 import com.petra.lib.variable.enums.Multiplicity;
+import lombok.Getter;
 
 import java.util.Collection;
-import java.util.List;
 
+@Getter
 public class ValueModelDto {
+    /**
+     * id консумера
+     */
     private Long id;
     private String name;
     private String multiplicity;
-    private List<Long> parents;
     private String loaderType;
-    private Collection<ValueModelDto> children;
-    private Long inputValueId;
     private String extractionString;
+
+    /**
+     * Настройки для INPUT
+     */
+    private Long inputValueId;
+
+
+    /**
+     * Настройки для SCRIPT
+     */
     private String script;
 
+    /**
+     * Настройки для SOURCE
+     */
     private Long sourceId;
     private String sourceVersion;
     private String sourceName;
+    private String sourceServicePath;
+
+    /**
+     * Параметры(продюсеры) для SOURCE и SCRIPT
+     */
     private Collection<SourceInputVariableModel> sourceInputVariableModels;
 
 
@@ -27,51 +46,27 @@ public class ValueModelDto {
         return LoaderType.valueOf(loaderType);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public Multiplicity getMultiplicity() {
         return Multiplicity.valueOf(multiplicity);
     }
 
-    public List<Long> getParents() {
-        return parents;
+
+    public boolean isChildOf(Long variableId){
+        if (getLoaderType() == LoaderType.SOURCE_LOADER || getLoaderType() == LoaderType.SCRIPT_LOADER){
+            for (SourceInputVariableModel variable : sourceInputVariableModels){
+                if (variable.getProdeucerVariable().equals(variableId)){
+                    return true;
+                }
+            }
+        }
+
+        if (getLoaderType() == LoaderType.INPUT_LOADER && inputValueId.equals(variableId)){
+            return true;
+        }
+
+        return false;
     }
 
-    public Collection<ValueModelDto> getChildren() {
-        return children;
-    }
 
-    public Long getInputValueId() {
-        return inputValueId;
-    }
 
-    public String getExtractionString() {
-        return extractionString;
-    }
-
-    public String getScript() {
-        return script;
-    }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public String getSourceVersion() {
-        return sourceVersion;
-    }
-
-    public String getSourceName() {
-        return sourceName;
-    }
-
-    public Collection<SourceInputVariableModel> getSourceInputVariableModels() {
-        return sourceInputVariableModels;
-    }
 }

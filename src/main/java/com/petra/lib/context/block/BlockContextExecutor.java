@@ -48,7 +48,7 @@ public class BlockContextExecutor {
         Optional<ContextEntity> optionalEntity = contextRepo.findContext(scenarioId, consumer.getIdentifier());
         Context context;
         if (optionalEntity.isEmpty()) {
-            BlockType type = consumerMap.containsKey(remoteProducer.getConsumerId()) ? BlockType.ACTION : BlockType.WORKFLOW;
+            BlockType type = consumerMap.get(remoteProducer.getConsumerId()).getBlockType();
             ContextEntity entity = new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED,
                     remoteProducer.getSendValuesContainer(), ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables()));
             context = new BlockContextImpl(entity, contextRepo,

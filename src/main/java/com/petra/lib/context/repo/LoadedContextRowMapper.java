@@ -60,7 +60,11 @@ public class LoadedContextRowMapper implements RowMapper<ContextEntity>, ResultS
         String producerValuesStr = rs.getString("producer_values");
         ObjectMapper oj = new ObjectMapper();
         List<ValueModel> producerValues = oj.readValue(producerValuesStr, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
-        List<ValueModel> outValues = oj.readValue(valuesStr, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
+
+        List<ValueModel> outValues = null;
+        if (valuesStr != null){
+            outValues = oj.readValue(valuesStr, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
+        }
 
         return new ContextEntity(
                 scenarioId,

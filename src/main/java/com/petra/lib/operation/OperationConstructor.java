@@ -20,7 +20,7 @@ public final class OperationConstructor {
      *
      * @throws IllegalArgumentException если любой из обязательных параметров (кроме userActionHandlerMap) равен null
      */
-    public static ActivityOperationService createBlockOperationService(
+    public static ActivityOperationService createActionOperationService(
             ThreadController threadController,
             AnswerOperation answerOperation,
             BlockUserOperation blockUserOperation,

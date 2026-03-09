@@ -3,36 +3,38 @@ package com.petra.lib.variable.context;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
+import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
 
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ValueContext {
+
     private final ValueContainer valueContextValues;
+
     private final ValueContainer blockContextValues;
     private final VariableCallback variableCallback;
-    private final Collection<ValueLoader> starterLoaders;
-    private final LoaderManager loaderManager;
+    private final LoadedValuesManager loadedValuesManager;
     private final UUID scenarioId;
 
+    private final Map<Long, ValueLoader> valueLoaders;
+
     public ValueContext(ValueContainer blockContextValues,
-                        int valuesCount,
-                        Collection<ValueLoader> starterLoaders,
                         UUID scenarioId,
-                        VariableCallback variableCallback) {
+                        VariableCallback variableCallback,
+                        Collection<ValueLoader> valueLoaders) {
         this.blockContextValues = blockContextValues;
         this.variableCallback = variableCallback;
-        this.loaderManager = new LoaderManager(this, valuesCount);
-        this.starterLoaders = starterLoaders;
+        this.loadedValuesManager = new LoadedValuesManager(blockContextValues.getModels().stream()
+                .mapToLong(ValueModel::getId).boxed().collect(Collectors.toSet()));
         this.scenarioId = scenarioId;
+        this.valueLoaders = valueLoaders.stream().collect(Collectors.toMap(ValueLoader::getVariableId, Function.identity()));
         valueContextValues = ValueContainerFactory.getSimpleContainer();
     }
 
-    public void start() {
-        starterLoaders.forEach(loader -> loader.load(this));
-    }
 
     public synchronized Value getValue(Long valueId) {
         Value ret = blockContextValues.getValue(valueId);
@@ -42,12 +44,20 @@ public class ValueContext {
         return ret;
     }
 
-    public synchronized void setValue(Value value, ValueLoader valueLoader) {
+    public synchronized void registerLoadedValue(Value value) {
         valueContextValues.setValue(value);
-        loaderManager.registerLoadedValue(valueLoader, value.getModel().getId());
-        if (loaderManager.areValuesLoaded()) {
+        loadedValuesManager.registerLoadedValue(value.getId());
+        if (loadedValuesManager.areValuesLoaded()) {
             variableCallback.loaded(valueContextValues);
         }
+    }
+
+    public ValueLoader getValueLoader(Long valueId) {
+        return valueLoaders.get(valueId);
+    }
+
+    public boolean areValuesLoaded(List<Long> valueIds) {
+        return loadedValuesManager.areValuesLoaded(valueIds);
     }
 
     public void error(Exception e) {

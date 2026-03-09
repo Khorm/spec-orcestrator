@@ -1,10 +1,10 @@
 package com.petra.lib.variable.loader.impl;
 
+import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
-import com.petra.lib.variable.enums.Multiplicity;
 import com.petra.lib.variable.value.Value;
 import com.petra.lib.variable.value.ValueFactory;
 
@@ -13,25 +13,21 @@ import java.util.Optional;
 
 class InputLoader extends LoaderAbs {
 
-    private final long inputValueId;
     private final Optional<String> extractionString;
-    private final ValueModel valueModel;
 
-    InputLoader(Long inputValueId, List<ValueLoader> childrenValues,
-                List<Long> parentValues, String extractionString,
-                ThreadController threadController, ValueModel valueModel) {
-        super(childrenValues, parentValues, threadController);
-        this.inputValueId = inputValueId;
-        this.valueModel = valueModel;
-        this.extractionString = extractionString == null || extractionString.isBlank() ?
-                Optional.empty() : Optional.of(extractionString);
+
+    InputLoader(ThreadController threadController, ValueModelDto valueModel,
+                List<Long> parents, List<ValueLoader> children) {
+        super(threadController, valueModel,parents, children);
+        this.extractionString = valueModel.getExtractionString() == null || valueModel.getExtractionString().isBlank() ?
+                Optional.empty() : Optional.of(valueModel.getExtractionString());
     }
 
     @Override
-    protected void executeLoad(ValueContext context) {
-        Value producerValue = context.getValue(inputValueId);
-        if (producerValue.getMultiplicity() != valueModel.getMultiplicity()) {
-            throw new IllegalArgumentException("Wrong producer multiplicity for value " + valueModel.getName());
+    protected Value executeLoad(ValueContext context) {
+        Value producerValue = context.getValue(getValueModel().getInputValueId());
+        if (producerValue.getMultiplicity() != getValueModel().getMultiplicity()) {
+            throw new IllegalArgumentException("Wrong producer multiplicity for value " + getValueModel().getName());
         }
         String newJsonValue;
         if (extractionString.isPresent()) {
@@ -39,10 +35,10 @@ class InputLoader extends LoaderAbs {
         } else {
             newJsonValue = producerValue.getModel().getJsonValue();
         }
-        Value contextValue = ValueFactory.createValue(valueModel);
-        contextValue.setJsonValue(newJsonValue);
+        ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
+                getValueModel().getMultiplicity(),newJsonValue);
 
-        context.setValue(contextValue, this);
+        return ValueFactory.createValue(valueModel);
     }
 
 }

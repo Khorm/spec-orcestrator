@@ -36,24 +36,24 @@ class AnswerHandler {
         this.answer = answer;
     }
 
-    void execute() {
-        if (answer.isPresent()) {
-            threadController.executeLimitedPoolTask(() -> {
-                try {
-                    String sourceJsonAnswer = answer.get().getConsumerSourceValues();
-                    ValueModel valueModel = new ValueModel(variableId, variableName, multiplicity, sourceJsonAnswer);
-                    Value contextValue = ValueFactory.createValue(valueModel);
-                    context.setValue(contextValue, thisLoader);
-                } catch (Exception e) {
-                    context.error(e);
-                }
-            });
-        } else {
-            threadController.executeLimitedPoolTask(() -> {
-                context.error(new PetraException("Connection error with " + sourceName));
-            });
-        }
-    }
+//    void execute() {
+//        if (answer.isPresent()) {
+//            threadController.executeLimitedPoolTask(() -> {
+//                try {
+//                    String sourceJsonAnswer = answer.get().getConsumerSourceValues();
+//                    ValueModel valueModel = new ValueModel(variableId, variableName, multiplicity, sourceJsonAnswer);
+//                    Value contextValue = ValueFactory.createValue(valueModel);
+//                    context.registerLoadedValue(contextValue, thisLoader);
+//                } catch (Exception e) {
+//                    context.error(e);
+//                }
+//            });
+//        } else {
+//            threadController.executeLimitedPoolTask(() -> {
+//                context.error(new PetraException("Connection error with " + sourceName));
+//            });
+//        }
+//    }
 
 
 }

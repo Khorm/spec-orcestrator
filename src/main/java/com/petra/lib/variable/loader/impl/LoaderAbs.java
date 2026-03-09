@@ -1,35 +1,57 @@
 package com.petra.lib.variable.loader.impl;
 
+import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
+import com.petra.lib.variable.value.Value;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public abstract class LoaderAbs implements ValueLoader {
 
-    private final List<ValueLoader> childValues;
-    private final List<Long> parentValues;
+    ThreadController threadController;
+    ValueModelDto valueModel;
+    List<Long> parents;
+    List<ValueLoader> children;
 
-    private final ThreadController threadController;
+    protected LoaderAbs(ThreadController threadController, ValueModelDto valueModel,
+                        List<Long> parents, List<ValueLoader> children) {
 
-    protected LoaderAbs(List<ValueLoader> childValues, List<Long> parentValues, ThreadController threadController) {
-        this.childValues = childValues;
-        this.parentValues = parentValues;
         this.threadController = threadController;
+        this.valueModel = valueModel;
+        this.parents = parents;
+        this.children = children;
     }
 
-    public void load(ValueContext context){
-        threadController.executeLimitedPoolTask(() -> executeLoad(context));
+    public void load(ValueContext context) {
+        if (!context.areValuesLoaded(parents)) {
+            return;
+        }
+        threadController.executeUnlimitedPoolTask(() -> {
+            Value result = executeLoad(context);
+            context.registerLoadedValue(result);
+            children.forEach(child -> child.load(context));
+        });
     }
 
-    protected abstract void executeLoad(ValueContext context);
+    protected abstract Value executeLoad(ValueContext context);
 
-    public List<Long> getParentValues(){
-        return parentValues;
+    public ValueModelDto getValueModel() {
+        return valueModel;
     }
 
-    public List<ValueLoader> getChildValues(){
-        return childValues;
+    public List<Long> getParents() {
+        return parents;
     }
+
+    public Long getVariableId() {
+        return valueModel.getId();
+    }
+
+
 }

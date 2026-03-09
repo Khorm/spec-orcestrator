@@ -13,7 +13,7 @@ petra:
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 spring:
   datasource:

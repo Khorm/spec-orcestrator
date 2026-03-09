@@ -3,7 +3,8 @@ package com.petra.lib.variable.loader.impl.source;
 import com.petra.lib.constructor.model.SourceInputVariableModel;
 import com.petra.lib.variable.enums.Multiplicity;
 
-public class SourceInputVariable {
+@Deprecated
+class SourceInputVariable {
 
     private final Long sourceVariable;
     private final Long currentBlockVariable;
@@ -14,30 +15,10 @@ public class SourceInputVariable {
 
     public SourceInputVariable(SourceInputVariableModel sourceInputVariableModel) {
         this.sourceVariable = sourceInputVariableModel.getSourceVariable();
-        this.currentBlockVariable = sourceInputVariableModel.getCurrentBlockVariable();
+        this.currentBlockVariable = sourceInputVariableModel.getProdeucerVariable();
         this.extractionString = sourceInputVariableModel.getExtractionString();
         this.sourceValueName = sourceInputVariableModel.getSourceValueName();
         this.sourceValueMultiplicity = sourceInputVariableModel.getSourceValueMultiplicity();
-    }
-
-    public Long getSourceVariable() {
-        return sourceVariable;
-    }
-
-    public Long getCurrentBlockVariable() {
-        return currentBlockVariable;
-    }
-
-    public String getExtractionString() {
-        return extractionString;
-    }
-
-    public String getSourceValueName() {
-        return sourceValueName;
-    }
-
-    public Multiplicity getSourceValueMultiplicity() {
-        return sourceValueMultiplicity;
     }
 
 }

@@ -36,7 +36,7 @@ public class HttpSender implements Sender {
                 HttpEntity<MessageDto> entity = new HttpEntity<>(messageDto, headers);
 
                 ResponseEntity<String> response
-                        = restTemplate.exchange("http://" + serviceName + "/" + command ,
+                        = restTemplate.exchange("http://" + serviceName + ":8080/" + command ,
                         HttpMethod.POST, entity, String.class);
 
                 if (response.getStatusCode() == HttpStatus.OK) {
@@ -80,7 +80,7 @@ public class HttpSender implements Sender {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<SourceRequestDto> entity = new HttpEntity<>(sourceRequestDto, headers);
         ResponseEntity<SourceResponseDto> response
-                = restTemplate.exchange("http://" + serviceUrl + "/source_request", HttpMethod.POST, entity, SourceResponseDto.class);
+                = restTemplate.exchange("http://" + serviceUrl + ":8080/source_request", HttpMethod.POST, entity, SourceResponseDto.class);
         if (response.getStatusCode() == HttpStatus.OK) {
 //                threadController.executeLimitedPoolTask(() -> senderCallback.answer(response.getBody()));
             return Optional.ofNullable(response.getBody());

@@ -8,8 +8,8 @@ import java.util.List;
 public interface ValueLoader {
     void load(ValueContext context);
 
-    List<ValueLoader> getChildValues();
-    List<Long> getParentValues();
+    Long getVariableId();
+    Collection<Long> getParents();
 
 
 }
