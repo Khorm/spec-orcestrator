@@ -19,7 +19,7 @@ class ImmutableValueContainer implements ValueContainer {
 
     @Override
     public Value getValue(String name) {
-        return null;
+        return valueContainer.getValue(name);
     }
 
     @Override
@@ -48,8 +48,8 @@ class ImmutableValueContainer implements ValueContainer {
     }
 
     @Override
-    public String toJson() {
-        return valueContainer.toJson();
+    public String toDBJson() {
+        return valueContainer.toDBJson();
     }
 
     @Override

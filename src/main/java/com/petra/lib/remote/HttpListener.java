@@ -2,6 +2,8 @@ package com.petra.lib.remote;
 
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.controller.PetraController;
+import com.petra.lib.remote.dto.SourceRequestDto;
+import com.petra.lib.remote.dto.SourceResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,15 +67,16 @@ public class HttpListener {
             petraController.blockAnswer(answerDto);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(value = "/source_request", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
-    public ResponseEntity<MessageDto> executeSource(@RequestBody MessageDto sourceRequestDto) {
+    public ResponseEntity<SourceResponseDto> executeSource(@RequestBody SourceRequestDto sourceRequestDto) {
         try {
-            MessageDto result = petraController.requestSource(sourceRequestDto);
+            SourceResponseDto result = petraController.requestSource(sourceRequestDto);
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (Exception e) {

@@ -9,6 +9,7 @@ public interface ValueLoader {
     void load(ValueContext context);
 
     Long getVariableId();
+    String getVariableName();
     Collection<Long> getParents();
 
 

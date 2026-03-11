@@ -11,6 +11,7 @@ import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.context.ValueContextManager;
 
 import java.util.Optional;
@@ -47,13 +48,17 @@ public class RemoteConsumer {
         valueContextManager.start(inputValueContainer, workflowBlockContext.getScenarioId(), new VariableCallback() {
             @Override
             public void loaded(ValueContainer loadedValues) {
+
+                ValueContainer actionContainer = ValueContainerFactory.getSimpleContainer(inputValueContainer.getModels());
+                loadedValues.getValues().forEach(actionContainer::setValue);
+
                 MessageDto messageDto = new MessageDto(
                         workflowBlockContext.getScenarioId(),
-                        id.getWorkflowId().getId(),
-                        id.getWorkflowId().getVersion(),
-                        inputValueContainer.getModels(),
                         id.getConsumerId().getId(),
                         id.getConsumerId().getVersion(),
+                        actionContainer.getModels(),
+                        id.getWorkflowId().getId(),
+                        id.getWorkflowId().getVersion(),
                         currentServiceName,
                         null
                 );
@@ -95,7 +100,10 @@ public class RemoteConsumer {
         WorkflowContextEntity contextEntity = new WorkflowContextEntity(id, scenarioId);
         contextEntity.setWorkflowState(WorkflowContextState.DONE);
         contextEntity.setResultValues(answerContainer);
-        workflowContextRepo.updateContext(contextEntity);
+        boolean result = workflowContextRepo.updateContext(contextEntity);
+        if (!result){
+            throw new RuntimeException("Could not update the state of " + id);
+        }
 
     }
 

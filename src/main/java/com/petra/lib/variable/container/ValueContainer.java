@@ -20,6 +20,6 @@ public interface ValueContainer {
 
     ValueContainer clone();
 
-    String toJson();
+    String toDBJson();
     boolean containsValue(String name);
 }

@@ -53,9 +53,10 @@ class ValueContainerImpl implements ValueContainer {
     }
 
     @Override
-    public String toJson() {
+    public String toDBJson() {
         ObjectMapper oj = new ObjectMapper();
         Collection<ValueModel> models = valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
+
         try {
             return oj.writeValueAsString(models);
         } catch (JsonProcessingException e) {

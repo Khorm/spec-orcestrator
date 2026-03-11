@@ -78,135 +78,86 @@
       "serviceName" : "localhost",
       "workflowId" : 10,
       "workflowVersion" : "0",
-      "blockValues" : {
-        "values" : [ {
-          "id" : 11,
-          "name" : "fst",
-          "multiplicity" : "SINGLE",
-          "parents" : [ 0 ],
-          "loaderType" : "INPUT_LOADER",
-          "children" : [ {
-            "id" : 2,
-            "name" : "LocationId",
-            "multiplicity" : "SINGLE",
-            "parents" : [ 1 ],
-            "loaderType" : "INPUT_LOADER",
-            "children" : [ ],
-            "extractionString" : "",
-            "inputValueId" : 11,
-            "script" : null,
-            "sourceId" : null,
-            "sourceVersion" : null,
-            "sourceName" : null,
-            "sourceServicePath" : null,
-            "sourceInputVariableModels" : null
-          } ],
-          "extractionString" : "",
-          "inputValueId" : 17,
-          "script" : null,
-          "sourceId" : null,
-          "sourceVersion" : null,
-          "sourceName" : null,
-          "sourceServicePath" : null,
-          "sourceInputVariableModels" : null
-        }, {
-          "id" : 12,
-          "name" : "scd",
-          "multiplicity" : "SINGLE",
-          "parents" : [ 0 ],
-          "loaderType" : "SOURCE_LOADER",
-          "children" : [ {
-            "id" : 2,
-            "name" : "LocationId",
-            "multiplicity" : "SINGLE",
-            "parents" : [ 1 ],
-            "loaderType" : "INPUT_LOADER",
-            "children" : [ ],
-            "extractionString" : "",
-            "inputValueId" : 11,
-            "script" : null,
-            "sourceId" : null,
-            "sourceVersion" : null,
-            "sourceName" : null,
-            "sourceServicePath" : null,
-            "sourceInputVariableModels" : null
-          } ],
-          "extractionString" : "name",
-          "inputValueId" : null,
-          "script" : null,
-          "sourceId" : 6,
-          "sourceVersion" : "0",
-          "sourceName" : "TestSource",
-          "sourceServicePath" : "localhost",
-          "sourceInputVariableModels" : [ {
-            "sourceVariable" : 2,
-            "sourceValueName" : "LocationId",
-            "sourceValueMultiplicity" : "SINGLE",
-            "currentBlockVariable" : 11,
-            "extractionString" : ""
-          } ]
-        } ],
-        "valueCount" : 4
-      }
-    }, {
-      "id" : 9,
-      "version" : "0",
-      "serviceName" : "localhost",
-      "workflowId" : 10,
-      "workflowVersion" : "0",
-      "blockValues" : {
-        "values" : [ {
-          "id" : 15,
-          "name" : "TstVarone",
-          "multiplicity" : "SINGLE",
-          "parents" : [ 0 ],
-          "loaderType" : "INPUT_LOADER",
-          "children" : [ ],
-          "extractionString" : "id",
-          "inputValueId" : 19,
-          "script" : null,
-          "sourceId" : null,
-          "sourceVersion" : null,
-          "sourceName" : null,
-          "sourceServicePath" : null,
-          "sourceInputVariableModels" : null
-        }, {
-          "id" : 16,
-          "name" : "TstVarTwo",
-          "multiplicity" : "SINGLE",
-          "parents" : [ 0 ],
-          "loaderType" : "INPUT_LOADER",
-          "children" : [ ],
-          "extractionString" : "",
-          "inputValueId" : 15,
-          "script" : null,
-          "sourceId" : null,
-          "sourceVersion" : null,
-          "sourceName" : null,
-          "sourceServicePath" : null,
-          "sourceInputVariableModels" : null
-        } ],
-        "valueCount" : 2
-      }
-    } ],
-    "exitValues" : {
       "values" : [ {
-        "id" : 17,
-        "name" : "FstWorfklowVar",
+        "id" : 11,
+        "name" : "fst",
         "multiplicity" : "SINGLE",
-        "parents" : [ 0 ],
         "loaderType" : "INPUT_LOADER",
-        "children" : [ ],
-        "extractionString" : "id",
-        "inputValueId" : 20,
+        "extractionString" : "",
+        "inputValueId" : 17,
         "script" : null,
         "sourceId" : null,
         "sourceVersion" : null,
         "sourceName" : null,
         "sourceServicePath" : null,
         "sourceInputVariableModels" : null
-      } ],
-      "valueCount" : 1
-    }
+      }, {
+        "id" : 12,
+        "name" : "scd",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "SOURCE_LOADER",
+        "extractionString" : "",
+        "inputValueId" : null,
+        "script" : null,
+        "sourceId" : 6,
+        "sourceVersion" : "0",
+        "sourceName" : "TestSource",
+        "sourceServicePath" : "localhost",
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : 2,
+          "sourceValueName" : "LocationId",
+          "sourceValueMultiplicity" : "SINGLE",
+          "producerVariable" : 17,
+          "extractionString" : ""
+        } ]
+      } ]
+    }, {
+      "id" : 9,
+      "version" : "0",
+      "serviceName" : "localhost",
+      "workflowId" : 10,
+      "workflowVersion" : "0",
+      "values" : [ {
+        "id" : 16,
+        "name" : "TstVarTwo",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "INPUT_LOADER",
+        "extractionString" : "id",
+        "inputValueId" : 19,
+        "script" : null,
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : null
+      }, {
+        "id" : 15,
+        "name" : "TstVarone",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "INPUT_LOADER",
+        "extractionString" : "id",
+        "inputValueId" : 19,
+        "script" : null,
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : null
+      } ]
+    } ],
+    "exitValues" : [ {
+      "id" : 17,
+      "name" : "FstWorfklowVar",
+      "multiplicity" : "SINGLE",
+      "loaderType" : "INPUT_LOADER",
+      "extractionString" : "id",
+      "inputValueId" : 20,
+      "script" : null,
+      "sourceId" : null,
+      "sourceVersion" : null,
+      "sourceName" : null,
+      "sourceServicePath" : null,
+      "sourceInputVariableModels" : null
+    } ]
   } ]
 }

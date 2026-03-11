@@ -45,7 +45,7 @@ public class AnswerOperation implements Operation {
                 blockContext.setState(CURRENT_STATE);
                 blockContext.save();
                 log.info("Answer sent successfully for scenarioId: {}, blockId: {}",
-                        blockContext.getScenarioId(), blockContext.getCurrentBlockId());
+                        blockContext.getScenarioId(), blockContext.getCurrentBlockId().toString());
 
             }
 
@@ -53,7 +53,7 @@ public class AnswerOperation implements Operation {
             public void error(Exception e, MessageResponse messageResponse) {
                 log.error("Failed to send answer for scenarioId: {}, blockId: {}. Error: {}",
                         blockContext.getScenarioId(),
-                        blockContext.getCurrentBlockId(),
+                        blockContext.getCurrentBlockId().toString(),
                         e.getMessage(), e);
                 try {
                     TimeUnit.SECONDS.sleep(2);

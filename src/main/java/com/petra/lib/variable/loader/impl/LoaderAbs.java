@@ -7,11 +7,13 @@ import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Log4j2
 public abstract class LoaderAbs implements ValueLoader {
 
     ThreadController threadController;
@@ -32,9 +34,12 @@ public abstract class LoaderAbs implements ValueLoader {
         if (!context.areValuesLoaded(parents)) {
             return;
         }
+        log.info("Loading variable {}",valueModel.getName());
         threadController.executeUnlimitedPoolTask(() -> {
             Value result = executeLoad(context);
-            context.registerLoadedValue(result);
+            boolean isExit = context.registerLoadedValue(result);
+            log.info("Variable {} loaded", valueModel.getName());
+            if (isExit) return;
             children.forEach(child -> child.load(context));
         });
     }
@@ -51,6 +56,10 @@ public abstract class LoaderAbs implements ValueLoader {
 
     public Long getVariableId() {
         return valueModel.getId();
+    }
+
+    public String getVariableName(){
+        return valueModel.getName();
     }
 
 

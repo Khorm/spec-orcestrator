@@ -42,7 +42,7 @@ public final class RemoteSource extends LoaderAbs {
         //парсинг переменных контекста в переменные соурса
         ValueContainer sourceContainer = ValueContainerFactory.getSimpleContainer();
         for (SourceInputVariableModel sourceInputVariable : sourceInputVariables) {
-            Value toSourceVal = context.getValue(sourceInputVariable.getProdeucerVariable());
+            Value toSourceVal = context.getValue(sourceInputVariable.getProducerVariable());
             String jsonSourceValue = toSourceVal.getExtractedJsonValue(sourceInputVariable.getExtractionString());
 
             ValueModel valueModel = new ValueModel(sourceInputVariable.getSourceVariable(), sourceInputVariable.getSourceValueName(),
@@ -66,16 +66,16 @@ public final class RemoteSource extends LoaderAbs {
     private Value executeNext(Optional<SourceResponseDto> answer, ValueContext context) {
         if (answer.isPresent()) {
             try {
-                String sourceJsonAnswer = answer.get().getConsumerSourceValues();
+                List<ValueModel> sourceAnswer = answer.get().getConsumerSourceResultValue();
                 Value resultValue;
-                if (getValueModel().getExtractionString() != null) {
-                    String json = JsonUtils.getExtractedJsonValue(sourceJsonAnswer, getValueModel().getExtractionString());
+                if (getValueModel().getExtractionString() != null && !getValueModel().getExtractionString().isBlank()) {
+                    String json = JsonUtils.getExtractedJsonValue(sourceAnswer.get(0).getJsonValue(), getValueModel().getExtractionString());
                     ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
                             getValueModel().getMultiplicity(), json);
                     resultValue = ValueFactory.createValue(valueModel);
                 } else {
                     ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
-                            getValueModel().getMultiplicity(), sourceJsonAnswer);
+                            getValueModel().getMultiplicity(), sourceAnswer.get(0).getJsonValue());
                     resultValue = ValueFactory.createValue(valueModel);
                 }
                 return resultValue;

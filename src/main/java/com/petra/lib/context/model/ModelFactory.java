@@ -14,13 +14,13 @@ import java.util.Iterator;
 
 public class ModelFactory {
 
-    public static LocalProducer localProducer(LocalProducerModel localConsumerModel, String currentServiceName, Sender sender,
+    public static LocalProducer localProducer(LocalProducerModel localProducerModel, String currentServiceName, Sender sender,
                                               WorkflowContextRepo workflowContextRepo, ContextRepo contextRepo,
                                               ThreadController threadController) {
-        return new LocalProducer(new Identifier(localConsumerModel.getId(), localConsumerModel.getVersion()),
-                remoteConsumer(currentServiceName, localConsumerModel.getConsumers().iterator(),
+        return new LocalProducer(new Identifier(localProducerModel.getId(), localProducerModel.getVersion()),
+                remoteConsumer(currentServiceName, localProducerModel.getConsumers().iterator(),
                         sender, workflowContextRepo, contextRepo, threadController),
-                contextRepo, VariableFactory.createStartedLoaders(localConsumerModel.getExitValues(), threadController, sender));
+                contextRepo, VariableFactory.createStartedLoaders(localProducerModel.getExitValues(), threadController, sender));
     }
 
     public static RemoteConsumer remoteConsumer(String currentServiceName, Iterator<RemoteConsumerModel> consumerModelIterator, Sender sender,
@@ -31,8 +31,8 @@ public class ModelFactory {
         }
         RemoteConsumerModel remoteConsumerModel = consumerModelIterator.next();
         return new RemoteConsumer(remoteConsumerModel,
-                VariableFactory.createStartedLoaders(remoteConsumerModel.getBlockValues(), threadController, sender),
-                currentServiceName,
+                VariableFactory.createStartedLoaders(remoteConsumerModel.getValues(), threadController, sender),
+                remoteConsumerModel.getServiceName(),
                 remoteConsumer(currentServiceName, consumerModelIterator, sender, workflowContextRepo,
                         contextRepo, threadController),
                 sender, workflowContextRepo);

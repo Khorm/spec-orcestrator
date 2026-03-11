@@ -13,7 +13,7 @@ public class SourceInputVariableModel {
         return sourceVariable;
     }
 
-    public Long getProdeucerVariable() {
+    public Long getProducerVariable() {
         return producerVariable;
     }
 

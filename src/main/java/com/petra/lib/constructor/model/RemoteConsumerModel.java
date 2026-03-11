@@ -11,9 +11,8 @@ public class RemoteConsumerModel {
     private String serviceName;
 
     private Long workflowId;
-
     private String workflowVersion;
-    private Collection<ValueModelDto> blockValues;
+    private Collection<ValueModelDto> values;
 
 
     public Long getId() {

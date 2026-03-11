@@ -54,7 +54,7 @@ public class ValueModelDto {
     public boolean isChildOf(Long variableId){
         if (getLoaderType() == LoaderType.SOURCE_LOADER || getLoaderType() == LoaderType.SCRIPT_LOADER){
             for (SourceInputVariableModel variable : sourceInputVariableModels){
-                if (variable.getProdeucerVariable().equals(variableId)){
+                if (variable.getProducerVariable().equals(variableId)){
                     return true;
                 }
             }

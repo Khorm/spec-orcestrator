@@ -40,38 +40,26 @@ public class HttpSender implements Sender {
                         HttpMethod.POST, entity, String.class);
 
                 if (response.getStatusCode() == HttpStatus.OK) {
-                    threadController.executeLimitedPoolTask(() -> senderCallback.answer(null));
+//                    () -> senderCallback.answer(null)
+                    threadController.executeUnlimitedPoolTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            senderCallback.answer(null);
+                        }
+                    });
 
                 } else {
-                    threadController.executeLimitedPoolTask(()
+                    threadController.executeUnlimitedPoolTask(()
                             -> senderCallback.error(null, new MessageResponse(response.getStatusCode())));
                 }
             } catch (Exception e) {
-                threadController.executeLimitedPoolTask(()
+                e.printStackTrace();
+                threadController.executeUnlimitedPoolTask(()
                         -> senderCallback.error(e, null));
             }
         });
     }
 
-//    @Override
-//    public void answerFromBlock(MessageDto messageDto, String serviceUrl, SenderCallback<Void> senderCallback) {
-//        threadController.executeUnlimitedPoolTask(() -> {
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_JSON);
-//            HttpEntity<MessageDto> entity = new HttpEntity<>(messageDto, headers);
-//
-//            ResponseEntity<String> response
-//                    = restTemplate.exchange("http://" + serviceUrl + "/answer/", HttpMethod.POST, entity, String.class);
-//
-//            if (response.getStatusCode() == HttpStatus.OK) {
-////                    throw new RestClientException(serviceUrl + " connection error " + response.getStatusCode());
-//                threadController.executeLimitedPoolTask(() -> senderCallback.answer(null));
-//
-//            } else {
-//                threadController.executeLimitedPoolTask(() -> senderCallback.error(null));
-//            }
-//        });
-//    }
 
     @Override
     public Optional<SourceResponseDto> sendToSource(SourceRequestDto sourceRequestDto, String serviceUrl) {

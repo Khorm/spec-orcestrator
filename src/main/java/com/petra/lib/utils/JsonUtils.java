@@ -25,7 +25,7 @@ public final class JsonUtils {
             throw new RuntimeException(e);
         }
 
-        String[] extractionArr = extractionString.split(".");
+        String[] extractionArr = extractionString.split("\\.");
         for (String extractValue : extractionArr) {
             rootNode = rootNode.get(extractValue);
             if (rootNode == null) {
@@ -34,11 +34,11 @@ public final class JsonUtils {
                 throw new PetraException(err);
             }
         }
-
-        if (rootNode.isObject() || rootNode.isArray()) {
-            return rootNode.toString();
-        } else {
-            return rootNode.asText();
-        }
+        return rootNode.asText();
+//        if (rootNode.isObject() || rootNode.isArray()) {
+//            return rootNode.toString();
+//        } else {
+//            return rootNode.asText();
+//        }
     }
 }

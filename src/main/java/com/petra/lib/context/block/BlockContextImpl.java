@@ -15,10 +15,8 @@ public class BlockContextImpl implements Context {
     private ContextEntity contextEntity;
     private final ContextRepo contextRepo;
     private ContextState contextState;
-    private ValueContainer values;
+    private ValueContainer outValues;
     private final OperationService blockOperationService;
-
-
 
 
     public BlockContextImpl(ContextEntity contextEntity,
@@ -36,7 +34,7 @@ public class BlockContextImpl implements Context {
 
     @Override
     public synchronized void setOutValues(ValueContainer values) {
-        this.values = values;
+        this.outValues = values;
     }
 
     @Override
@@ -70,8 +68,8 @@ public class BlockContextImpl implements Context {
 
     @Override
     public ValueContainer getContextOutValues() {
-        if (values != null) {
-            return values;
+        if (outValues != null) {
+            return outValues;
         }
         ValueContainer newCont = contextEntity.getOutContextValues();
         return newCont;
@@ -90,7 +88,9 @@ public class BlockContextImpl implements Context {
     @Override
     public void save() {
         contextRepo.updateStateAndValues(contextEntity, getCurrentState(), getContextOutValues());
-        blockOperationService.executeState(this);
+        if (getCurrentState() != ContextState.ANSWERED) {
+            blockOperationService.executeState(this);
+        }
     }
 
     @Override

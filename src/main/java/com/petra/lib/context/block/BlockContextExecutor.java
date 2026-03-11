@@ -50,7 +50,9 @@ public class BlockContextExecutor {
         if (optionalEntity.isEmpty()) {
             BlockType type = consumerMap.get(remoteProducer.getConsumerId()).getBlockType();
             ContextEntity entity = new ContextEntity(scenarioId, remoteProducer, type, ContextState.STARTED,
-                    remoteProducer.getSendValuesContainer(), ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables()));
+                    remoteProducer.getSendValuesContainer(),
+                    ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables()));
+
             context = new BlockContextImpl(entity, contextRepo,
                     type == BlockType.ACTION ? actionOperationService : workflowOperationService);
         }else {
@@ -62,18 +64,6 @@ public class BlockContextExecutor {
     }
 
 
-//    public void loadContext(UUID scenarioId, Identifier consumerId, ValueContainer newOutputValues) {
-//        LocalConsumer consumer = consumerMap.get(consumerId);
-//        Optional<ContextEntity> optionalEntityOpt = contextRepo.findContext(scenarioId, consumer.getConsumerId());
-//        if (optionalEntityOpt.isEmpty()) {
-//            throw new NullPointerException("Context not found " + consumer.getName());
-//        }
-//
-//        ContextEntity entity = optionalEntityOpt.get();
-//        entity.setOutContextValues(newOutputValues);
-//        operationService.executeState(createContext(entity, consumer));
-//    }
-
     public void handleAnswerFromBlock(ValueContainer outputValues, Identifier answeredBlockId,
                                       UUID scenarioId, Identifier workflowId) {
         Optional<ContextEntity> optionalEntity = contextRepo.findContext(scenarioId, workflowId);
@@ -82,17 +72,10 @@ public class BlockContextExecutor {
                     optionalEntity.get().getBlockType() == BlockType.ACTION ? actionOperationService : workflowOperationService);
             LocalProducer localProducer = producerMap.get(workflowId);
             localProducer.answerFromBlock(outputValues, answeredBlockId, context);
+            return;
         }
         throw new NullPointerException("Context not found " + workflowId);
 
     }
 
-//    private Context createContext(ContextEntity entity, LocalConsumer localConsumer) {
-//        return new BlockContextImpl(
-//                entity,
-//                operationService,
-//                transactionManager,
-//                contextRepo,
-//                localConsumer);
-//    }
 }

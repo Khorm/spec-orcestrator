@@ -1,6 +1,7 @@
 package com.petra.lib.context.model;
 
 import com.petra.lib.context.Context;
+import com.petra.lib.context.ContextState;
 import com.petra.lib.context.repo.ContextRepo;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
@@ -31,21 +32,27 @@ public class LocalProducer {
 
     public void answerFromBlock(ValueContainer answerContainer, Identifier answerBlockId, Context context) {
         RemoteConsumer workConsumer = firstConsumer;
-        ConsumerIdentifier consumerIdentifier = new ConsumerIdentifier(answerBlockId, workflowId);
+        ConsumerIdentifier answerConsumerId = new ConsumerIdentifier(answerBlockId, workflowId);
         do {
-            if (workConsumer.getId().equals(consumerIdentifier)) {
+            if (workConsumer.getId().equals(answerConsumerId)) {
                 workConsumer.answer(context.getScenarioId(), answerContainer);
-                workConsumer.next().execute(answerContainer, context);
-                return;
+                if (workConsumer.hasNext()) {
+                    workConsumer.next().execute(answerContainer, context);
+                    return;
+                }
+            }
+            if (!workConsumer.hasNext()){
+                break;
             }
             workConsumer = workConsumer.next();
-        } while (workConsumer.hasNext());
+        } while (true);
 
         //вызывать парсинг из последнего блока в выходные переменные воркфлоу
         valueContextManager.start(answerContainer, context.getScenarioId(), new VariableCallback() {
             @Override
             public void loaded(ValueContainer loadedValues) {
                 context.setOutValues(loadedValues);
+                context.setState(ContextState.EXECUTED);
                 context.save();
 //                operationService.executeState(contextRepo.findContext(scenarioId, workflowId).get());
 

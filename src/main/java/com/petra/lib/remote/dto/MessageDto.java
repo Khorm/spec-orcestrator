@@ -13,7 +13,7 @@ public class MessageDto {
     private List<ValueModel> transmittedValues;
     private Long senderId;
     private String senderVersion;
-    private String senderServiceName;
+    private String senderServiceURL;
     private ExecutionStatus status;
 
     /**
@@ -24,18 +24,18 @@ public class MessageDto {
      * @param transmittedValues
      * @param senderId
      * @param senderVersion
-     * @param senderServiceName - имя сервиса, отправляющего сообщение
+     * @param senderServiceURL - имя сервиса, отправляющего сообщение
      * @param status - результат оработки сообщения
      */
     public MessageDto(UUID scenarioId, Long receiverId, String receiverVersion,
-                      List<ValueModel> transmittedValues, Long senderId, String senderVersion, String senderServiceName, ExecutionStatus status) {
+                      List<ValueModel> transmittedValues, Long senderId, String senderVersion, String senderServiceURL, ExecutionStatus status) {
         this.scenarioId = scenarioId;
         this.receiverId = receiverId;
         this.receiverVersion = receiverVersion;
         this.transmittedValues = transmittedValues;
         this.senderId = senderId;
         this.senderVersion = senderVersion;
-        this.senderServiceName = senderServiceName;
+        this.senderServiceURL = senderServiceURL;
         this.status = status;
     }
 
@@ -70,8 +70,8 @@ public class MessageDto {
         return status;
     }
 
-    public String getSenderServiceName() {
-        return senderServiceName;
+    public String getSenderServiceURL() {
+        return senderServiceURL;
     }
 
     public void setTransmittedValues(List<ValueModel> transmittedValues) {
@@ -87,7 +87,7 @@ public class MessageDto {
                 ", transmittedValues='" + transmittedValues + '\'' +
                 ", senderId=" + senderId +
                 ", senderVersion='" + senderVersion + '\'' +
-                ", senderServiceName='" + senderServiceName + '\'' +
+                ", senderServiceURL='" + senderServiceURL + '\'' +
                 ", status=" + status +
                 '}';
     }

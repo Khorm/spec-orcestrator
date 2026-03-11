@@ -14,7 +14,7 @@ public interface WorkflowContextRepo {
 
     boolean insertContext(WorkflowContextEntity contextEntity);
 
-    //TODO: заблокирвать запись перед апдейтом
+
     boolean updateContext(WorkflowContextEntity contextEntity);
 //
 //    ContextState getState();

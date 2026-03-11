@@ -1,7 +1,10 @@
 package com.petra.lib.context.model;
 
 
+import groovy.transform.ToString;
+
 import java.util.Objects;
+
 
 public class Identifier {
     private final long id;
@@ -36,5 +39,13 @@ public class Identifier {
 
     public String getVersion() {
         return version;
+    }
+
+    @Override
+    public String toString() {
+        return "Identifier{" +
+                "id=" + id +
+                ", version='" + version + '\'' +
+                '}';
     }
 }

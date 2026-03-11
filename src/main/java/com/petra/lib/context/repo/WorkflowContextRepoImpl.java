@@ -38,12 +38,17 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
                         " FROM workflow_context " +
                         " WHERE scenario_id = :scenarioId " +
                         " AND consumer_id = :consumerId " +
-                        " AND consumer_version = :consumerVersion ";
+                        " AND consumer_version = :consumerVersion " +
+                        " AND workflow_id = :workflowId " +
+                        " AND workflow_version = :workflowVersion"
+                ;
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("scenarioId", scenarioId)
                 .addValue("consumerId", consumerIdentifier.getConsumerId().getId())
-                .addValue("consumerVersion", consumerIdentifier.getConsumerId().getVersion());
+                .addValue("consumerVersion", consumerIdentifier.getConsumerId().getVersion())
+                .addValue("workflowId", consumerIdentifier.getWorkflowId().getId())
+                .addValue("workflowVersion", consumerIdentifier.getWorkflowId().getVersion());
 
 
         List<WorkflowContextEntity> result = namedParameterJdbcTemplate.query(sql, params,
@@ -106,15 +111,19 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
 
             // Шаг 1: Выбираем строку с блокировкой
             String selectForUpdateSql = "SELECT state FROM workflow_context " +
-                    "WHERE scenario_id = :scenarioId " +
-                    "  AND consumer_id = :consumerId " +
-                    "  AND consumer_version = :consumerVersion " +
-                    "FOR UPDATE";
+                    " WHERE scenario_id = :scenarioId " +
+                    " AND consumer_id = :consumerId " +
+                    " AND consumer_version = :consumerVersion " +
+                    " AND workflow_id = :workflowId " +
+                    " AND workflow_version = :workflowVersion" +
+                    " FOR UPDATE";
 
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("scenarioId", contextEntity.getScenarioId())
                     .addValue("consumerId", consumerId.getId())
-                    .addValue("consumerVersion", consumerId.getVersion());
+                    .addValue("consumerVersion", consumerId.getVersion())
+                    .addValue("workflowId", identifier.getWorkflowId().getId())
+                    .addValue("workflowVersion", identifier.getWorkflowId().getVersion());
 
             try {
                 String stateResult = template
@@ -130,21 +139,27 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
                         "    result_values = :resultValues " +
                         "WHERE scenario_id = :scenarioId " +
                         "  AND consumer_id = :consumerId " +
-                        "  AND consumer_version = :consumerVersion";
+                        "  AND consumer_version = :consumerVersion " +
+                        " AND workflow_id = :workflowId " +
+                        " AND workflow_version = :workflowVersion";
+
 
                 MapSqlParameterSource updateParams = new MapSqlParameterSource()
                         .addValue("scenarioId", contextEntity.getScenarioId())
                         .addValue("consumerId", consumerId.getId())
                         .addValue("consumerVersion", consumerId.getVersion())
+                        .addValue("workflowId", identifier.getWorkflowId().getId())
+                        .addValue("workflowVersion", identifier.getWorkflowId().getVersion())
                         .addValue("newState", contextEntity.getWorkflowState().name())
-                        .addValue("resultValues", contextEntity.getResultValues().getModels());
+                        .addValue("resultValues", contextEntity.getResultValues().toDBJson());
 
                 int updatedRows = template.update(updateSql, updateParams);
                 return updatedRows > 0;
 
             } catch (Exception e) {
+                e.printStackTrace();
                 return false; // Ошибки доступа, блокировки и т.п.
             }
-        }, Isolation.SERIALIZABLE);
+        });
     }
 }

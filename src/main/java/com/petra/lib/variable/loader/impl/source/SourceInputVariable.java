@@ -15,7 +15,7 @@ class SourceInputVariable {
 
     public SourceInputVariable(SourceInputVariableModel sourceInputVariableModel) {
         this.sourceVariable = sourceInputVariableModel.getSourceVariable();
-        this.currentBlockVariable = sourceInputVariableModel.getProdeucerVariable();
+        this.currentBlockVariable = sourceInputVariableModel.getProducerVariable();
         this.extractionString = sourceInputVariableModel.getExtractionString();
         this.sourceValueName = sourceInputVariableModel.getSourceValueName();
         this.sourceValueMultiplicity = sourceInputVariableModel.getSourceValueMultiplicity();

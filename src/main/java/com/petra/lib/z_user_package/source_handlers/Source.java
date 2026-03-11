@@ -22,6 +22,6 @@ public class Source implements SourceUserHandler {
         Long locationId = userContext.getValue("LocationId", Long.class);
         System.out.println("SOURCE USING locationId " + locationId);
 
-        userContext.setValue("OutVat", new Truck(10L, "Truck name"));
+        userContext.setValue("Truck", new Truck(10L, "Truck name"));
     }
 }

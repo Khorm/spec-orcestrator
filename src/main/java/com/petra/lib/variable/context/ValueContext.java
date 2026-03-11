@@ -28,8 +28,8 @@ public class ValueContext {
                         Collection<ValueLoader> valueLoaders) {
         this.blockContextValues = blockContextValues;
         this.variableCallback = variableCallback;
-        this.loadedValuesManager = new LoadedValuesManager(blockContextValues.getModels().stream()
-                .mapToLong(ValueModel::getId).boxed().collect(Collectors.toSet()));
+        this.loadedValuesManager = new LoadedValuesManager(valueLoaders.stream()
+                .mapToLong(ValueLoader::getVariableId).boxed().collect(Collectors.toSet()));
         this.scenarioId = scenarioId;
         this.valueLoaders = valueLoaders.stream().collect(Collectors.toMap(ValueLoader::getVariableId, Function.identity()));
         valueContextValues = ValueContainerFactory.getSimpleContainer();
@@ -44,12 +44,14 @@ public class ValueContext {
         return ret;
     }
 
-    public synchronized void registerLoadedValue(Value value) {
+    public synchronized boolean registerLoadedValue(Value value) {
         valueContextValues.setValue(value);
         loadedValuesManager.registerLoadedValue(value.getId());
         if (loadedValuesManager.areValuesLoaded()) {
             variableCallback.loaded(valueContextValues);
+            return true;
         }
+        return false;
     }
 
     public ValueLoader getValueLoader(Long valueId) {

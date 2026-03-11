@@ -1,7 +1,12 @@
 package com.petra.lib.remote.dto;
 
+import com.petra.lib.variable.container.ValueModel;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 import java.util.UUID;
 
+@NoArgsConstructor
 public class SourceResponseDto {
     private UUID scenarioId;
 
@@ -9,23 +14,19 @@ public class SourceResponseDto {
 
     private String consumerSourceVersion ;
 
-    private String consumerSourceValues;
-
-    private Long producerBlockId ;
-
-    private String producerVersion ;
+    private List<ValueModel> consumerSourceResultValue;
 
 
-    public SourceResponseDto(){}
+
 
     public SourceResponseDto(UUID scenarioId, Long consumerSourceId, String consumerSourceVersion,
-                             String consumerSourceValues, Long producerBlockId, String producerVersion) {
+                             List<ValueModel> consumerSourceResultValue) {
         this.scenarioId = scenarioId;
         this.consumerSourceId = consumerSourceId;
         this.consumerSourceVersion = consumerSourceVersion;
-        this.consumerSourceValues = consumerSourceValues;
-        this.producerBlockId = producerBlockId;
-        this.producerVersion = producerVersion;
+        this.consumerSourceResultValue = consumerSourceResultValue;
+//        this.producerBlockId = producerBlockId;
+//        this.producerVersion = producerVersion;
 //        this.executionStatus = executionStatus;
     }
 
@@ -41,15 +42,15 @@ public class SourceResponseDto {
         return consumerSourceVersion;
     }
 
-    public String getConsumerSourceValues() {
-        return consumerSourceValues;
+    public List<ValueModel> getConsumerSourceResultValue() {
+        return consumerSourceResultValue;
     }
 
-    public Long getProducerBlockId() {
-        return producerBlockId;
-    }
-
-    public String getProducerVersion() {
-        return producerVersion;
-    }
+//    public Long getProducerBlockId() {
+//        return producerBlockId;
+//    }
+//
+//    public String getProducerVersion() {
+//        return producerVersion;
+//    }
 }

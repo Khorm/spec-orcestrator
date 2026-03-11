@@ -13,7 +13,8 @@ public class TestActionHandler implements UserActionHandler {
 
         System.out.println("FstAction");
         System.out.println("SOURCE USING FstIn " + variableUserActionContext.getValue("fst", Long.class));
-        variableUserActionContext.setValue("FstOut", "hello");
+        System.out.println("SOURCE USING ScdIn " + variableUserActionContext.getValue("scd", Truck.class));
+        variableUserActionContext.setValue("OutFstVal", new Location(1L, "Location one"));
     }
 //    @Override
 //    public void execute(VariableUserContext variableUserContext) {

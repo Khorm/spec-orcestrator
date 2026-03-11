@@ -52,7 +52,7 @@ public class ContextRepoImpl implements ContextRepo {
                 .addValue("producerId", context.getProducer().getId())
                 .addValue("producerVersion", context.getProducer().getVersion())
                 .addValue("producerServiceName", context.getProducer().getServiceName())
-                .addValue("producerValues", context.getInputContextValues().toJson());
+                .addValue("producerValues", context.getInputContextValues().toDBJson());
 
         namedParameterJdbcTemplate.update(sql, insertParams);
     }
@@ -117,7 +117,7 @@ public class ContextRepoImpl implements ContextRepo {
                     "WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND scenario_id = :scenarioId";
             SqlParameterSource updateParams = new MapSqlParameterSource()
                     .addValue("state", state.name())
-                    .addValue("values", outValues.toJson())
+                    .addValue("values", outValues.toDBJson())
                     .addValue("consumerId", consumer.getId())
                     .addValue("consumerVersion", consumer.getVersion())
                     .addValue("scenarioId", entity.getScenarioId());
