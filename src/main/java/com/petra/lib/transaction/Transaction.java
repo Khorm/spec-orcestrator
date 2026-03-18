@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 public class Transaction {
     private final TransactionStatus transactionStatus;
     private final JpaTransactionManager jpaTransactionManager;
-    private boolean commitTransaction = true;
+//    private boolean commitTransaction = true;
 
     public Transaction(TransactionStatus transactionStatus, JpaTransactionManager jpaTransactionManager) {
         this.transactionStatus = transactionStatus;
@@ -19,7 +19,11 @@ public class Transaction {
     }
 
     public void rollback(){
-        commitTransaction = false;
+        jpaTransactionManager.rollback(transactionStatus);
+    }
+
+    public void commit(){
+        jpaTransactionManager.commit(transactionStatus);
     }
 
     public DataSource getDataSource(){
@@ -30,9 +34,9 @@ public class Transaction {
         return jpaTransactionManager.getEntityManagerFactory();
     }
 
-    boolean isTransactionSuccess(){
-        return commitTransaction;
-    }
+//    boolean isTransactionSuccess(){
+//        return commitTransaction;
+//    }
 
 
 }

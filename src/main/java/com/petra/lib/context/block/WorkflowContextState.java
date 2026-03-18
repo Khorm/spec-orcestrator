@@ -1,4 +1,4 @@
-package com.petra.lib.context.workflow;
+package com.petra.lib.context.block;
 
 public enum WorkflowContextState {
     START,

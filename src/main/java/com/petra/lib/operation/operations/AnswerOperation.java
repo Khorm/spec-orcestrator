@@ -42,8 +42,13 @@ public class AnswerOperation implements Operation {
         SenderCallback senderCallback = new SenderCallback() {
             @Override
             public void answer(MessageResponse messageResponse) {
-                blockContext.setState(CURRENT_STATE);
-                blockContext.save();
+                blockContext.lockAndLoad();
+                boolean setStateResult = blockContext.setState(CURRENT_STATE);
+                if (setStateResult){
+                    blockContext.unlockAndSave();
+                }else {
+                    blockContext.unlockAndDiscard();
+                }
                 log.info("Answer sent successfully for scenarioId: {}, blockId: {}",
                         blockContext.getScenarioId(), blockContext.getCurrentBlockId().toString());
 

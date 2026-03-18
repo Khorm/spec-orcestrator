@@ -27,10 +27,13 @@ public class BlockUserOperation implements Operation {
     private final ContextState CURRENT_STATE = ContextState.EXECUTED;
 
     private final Map<Identifier, UserActionHandler> userHandlers;
+    private final OperationService operationService;
 
-    public BlockUserOperation(TransactionManager transactionManager, Map<Identifier, UserActionHandler> userHandlers) {
+    public BlockUserOperation(TransactionManager transactionManager, Map<Identifier,
+            UserActionHandler> userHandlers, OperationService operationService) {
         this.transactionManager = transactionManager;
         this.userHandlers = userHandlers;
+        this.operationService = operationService;
         log.debug("BlockUserOperation initialized with {} user handlers", userHandlers.size());
     }
 
@@ -41,6 +44,7 @@ public class BlockUserOperation implements Operation {
      * @param blockContext - current execution context
      */
     public void execute(Context blockContext) {
+        UserActionHandler userActionHandler = userHandlers.get(blockContext.getCurrentBlockId());
         transactionManager.executeInTransaction(transaction -> {
             try {
                 log.debug("Starting transaction for BlockUserOperation");
@@ -50,20 +54,26 @@ public class BlockUserOperation implements Operation {
 
                 UserActionContextImpl userContext = new UserActionContextImpl(entityManager,
                         blockContext.getContextInputValues().getValues(), blockContext.getContextOutValues());
-                userHandlers.get(blockContext.getCurrentBlockId()).execute(userContext);
-                blockContext.setState(CURRENT_STATE);
+                userActionHandler.execute(userContext);
+                blockContext.lockAndLoad();
+                boolean isResultSet = blockContext.setState(CURRENT_STATE);
+                if (!isResultSet){
+                    blockContext.saveRepeat();
+                    operationService.executeState(blockContext);
+                    return;
+                }
                 blockContext.setOutValues(userContext.getOutputValues());
-                blockContext.save();
+                blockContext.unlockAndSave();
                 log.debug("Context saved successfully for scenarioId: {}", blockContext.getScenarioId());
+                operationService.executeState(blockContext);
 
             } catch (Exception e) {
                 log.error("Exception occurred during BlockUserOperation execution for scenarioId: {}, blockId: {}: {}",
                         blockContext.getScenarioId(), blockContext.getCurrentBlockId(), e.getMessage(), e);
 
                 blockContext.saveError(e);
-//                operationService.executeState(blockContext);
             }
-        }, Isolation.SERIALIZABLE);
+        }, userActionHandler.getTransactionIsolationLevel());
 
     }
 

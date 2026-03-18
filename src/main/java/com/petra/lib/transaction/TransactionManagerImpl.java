@@ -25,17 +25,20 @@ class TransactionManagerImpl implements TransactionManager {
             transactionAccept(transactionStatus, transaction);
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
             jpaTransactionManager.rollback(transactionStatus);
-            throw new RuntimeException(e);
+            throw e;
         }
-
     }
 
 
     @Override
     public <T> T executeInTransaction(TransactionCallable<T> task) {
         return executeInTransaction(task, Isolation.READ_COMMITTED);
+    }
+
+    @Override
+    public <T> T executeInTransaction(TransactionCallable<T> task, Transaction transaction) {
+        return task.run(transaction);
     }
 
     @Override
@@ -51,20 +54,31 @@ class TransactionManagerImpl implements TransactionManager {
             transactionAccept(transactionStatus, transaction);
         } catch (Exception e) {
             jpaTransactionManager.rollback(transactionStatus);
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw e;
         }
     }
+
+    @Override
+    public void executeInTransaction(TransactionRunnable task, Transaction transaction) {
+        task.run(transaction);
+    }
+
+    @Override
+    public Transaction openNewTransaction() {
+        DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+        definition.setIsolationLevel(TransactionDefinition.ISOLATION_DEFAULT);
+        definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        TransactionStatus transactionStatus = jpaTransactionManager.getTransaction(definition);
+
+        return new Transaction(transactionStatus, jpaTransactionManager);
+    }
+
 
     public JpaTransactionManager getJpaTransactionManager() {
         return jpaTransactionManager;
     }
 
     private void transactionAccept(TransactionStatus transactionStatus, Transaction transaction ){
-        if (transaction.isTransactionSuccess()){
-            jpaTransactionManager.commit(transactionStatus);
-        }else {
-            jpaTransactionManager.rollback(transactionStatus);
-        }
+        jpaTransactionManager.commit(transactionStatus);
     }
 }

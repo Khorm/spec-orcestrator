@@ -1,33 +1,21 @@
 package com.petra.lib.context.workflow;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
-import com.petra.lib.context.model.LocalProducer;
-import com.petra.lib.context.model.RemoteConsumer;
-import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.context.ValueContextManager;
+import com.petra.lib.context.block.WorkflowContextState;
+import com.petra.lib.context.model.ConsumerIdentifier;
 
-import java.util.Optional;
 import java.util.UUID;
 
-@Deprecated
-interface WorkflowContext extends Context {
+public interface WorkflowContext {
     UUID getScenarioId();
 
-    void setState(ValueContainer values, ContextState executedState);
+    boolean setState(WorkflowContextState executedState);
+    boolean create();
+    boolean lockAndLoad();
+    void unlockAndSave();
+    void unlockAndDiscard();
 
-    LocalProducer getLocalProducer();
+    WorkflowContextState getState();
 
-    RemoteConsumer getRemoteConsumer();
+    ConsumerIdentifier getIdentifier();
 
-    ValueContainer getWorkflowInputValues();
-
-    ValueContainer getWorkflowOutputValues();
-
-    Optional<RemoteConsumer> getNextConsumer();
-
-    ValueContextManager getLastWorkflowBlockOuterParser();
-
-
-//    WorkflowContextExecutor getExecutor();
 }

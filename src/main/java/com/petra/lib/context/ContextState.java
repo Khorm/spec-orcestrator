@@ -2,24 +2,25 @@ package com.petra.lib.context;
 
 public enum ContextState {
 
-    //контекст только создан и не заполнен
-//    CREATING,
-
-    //начало исполнения воркфлоу
-   STARTED,
-
-    //происходит загрузка переменных (ЗАГРУЖАЕТСЯ БЕЗ СТАТУСА)
-//    WORKFLOW_LOADING_VARIABLES,
+    //блок выполняет подтверждение о выполнении
+    ANSWERED(null),
 
     //воркфлоу выполнила все входящие в нее блоки
-   EXECUTED,
+    EXECUTED(ANSWERED),
 
-    /**
-     * Response after execution
-     */
-//    ACTIVITY_EXECUTING,
+    //начало исполнения воркфлоу
+    STARTED(EXECUTED),
 
-    //блок выполняет подтверждение о выполнении
-    ANSWERED,
+    ;
+
+    private final ContextState next;
+
+    ContextState(ContextState next){
+        this.next = next;
+    }
+
+    public ContextState getNext(){
+        return next;
+    }
 
 }

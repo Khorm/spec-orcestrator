@@ -36,7 +36,7 @@ public class PetraController {
         Identifier workflowId = new Identifier(messageDto.getReceiverId(), messageDto.getReceiverVersion());
 
         blockContextExecutor.handleAnswerFromBlock(ValueContainerFactory.getSimpleContainer(messageDto.getTransmittedValues()),
-                blockId, messageDto.getScenarioId(), workflowId);
+                blockId, messageDto.getScenarioId(), workflowId, messageDto.getStatus());
     }
 
     private RemoteProducer createProducer(MessageDto messageDto) {

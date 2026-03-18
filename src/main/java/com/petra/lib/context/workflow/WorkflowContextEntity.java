@@ -1,36 +1,49 @@
 package com.petra.lib.context.workflow;
 
+import com.petra.lib.context.block.WorkflowContextState;
 import com.petra.lib.context.model.ConsumerIdentifier;
-import com.petra.lib.operation.WorkflowOperationService;
-import com.petra.lib.variable.container.ValueContainer;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
-
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
 public class WorkflowContextEntity {
 
-    private final ConsumerIdentifier consumerIdentifier;
-    private final UUID scenarioId;
-    private WorkflowContextState workflowState = WorkflowContextState.START;
-    private ValueContainer resultValues;
+    final ConsumerIdentifier consumerIdentifier;
+    final UUID scenarioId;
+
+    WorkflowContextState workflowState = WorkflowContextState.START;
+    boolean areWorkflowStateChanged;
+
+//    ValueContainer resultValues;
+//    boolean areResultValuesChanged;
+
+
+//    final ValueContainer inputValues;
+
 
     public WorkflowContextEntity(ConsumerIdentifier consumerIdentifier, UUID scenarioId) {
         this.consumerIdentifier = consumerIdentifier;
         this.scenarioId = scenarioId;
+//        this.inputValues = inputValues;
     }
 
 
-    public ValueContainer getResultValues() {
-        return resultValues;
-    }
-
-    public UUID getScenarioId() {
-        return scenarioId;
-    }
-
-    public void setResultValues(ValueContainer resultValues) {
-        this.resultValues = resultValues;
-    }
+//    public ValueContainer getInputValues() {
+//        return resultValues;
+//    }
+//
+//    public UUID getScenarioId() {
+//        return scenarioId;
+//    }
+//
+//    void setResultValues(ValueContainer resultValues) {
+//        this.resultValues = resultValues;
+//        areResultValuesChanged = true;
+//    }
 
     public WorkflowContextState getWorkflowState() {
         return workflowState;
@@ -38,7 +51,7 @@ public class WorkflowContextEntity {
 
     public void setWorkflowState(WorkflowContextState workflowState) {
         this.workflowState = workflowState;
-
+        areWorkflowStateChanged = true;
     }
 
     public ConsumerIdentifier getConsumerIdentifier() {

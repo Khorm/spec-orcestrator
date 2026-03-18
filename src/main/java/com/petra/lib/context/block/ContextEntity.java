@@ -9,10 +9,16 @@ import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.value.Value;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
 public class ContextEntity {
     /**
      * АЙДИ бизнеспроцесса
@@ -26,22 +32,27 @@ public class ContextEntity {
      */
     private final ValueContainer inputContextValues;
 
+    @Getter
     private final BlockType blockType;
 
     /**
      * Список исходящих переменных контекста
      */
     private final ValueContainer outContextValues;
+    boolean valuesChanged;
 
     /**
      * Стейт в котором находтся котекст
      */
     private ContextState state;
+    boolean areStateChanged;
 
     /**
      * Результат выполнения
      */
     private ExecutionStatus executionStatus = ExecutionStatus.OK;
+    boolean areExecStatusChanged;
+
 
 
     public ContextEntity(UUID scenarioId,
@@ -69,56 +80,33 @@ public class ContextEntity {
         this.blockType = blockType;
         this.inputContextValues = inputContextValues;
         this.state = state;
-        this.outContextValues = outContextValues;
+        this.outContextValues = Optional.ofNullable(outContextValues).orElse(ValueContainerFactory.getSimpleContainer());
     }
 
-    public UUID getScenarioId() {
-        return scenarioId;
-    }
-
-    public RemoteProducer getProducer() {
-        return producer;
-    }
 
     public Identifier getConsumerId() {
         return producer.getConsumerId();
     }
 
-    public ValueContainer getInputContextValues() {
-        return inputContextValues;
-    }
 
-    public ContextState getState() {
-        return state;
-    }
-
-    public ExecutionStatus getExecutionStatus() {
-        return executionStatus;
-    }
-
-    public ValueContainer getOutContextValues() {
-        return outContextValues;
-    }
-
-    public void setState(ContextState state) {
+    void setState(ContextState state) {
         this.state = state;
+        areStateChanged = true;
     }
 
 
-    public void setExecutionStatus(ExecutionStatus executionStatus) {
+    void setExecutionStatus(ExecutionStatus executionStatus) {
         this.executionStatus = executionStatus;
+        areExecStatusChanged = true;
     }
 
 
-
-    public BlockType getBlockType() {
-        return blockType;
-    }
-
-
-    public void setOutContextValues(ValueContainer outValues) {
+    void setOutContextValues(ValueContainer outValues) {
         for(Value value : outValues.getValues()) {
             outContextValues.setValue(value);
         }
+        valuesChanged = true;
     }
+
+
 }

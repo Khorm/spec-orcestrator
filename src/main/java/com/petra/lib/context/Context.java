@@ -1,5 +1,6 @@
 package com.petra.lib.context;
 
+import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.RemoteProducer;
@@ -8,7 +9,7 @@ import com.petra.lib.variable.container.ValueContainer;
 import java.util.UUID;
 
 public interface Context {
-    void setState(ContextState contextState);
+    boolean setState(ContextState contextState);
 
     void setOutValues(ValueContainer values);
 
@@ -28,6 +29,15 @@ public interface Context {
 
     String getProducerServiceName();
 
-    void save();
+    void unlockAndSave();
+
     void saveError(Exception e);
+    void saveRepeat();
+    boolean lockAndLoad();
+    void unlockAndDiscard();
+
+    BlockType getBlockType();
+
+    boolean create();
+    void load();
 }

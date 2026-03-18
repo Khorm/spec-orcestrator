@@ -3,8 +3,12 @@ package com.petra.lib.constructor;
 import com.petra.lib.constructor.model.ConstructorModel;
 import com.petra.lib.constructor.model.LocalSourceModel;
 import com.petra.lib.context.block.BlockContextExecutor;
+import com.petra.lib.context.block.ContextService;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.model.LocalSource;
+import com.petra.lib.context.repo.ContextRepo;
+import com.petra.lib.context.repo.RepoFactory;
+import com.petra.lib.context.repo.WorkflowContextRepo;
 import com.petra.lib.context.source.SourceContextExecutor;
 import com.petra.lib.context.source.SourceUserHandler;
 import com.petra.lib.controller.PetraController;
@@ -32,10 +36,13 @@ public class Constructor {
 
         ThreadController threadController = new ThreadController(petraProperties.getThreadCount());
         Sender sender = new HttpSender(threadController);
+        ContextRepo contextRepo = RepoFactory.createBlockRepo(transactionManager);
+        WorkflowContextRepo workflowContextRepo = RepoFactory.createWorkflowRepo(transactionManager);
 
+        ContextService contextService = new ContextService(transactionManager, contextRepo, workflowContextRepo);
         BlockContextExecutor blockContextExecutor = createBlockContextExecutor(constructorModel.getProducers(),
                 constructorModel.getConsumers(), transactionManager,
-                threadController, sender, petraProperties.getServiceName(), userActionHandlerMap);
+                threadController, sender, petraProperties.getServiceName(), userActionHandlerMap, contextService, contextRepo);
 
         SourceContextExecutor sourceContextExecutor = createSourceContextExecutor(constructorModel.getSources(),
                 jpaTransactionManager.getEntityManagerFactory(), sourceUserHandlerMap);

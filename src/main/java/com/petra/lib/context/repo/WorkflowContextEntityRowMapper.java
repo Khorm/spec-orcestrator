@@ -2,11 +2,10 @@ package com.petra.lib.context.repo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.context.block.ContextEntity;
 import com.petra.lib.context.model.ConsumerIdentifier;
 import com.petra.lib.context.model.Identifier;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
-import com.petra.lib.context.workflow.WorkflowContextState;
+import com.petra.lib.context.block.WorkflowContextState;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.container.ValueModel;
 import org.springframework.dao.DataAccessException;
@@ -57,13 +56,13 @@ public class WorkflowContextEntityRowMapper implements RowMapper<WorkflowContext
             entity.setWorkflowState(WorkflowContextState.valueOf(stateStr));
         }
 
-        String resultValuesJson = rs.getString("result_values");
-        ObjectMapper oj = new ObjectMapper();
-        List<ValueModel> resultValues = oj.readValue(resultValuesJson, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
-
-        if (resultValuesJson != null) {
-            entity.setResultValues(ValueContainerFactory.getImmutableContainer(resultValues));
-        }
+//        String resultValuesJson = rs.getString("result_values");
+//        ObjectMapper oj = new ObjectMapper();
+//        List<ValueModel> resultValues = oj.readValue(resultValuesJson, oj.getTypeFactory().constructCollectionType(List.class, ValueModel.class));
+//
+//        if (resultValuesJson != null) {
+//            entity.setResultValues(ValueContainerFactory.getImmutableContainer(resultValues));
+//        }
 
         return entity;
     }

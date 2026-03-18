@@ -4,6 +4,7 @@ import com.petra.lib.operation.operations.executor.UserActionContext;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 //import com.petra.lib.annotation.WorkflowHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 
 //@WorkflowHandler(name = "test_action_1")
 //@Service
@@ -11,6 +12,11 @@ public class ActionActionHandler implements UserActionHandler {
     @Override
     public void execute(UserActionContext variableUserActionContext) {
         variableUserActionContext.getValue("variableTwo", String.class);
+    }
+
+    @Override
+    public Isolation getTransactionIsolationLevel() {
+        return null;
     }
 //    @Override
 //    public void execute(VariableUserContext variableUserContext) {

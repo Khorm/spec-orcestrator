@@ -12,10 +12,10 @@ import java.util.Map;
 /**
  * Отвечает за вызов операций переключающий стейты
  */
-public abstract class OperationService {
+public class OperationService {
     private final Map<ContextState, Operation> operationsByStates = new HashMap<>();
     private final ThreadController threadController;
-    private final List<ContextState> executingStates = new ArrayList<>();
+//    private final List<ContextState> executingStates = new ArrayList<>();
 
     OperationService(ThreadController threadController) {
         this.threadController = threadController;
@@ -26,7 +26,7 @@ public abstract class OperationService {
         executeState(blockContext, getNextState(blockContext.getCurrentState()));
     }
 
-    private void executeState(Context blockContext, ContextState state) {
+    private synchronized void executeState(Context blockContext, ContextState state) {
         threadController.executeUnlimitedPoolTask(() -> {
             try {
                 operationsByStates.get(state).execute(blockContext);
@@ -39,29 +39,30 @@ public abstract class OperationService {
 
     public void addOperation(Operation operation){
         operationsByStates.put(operation.getState(), operation);
-        executingStates.add(operation.getState());
+//        executingStates.add(operation.getState());
     }
 
 
     private ContextState getNextState(ContextState currentState) {
-        if (currentState == ContextState.ANSWERED) {
-            return null;
-        }
-
-        if (currentState == ContextState.STARTED) {
-            for (ContextState state : executingStates) {
-                if (state == ContextState.EXECUTED){
-                    return state;
-                }
-            }
-        }
-
-        for (int i = 0; i < executingStates.size() ; i++) {
-            if (executingStates.get(i) == currentState) {
-                return executingStates.get(i + 1);
-            }
-        }
-        throw new NullPointerException();
+        return currentState.getNext();
+//        if (currentState == ContextState.ANSWERED) {
+//            return null;
+//        }
+//
+//        if (currentState == ContextState.STARTED) {
+//            for (ContextState state : executingStates) {
+//                if (state == ContextState.EXECUTED){
+//                    return state;
+//                }
+//            }
+//        }
+//
+//        for (int i = 0; i < executingStates.size() ; i++) {
+//            if (executingStates.get(i) == currentState) {
+//                return executingStates.get(i + 1);
+//            }
+//        }
+//        throw new NullPointerException();
     }
 
 }
