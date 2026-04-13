@@ -1,8 +1,9 @@
 package com.petra.lib.operation.operations;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
+import com.petra.lib.context.block.Context;
+import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.operation.Operation;
+import com.petra.lib.operation.OperationService;
 import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.remote.SenderCallback;
@@ -27,7 +28,7 @@ public class AnswerOperation implements Operation {
     }
 
     @Override
-    public void execute(Context blockContext) {
+    public void execute(Context blockContext, OperationService operationService) {
         MessageDto messageDto = new MessageDto(
                 blockContext.getScenarioId(),
                 blockContext.getProducer().getId(),

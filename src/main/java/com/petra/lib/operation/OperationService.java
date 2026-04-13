@@ -1,12 +1,11 @@
 package com.petra.lib.operation;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
+import com.petra.lib.context.block.Context;
+import com.petra.lib.context.enums.ContextState;
+import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.thread.ThreadController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +14,6 @@ import java.util.Map;
 public class OperationService {
     private final Map<ContextState, Operation> operationsByStates = new HashMap<>();
     private final ThreadController threadController;
-//    private final List<ContextState> executingStates = new ArrayList<>();
 
     OperationService(ThreadController threadController) {
         this.threadController = threadController;
@@ -27,11 +25,17 @@ public class OperationService {
     }
 
     private synchronized void executeState(Context blockContext, ContextState state) {
+        if (state == null) return;
         threadController.executeUnlimitedPoolTask(() -> {
             try {
-                operationsByStates.get(state).execute(blockContext);
+                operationsByStates.get(state).execute(blockContext, this);
             } catch (Exception e) {
-                blockContext.saveError(e);
+                blockContext.lockAndLoad();
+                boolean stateResult = blockContext.setState(ContextState.EXECUTED);
+                if (stateResult) {
+                    blockContext.setExecutionStatus(ExecutionStatus.ERROR);
+                }
+                blockContext.unlockAndSave();
                 executeState(blockContext);
             }
         });

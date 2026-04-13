@@ -1,13 +1,9 @@
 package com.petra.lib.variable.loader.impl.source;
 
-import com.petra.lib.PetraException;
 import com.petra.lib.remote.dto.SourceResponseDto;
 import com.petra.lib.thread.ThreadController;
-import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.enums.Multiplicity;
-import com.petra.lib.variable.value.Value;
-import com.petra.lib.variable.value.ValueFactory;
 
 import java.util.Optional;
 

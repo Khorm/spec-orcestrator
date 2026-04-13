@@ -1,6 +1,6 @@
 package com.petra.lib.variable.container;
 
-import com.petra.lib.constructor.model.ValueDto;
+import com.petra.lib.constructor.model.ValueModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,22 +12,22 @@ public final class ValueContainerFactory {
         return new ValueContainerImpl();
     }
 
-    public static ValueContainer getSimpleContainer(List<ValueDto> jsonValues) {
-        if (jsonValues != null && !jsonValues.isEmpty()) {
-            Collection<ValueModel> valueModels = new ArrayList<>();
-            for (ValueDto valueDto : jsonValues) {
-                valueModels.add(new ValueModel(valueDto.getId(), valueDto.getName(), valueDto.getMultiplicityEnm(),null ));
+    public static ValueContainer getSimpleContainer(List<ValueModel> models) {
+        if (models != null && !models.isEmpty()) {
+            Collection<ValueDto> valueDtos = new ArrayList<>();
+            for (ValueModel valueModel : models) {
+                valueDtos.add(new ValueDto(valueModel.getId(), valueModel.getName(), valueModel.getMultiplicityEnm(),null ));
             }
-            return new ValueContainerImpl(valueModels);
+            return new ValueContainerImpl(valueDtos);
         } else {
             return new ValueContainerImpl();
         }
     }
 
 
-    public static ValueContainer getSimpleContainer(Collection<ValueModel> models){
-        if (models != null) {
-            return new ValueContainerImpl(models);
+    public static ValueContainer getSimpleContainer(Collection<ValueDto> dtos){
+        if (dtos != null) {
+            return new ValueContainerImpl(dtos);
         }else {
             return new ValueContainerImpl();
         }
@@ -37,7 +37,7 @@ public final class ValueContainerFactory {
         return new ImmutableValueContainer(valueContainer);
     }
 
-    public static ValueContainer getImmutableContainer(List<ValueModel> jsonValues) {
+    public static ValueContainer getImmutableContainer(List<ValueDto> jsonValues) {
         return new ImmutableValueContainer(getSimpleContainer(jsonValues));
     }
 

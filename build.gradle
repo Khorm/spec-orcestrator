@@ -1,7 +1,7 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.10'
+//	id 'org.springframework.boot' version '2.7.10'
 	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-	id 'java'
+	id 'java-library'
 }
 
 group = 'com.petra'
@@ -24,22 +24,28 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	api 'org.springframework.boot:spring-boot-starter-data-jdbc:2.7.10'
+    api 'org.springframework.boot:spring-boot-starter-jdbc:2.7.10'
 //	implementation 'org.springframework.kafka:spring-kafka'
 	// https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all
-	implementation("org.codehaus.groovy:groovy-all:3.0.24")
-	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'//, version: '2.7.10'
+    api "org.codehaus.groovy:groovy-all:3.0.24"
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.7.10'
 //	implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.6'
 
-	implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.6.15.Final'
-	implementation group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.6.15.Final'
+    api group: 'org.hibernate', name: 'hibernate-core', version: '5.6.15.Final'
+    api group: 'org.hibernate', name: 'hibernate-entitymanager', version: '5.6.15.Final'
 
-	implementation group: 'org.postgresql', name: 'postgresql', version: '42.6.0'
+    api group: 'org.postgresql', name: 'postgresql', version: '42.6.0'
 
-	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'//, version: '2.7.10'
-	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    api group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '2.7.10'
+    api 'org.springframework.boot:spring-boot-starter-log4j2:2.7.10'
 
+    // Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
+//    api("org.springframework.boot:spring-boot-starter-actuator:2.7.10")
+    api "org.springframework.boot:spring-boot-starter-actuator:2.7.10"
+
+    // Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure
+    api "org.springframework.boot:spring-boot-autoconfigure:2.7.10"
 
 
 //	implementation group: 'org.nanohttpd', name: 'nanohttpd', version: '2.3.1'
@@ -47,13 +53,13 @@ dependencies {
 //	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core'//, version: '2.14.1'
 //	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'//, version: '2.14.1'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.20.1'
+    api 'com.fasterxml.jackson.core:jackson-core:2.20.1'
 
 
-	compileOnly 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
 	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.10'
 //	testImplementation 'org.springframework.kafka:spring-kafka-test'
 
 
@@ -62,6 +68,6 @@ dependencies {
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
+//tasks.named('test') {
+//	useJUnitPlatform()
+//}

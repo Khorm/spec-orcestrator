@@ -1,10 +1,12 @@
 package com.petra.lib.context.workflow;
 
-import com.petra.lib.context.block.WorkflowContextState;
-import com.petra.lib.context.model.ConsumerIdentifier;
-import com.petra.lib.context.repo.WorkflowContextRepo;
+import com.petra.lib.context.enums.WorkflowContextState;
+import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
+import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.variable.container.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerFactory;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -19,15 +21,15 @@ public class WorkflowContextImpl implements WorkflowContext {
     Transaction transaction;
     final TransactionManager transactionManager;
     final UUID scenarioId;
-    final ConsumerIdentifier consumerIdentifier;
+    final Identifier workflowId;
 
 
     public WorkflowContextImpl(WorkflowContextRepo workflowContextRepo, TransactionManager transactionManager,
-                               UUID scenarioId, ConsumerIdentifier consumerIdentifier) {
+                               UUID scenarioId, Identifier workflowId) {
         this.workflowContextRepo = workflowContextRepo;
         this.transactionManager = transactionManager;
         this.scenarioId = scenarioId;
-        this.consumerIdentifier = consumerIdentifier;
+        this.workflowId = workflowId;
     }
 
 
@@ -47,39 +49,35 @@ public class WorkflowContextImpl implements WorkflowContext {
         return true;
     }
 
-//    @Override
-//    public ValueContainer getInputValues() {
-//        return entity.getInputValues();
-//    }
-//
-//    @Override
-//    public void setInputValues(ValueContainer resultValues) {
-//        entity.setResultValues(resultValues);
-//    }
-
     @Override
-    public ConsumerIdentifier getIdentifier() {
-        return entity.getConsumerIdentifier();
+    public ValueContainer getContextValues() {
+        return entity.getContextValues();
     }
 
     public boolean create() {
+        transaction = transactionManager.openNewTransaction();
+        entity = new WorkflowContextEntity(workflowId, scenarioId, ValueContainerFactory.getSimpleContainer(),
+                WorkflowContextState.START);
         boolean result = workflowContextRepo.insertContext(entity, transaction);
         entity = null;
+        transaction.commit();
+        transaction = null;
         return result;
     }
 
     public boolean lockAndLoad() {
-        if (transaction != null) {
-            throw new IllegalMonitorStateException("Lock already acquired");
-        }
-        transaction = transactionManager.openNewTransaction();
-        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, consumerIdentifier, transaction);
-        if (entity.isPresent()) {
-            this.entity = entity.get();
-            return true;
-        } else {
-            return false;
-        }
+//        if (transaction != null) {
+//            throw new IllegalMonitorStateException("Lock already acquired");
+//        }
+//        transaction = transactionManager.openNewTransaction();
+//        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, workflowId, transaction);
+//        if (entity.isPresent()) {
+//            this.entity = entity.get();
+//            return true;
+//        } else {
+//            return false;
+//        }
+        return toLoad(true, null);
     }
 
     public void unlockAndSave() {
@@ -96,7 +94,43 @@ public class WorkflowContextImpl implements WorkflowContext {
     }
 
     @Override
+    public boolean load() {
+        return toLoad(false, null);
+    }
+
+    @Override
+    public void setContextValues(ValueContainer values) {
+        entity.setContextValues(values);
+    }
+
+    @Override
+    public Identifier getIdentifier() {
+        return entity.getWorkflowId();
+    }
+
+    @Override
     public WorkflowContextState getState() {
         return entity.getWorkflowState();
+    }
+
+    private boolean toLoad(boolean isLocking, Transaction transaction) {
+        if (this.transaction != null) {
+            throw new IllegalMonitorStateException("Lock already acquired");
+        }
+        if (transaction == null) {
+            this.transaction = transactionManager.openNewTransaction();
+        } else {
+            this.transaction = transaction;
+        }
+        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, workflowId, transaction, isLocking);
+        if (!isLocking) {
+            this.transaction = null;
+        }
+        if (entity.isPresent()) {
+            this.entity = entity.get();
+            return true;
+        } else {
+            return false;
+        }
     }
 }

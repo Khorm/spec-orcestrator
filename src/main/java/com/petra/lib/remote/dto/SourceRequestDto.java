@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.container.ValueModel;
-import com.petra.lib.variable.enums.Multiplicity;
+import com.petra.lib.variable.container.ValueDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,14 +17,14 @@ public class SourceRequestDto {
 
     private String consumerSourceVersion;
 
-    private List<ValueModel> inputValues;
+    private List<ValueDto> inputValues;
 
     @JsonCreator
     SourceRequestDto(
             @JsonProperty("scenarioId") UUID scenarioId,
             @JsonProperty("consumerSourceId") Long consumerSourceId,
             @JsonProperty("consumerSourceVersion") String consumerSourceVersion,
-            @JsonProperty("inputValues") List<ValueModel> inputValues) {
+            @JsonProperty("inputValues") List<ValueDto> inputValues) {
         this.scenarioId = scenarioId;
         this.consumerSourceId = consumerSourceId;
         this.consumerSourceVersion = consumerSourceVersion;
@@ -54,7 +53,7 @@ public class SourceRequestDto {
     }
 
     @JsonProperty("inputValues")
-    List<ValueModel> getInputs(){
+    List<ValueDto> getInputs(){
         return inputValues;
     }
 

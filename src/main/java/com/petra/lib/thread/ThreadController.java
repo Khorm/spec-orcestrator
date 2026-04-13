@@ -2,6 +2,7 @@ package com.petra.lib.thread;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class ThreadController {
 
@@ -18,5 +19,10 @@ public class ThreadController {
 
     public void executeUnlimitedPoolTask(Runnable runnable){
         unlimitedExecutor.execute(runnable);
+    }
+
+    public int getActiveThreadCount(){
+        return ((ThreadPoolExecutor)unlimitedExecutor).getActiveCount() +
+                ((ThreadPoolExecutor)limitedExecutor).getActiveCount();
     }
 }

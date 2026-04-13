@@ -107,7 +107,7 @@
           "sourceVariable" : 2,
           "sourceValueName" : "LocationId",
           "sourceValueMultiplicity" : "SINGLE",
-          "producerVariable" : 17,
+          "producerVariable" : 11,
           "extractionString" : ""
         } ]
       } ]
@@ -121,15 +121,21 @@
         "id" : 16,
         "name" : "TstVarTwo",
         "multiplicity" : "SINGLE",
-        "loaderType" : "INPUT_LOADER",
-        "extractionString" : "id",
-        "inputValueId" : 19,
+        "loaderType" : "SOURCE_LOADER",
+        "extractionString" : "driver.id",
+        "inputValueId" : null,
         "script" : null,
-        "sourceId" : null,
-        "sourceVersion" : null,
-        "sourceName" : null,
-        "sourceServicePath" : null,
-        "sourceInputVariableModels" : null
+        "sourceId" : 6,
+        "sourceVersion" : "0",
+        "sourceName" : "TestSource",
+        "sourceServicePath" : "localhost",
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : 2,
+          "sourceValueName" : "LocationId",
+          "sourceValueMultiplicity" : "SINGLE",
+          "producerVariable" : 15,
+          "extractionString" : ""
+        } ]
       }, {
         "id" : 15,
         "name" : "TstVarone",
@@ -146,8 +152,8 @@
       } ]
     } ],
     "exitValues" : [ {
-      "id" : 17,
-      "name" : "FstWorfklowVar",
+      "id" : 18,
+      "name" : "FstOutVar",
       "multiplicity" : "SINGLE",
       "loaderType" : "INPUT_LOADER",
       "extractionString" : "id",

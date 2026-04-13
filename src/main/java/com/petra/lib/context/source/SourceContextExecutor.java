@@ -1,7 +1,7 @@
 package com.petra.lib.context.source;
 
-import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.model.LocalSource;
+import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.operation.actor.LocalSource;
 import com.petra.lib.remote.dto.SourceRequestDto;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;

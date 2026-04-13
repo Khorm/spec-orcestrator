@@ -1,6 +1,6 @@
 package com.petra.lib.remote.dto;
 
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -14,13 +14,13 @@ public class SourceResponseDto {
 
     private String consumerSourceVersion ;
 
-    private List<ValueModel> consumerSourceResultValue;
+    private List<ValueDto> consumerSourceResultValue;
 
 
 
 
     public SourceResponseDto(UUID scenarioId, Long consumerSourceId, String consumerSourceVersion,
-                             List<ValueModel> consumerSourceResultValue) {
+                             List<ValueDto> consumerSourceResultValue) {
         this.scenarioId = scenarioId;
         this.consumerSourceId = consumerSourceId;
         this.consumerSourceVersion = consumerSourceVersion;
@@ -42,7 +42,7 @@ public class SourceResponseDto {
         return consumerSourceVersion;
     }
 
-    public List<ValueModel> getConsumerSourceResultValue() {
+    public List<ValueDto> getConsumerSourceResultValue() {
         return consumerSourceResultValue;
     }
 

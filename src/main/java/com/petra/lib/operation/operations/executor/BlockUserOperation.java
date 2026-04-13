@@ -1,17 +1,16 @@
 package com.petra.lib.operation.operations.executor;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
-import com.petra.lib.context.model.Identifier;
+import com.petra.lib.context.block.Context;
+import com.petra.lib.context.enums.ContextState;
+import com.petra.lib.context.enums.ExecutionStatus;
+import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.operation.Operation;
 import com.petra.lib.operation.OperationService;
-import com.petra.lib.operation.operations.AnswerOperation;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.transaction.TransactionManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
-import org.springframework.transaction.annotation.Isolation;
 
 import javax.persistence.EntityManager;
 import java.util.Map;
@@ -27,13 +26,11 @@ public class BlockUserOperation implements Operation {
     private final ContextState CURRENT_STATE = ContextState.EXECUTED;
 
     private final Map<Identifier, UserActionHandler> userHandlers;
-    private final OperationService operationService;
 
     public BlockUserOperation(TransactionManager transactionManager, Map<Identifier,
-            UserActionHandler> userHandlers, OperationService operationService) {
+            UserActionHandler> userHandlers) {
         this.transactionManager = transactionManager;
         this.userHandlers = userHandlers;
-        this.operationService = operationService;
         log.debug("BlockUserOperation initialized with {} user handlers", userHandlers.size());
     }
 
@@ -43,7 +40,7 @@ public class BlockUserOperation implements Operation {
      *
      * @param blockContext - current execution context
      */
-    public void execute(Context blockContext) {
+    public void execute(Context blockContext, OperationService operationService) {
         UserActionHandler userActionHandler = userHandlers.get(blockContext.getCurrentBlockId());
         transactionManager.executeInTransaction(transaction -> {
             try {
@@ -55,14 +52,14 @@ public class BlockUserOperation implements Operation {
                 UserActionContextImpl userContext = new UserActionContextImpl(entityManager,
                         blockContext.getContextInputValues().getValues(), blockContext.getContextOutValues());
                 userActionHandler.execute(userContext);
-                blockContext.lockAndLoad();
+                blockContext.lockAndLoad(transaction);
                 boolean isResultSet = blockContext.setState(CURRENT_STATE);
                 if (!isResultSet){
-                    blockContext.saveRepeat();
-                    operationService.executeState(blockContext);
+                    blockContext.unlockAndDiscard();
                     return;
                 }
                 blockContext.setOutValues(userContext.getOutputValues());
+                blockContext.setExecutionStatus(ExecutionStatus.OK);
                 blockContext.unlockAndSave();
                 log.debug("Context saved successfully for scenarioId: {}", blockContext.getScenarioId());
                 operationService.executeState(blockContext);
@@ -70,8 +67,14 @@ public class BlockUserOperation implements Operation {
             } catch (Exception e) {
                 log.error("Exception occurred during BlockUserOperation execution for scenarioId: {}, blockId: {}: {}",
                         blockContext.getScenarioId(), blockContext.getCurrentBlockId(), e.getMessage(), e);
-
-                blockContext.saveError(e);
+                boolean isResultSet = blockContext.setState(CURRENT_STATE);
+                if (!isResultSet){
+                    blockContext.unlockAndDiscard();
+                    return;
+                }
+                blockContext.setExecutionStatus(ExecutionStatus.ERROR);
+                blockContext.unlockAndSave();
+                operationService.executeState(blockContext);
             }
         }, userActionHandler.getTransactionIsolationLevel());
 

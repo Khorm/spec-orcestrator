@@ -6,6 +6,7 @@ import com.petra.lib.constructor.PetraProperties;
 import com.petra.lib.constructor.model.ConstructorModel;
 import com.petra.lib.context.source.SourceUserHandler;
 import com.petra.lib.controller.PetraController;
+import com.petra.lib.controller.PetraControllerImpl;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-@Configuration
+//@Configuration
 //@EnableTransactionManagement
 //@PropertySource("classpath:application.properties")
 public class ConfigurationTest {
@@ -117,7 +118,8 @@ public class ConfigurationTest {
 //        PetraProperties petraProperties = applicationContext.getBean(PetraProperties.class);
 //        Map<String, UserActionHandler> userActionHandlerMap = applicationContext.getBeansOfType(UserActionHandler.class);
 //        Map<String, SourceUserHandler> sourceUserHandlerMap = applicationContext.getBeansOfType(SourceUserHandler.class);
-        return constructor.construct(constructorModel, transactionManager, petraProperties, userActionHandlerMap, sourceUserHandlerMap);
+        return constructor.construct(constructorModel, transactionManager, petraProperties,
+                userActionHandlerMap, sourceUserHandlerMap);
     }
 
     private Properties additionalProperties() {

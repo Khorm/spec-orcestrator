@@ -2,17 +2,12 @@ package com.petra.lib.operation.operations.executor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.constructor.model.ValueDto;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.value.Value;
-import com.petra.lib.variable.value.ValueFactory;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 

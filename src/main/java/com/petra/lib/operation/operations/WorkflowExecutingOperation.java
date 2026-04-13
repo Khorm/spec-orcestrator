@@ -1,9 +1,10 @@
 package com.petra.lib.operation.operations;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
-import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.model.LocalProducer;
+import com.petra.lib.context.block.Context;
+import com.petra.lib.context.enums.ContextState;
+import com.petra.lib.operation.OperationService;
+import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.operation.actor.LocalProducer;
 import com.petra.lib.operation.Operation;
 import lombok.extern.log4j.Log4j2;
 
@@ -23,13 +24,15 @@ public final class WorkflowExecutingOperation implements Operation {
     }
 
     @Override
-    public void execute(Context blockContext) {
+    public void execute(Context blockContext, OperationService operationService) {
         log.info("Start executing workflow {}", blockContext.getScenarioId().toString());
-        localProducers.get(blockContext.getCurrentBlockId()).start(blockContext);
+        localProducers.get(blockContext.getCurrentBlockId()).start(blockContext,operationService);
     }
 
     @Override
     public ContextState getState() {
         return CURRENT_STATE;
     }
+
+
 }

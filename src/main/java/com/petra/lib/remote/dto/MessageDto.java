@@ -1,7 +1,7 @@
 package com.petra.lib.remote.dto;
 
 import com.petra.lib.context.enums.ExecutionStatus;
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +10,7 @@ public class MessageDto {
     private UUID scenarioId;
     private Long receiverId;
     private String receiverVersion;
-    private List<ValueModel> transmittedValues;
+    private List<ValueDto> transmittedValues;
     private Long senderId;
     private String senderVersion;
     private String senderServiceURL;
@@ -28,7 +28,7 @@ public class MessageDto {
      * @param status - результат оработки сообщения
      */
     public MessageDto(UUID scenarioId, Long receiverId, String receiverVersion,
-                      List<ValueModel> transmittedValues, Long senderId, String senderVersion, String senderServiceURL, ExecutionStatus status) {
+                      List<ValueDto> transmittedValues, Long senderId, String senderVersion, String senderServiceURL, ExecutionStatus status) {
         this.scenarioId = scenarioId;
         this.receiverId = receiverId;
         this.receiverVersion = receiverVersion;
@@ -54,7 +54,7 @@ public class MessageDto {
         return receiverVersion;
     }
 
-    public List<ValueModel> getTransmittedValues() {
+    public List<ValueDto> getTransmittedValues() {
         return transmittedValues;
     }
 
@@ -74,7 +74,7 @@ public class MessageDto {
         return senderServiceURL;
     }
 
-    public void setTransmittedValues(List<ValueModel> transmittedValues) {
+    public void setTransmittedValues(List<ValueDto> transmittedValues) {
         this.transmittedValues = transmittedValues;
     }
 

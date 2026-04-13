@@ -10,7 +10,7 @@ import com.petra.lib.thread.ThreadController;
 import com.petra.lib.utils.JsonUtils;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.loader.impl.LoaderAbs;
@@ -45,9 +45,9 @@ public final class RemoteSource extends LoaderAbs {
             Value toSourceVal = context.getValue(sourceInputVariable.getProducerVariable());
             String jsonSourceValue = toSourceVal.getExtractedJsonValue(sourceInputVariable.getExtractionString());
 
-            ValueModel valueModel = new ValueModel(sourceInputVariable.getSourceVariable(), sourceInputVariable.getSourceValueName(),
+            ValueDto valueDto = new ValueDto(sourceInputVariable.getSourceVariable(), sourceInputVariable.getSourceValueName(),
                     sourceInputVariable.getSourceValueMultiplicity(), jsonSourceValue);
-            Value sourceInputValue = ValueFactory.createValue(valueModel);
+            Value sourceInputValue = ValueFactory.createValue(valueDto);
             sourceContainer.setValue(sourceInputValue);
         }
 
@@ -66,17 +66,18 @@ public final class RemoteSource extends LoaderAbs {
     private Value executeNext(Optional<SourceResponseDto> answer, ValueContext context) {
         if (answer.isPresent()) {
             try {
-                List<ValueModel> sourceAnswer = answer.get().getConsumerSourceResultValue();
+                List<ValueDto> sourceAnswer = answer.get().getConsumerSourceResultValue();
                 Value resultValue;
                 if (getValueModel().getExtractionString() != null && !getValueModel().getExtractionString().isBlank()) {
-                    String json = JsonUtils.getExtractedJsonValue(sourceAnswer.get(0).getJsonValue(), getValueModel().getExtractionString());
-                    ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
+                    String json = JsonUtils.getExtractedJsonValue(getValueModel().getExtractionString(),
+                            sourceAnswer.get(0).getJsonValue());
+                    ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
                             getValueModel().getMultiplicity(), json);
-                    resultValue = ValueFactory.createValue(valueModel);
+                    resultValue = ValueFactory.createValue(valueDto);
                 } else {
-                    ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
+                    ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
                             getValueModel().getMultiplicity(), sourceAnswer.get(0).getJsonValue());
-                    resultValue = ValueFactory.createValue(valueModel);
+                    resultValue = ValueFactory.createValue(valueDto);
                 }
                 return resultValue;
             } catch (Exception e) {

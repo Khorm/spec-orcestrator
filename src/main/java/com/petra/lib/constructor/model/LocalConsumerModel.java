@@ -1,6 +1,5 @@
 package com.petra.lib.constructor.model;
 
-import java.util.Collection;
 import java.util.List;
 
 public class LocalConsumerModel {
@@ -9,8 +8,8 @@ public class LocalConsumerModel {
     private String blockType;
     private String name;
 
-    private List<ValueDto> inputModels;
-    private List<ValueDto> outputModels;
+    private List<ValueModel> inputModels;
+    private List<ValueModel> outputModels;
 
 
     public Long getId() {
@@ -29,11 +28,11 @@ public class LocalConsumerModel {
         return name;
     }
 
-    public List<ValueDto> getInputModels() {
+    public List<ValueModel> getInputModels() {
         return inputModels;
     }
 
-    public List<ValueDto> getOutputModels() {
+    public List<ValueModel> getOutputModels() {
         return outputModels;
     }
 }

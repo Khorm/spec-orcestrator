@@ -2,7 +2,7 @@ package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.constructor.model.ValueModelDto;
 import com.petra.lib.thread.ThreadController;
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
@@ -35,10 +35,10 @@ class InputLoader extends LoaderAbs {
         } else {
             newJsonValue = producerValue.getModel().getJsonValue();
         }
-        ValueModel valueModel = new ValueModel(getVariableId(), getValueModel().getName(),
+        ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
                 getValueModel().getMultiplicity(),newJsonValue);
 
-        return ValueFactory.createValue(valueModel);
+        return ValueFactory.createValue(valueDto);
     }
 
 }

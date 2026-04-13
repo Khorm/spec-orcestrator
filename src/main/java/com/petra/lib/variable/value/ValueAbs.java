@@ -3,15 +3,15 @@ package com.petra.lib.variable.value;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.utils.JsonUtils;
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.enums.Multiplicity;
 
 abstract class ValueAbs implements Value {
 
-    protected ValueModel model;
+    protected ValueDto model;
     protected final ObjectMapper oj = new ObjectMapper();
 
-    ValueAbs(ValueModel model) {
+    ValueAbs(ValueDto model) {
         this.model = model;
     }
 
@@ -23,11 +23,11 @@ abstract class ValueAbs implements Value {
     }
 
     protected synchronized void updateValue(String jsonValue) {
-        model = new ValueModel(model.getId(), model.getName(), model.getMultiplicity(), jsonValue);
+        model = new ValueDto(model.getId(), model.getName(), model.getMultiplicity(), jsonValue);
     }
 
     @Override
-    public ValueModel getModel() {
+    public ValueDto getModel() {
         return model;
     }
 

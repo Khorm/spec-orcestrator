@@ -1,17 +1,15 @@
 package com.petra.lib.variable.value;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.petra.lib.PetraException;
 import com.petra.lib.variable.GenericParsers;
-import com.petra.lib.variable.container.ValueModel;
-import com.petra.lib.variable.enums.Multiplicity;
+import com.petra.lib.variable.container.ValueDto;
 
 import java.util.List;
 
 class SimpleValue extends ValueAbs{
 
 
-    SimpleValue(ValueModel model) {
+    SimpleValue(ValueDto model) {
         super(model);
     }
 

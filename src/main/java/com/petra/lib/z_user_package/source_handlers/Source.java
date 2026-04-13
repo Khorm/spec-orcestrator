@@ -14,14 +14,10 @@ public class Source implements SourceUserHandler {
     public void executeSource(SourceUserContext userContext) {
         System.out.println("TestSource");
 
-//        List<String> list = userContext.getListValue("SecondInVarList", String.class);
-//        for (String s : list) {
-//            System.out.println("SOURCE USING SecondInVarList " + s);
-//        }
 
         Long locationId = userContext.getValue("LocationId", Long.class);
         System.out.println("SOURCE USING locationId " + locationId);
 
-        userContext.setValue("Truck", new Truck(10L, "Truck name"));
+        userContext.setValue("Truck", new Truck(10L, "Truck name", new Driver(20L)));
     }
 }

@@ -19,6 +19,7 @@ public final class JsonUtils {
 
         ObjectMapper extractMapper = new ObjectMapper();
         JsonNode rootNode = null;
+        System.out.println("OUT STRING JSON____"+inputString);
         try {
             rootNode = extractMapper.readTree(inputString);
         } catch (JsonProcessingException e) {

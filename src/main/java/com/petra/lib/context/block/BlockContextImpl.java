@@ -1,13 +1,11 @@
 package com.petra.lib.context.block;
 
-import com.petra.lib.context.Context;
-import com.petra.lib.context.ContextState;
+import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
-import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.model.RemoteProducer;
-import com.petra.lib.context.repo.ContextRepo;
-import com.petra.lib.operation.OperationService;
+import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.variable.container.ValueContainer;
@@ -104,14 +102,20 @@ public class BlockContextImpl implements Context {
         return contextEntity.getProducer().getServiceName();
     }
 
-    public boolean create() {
-        return contextRepo.insertContext(contextEntity, transaction);
+    public boolean create(RemoteProducer producer, BlockType blockType,
+                          ContextState state, ValueContainer outContextValues) {
+        transaction = transactionManager.openNewTransaction();
+        contextEntity = new ContextEntity(scenarioId,  producer,blockType, state, outContextValues);
+        boolean result = contextRepo.insertContext(contextEntity, transaction);
+        transaction.commit();
+        transaction = null;
+        return result;
 
     }
 
     @Override
     public void load() {
-        toLoad(false);
+        toLoad(false, null);
     }
 
     @Override
@@ -122,22 +126,13 @@ public class BlockContextImpl implements Context {
     }
 
     @Override
-    public void saveError(Exception e) {
-        log.error(e);
-        contextEntity.setExecutionStatus(ExecutionStatus.ERROR);
-        contextEntity.setState(ContextState.EXECUTED);
-        contextRepo.save(contextEntity, transaction);
-        transaction.commit();
+    public boolean lockAndLoad() {
+        return toLoad(true, null);
     }
 
     @Override
-    public void saveRepeat() {
-        contextEntity.setExecutionStatus(ExecutionStatus.REPEAT);
-        transaction.rollback();
-    }
-
-    public boolean lockAndLoad() {
-        return toLoad(true);
+    public boolean lockAndLoad(Transaction transaction) {
+        return toLoad(true, transaction);
     }
 
     public void unlockAndDiscard() {
@@ -150,16 +145,24 @@ public class BlockContextImpl implements Context {
         return contextEntity.getBlockType();
     }
 
-    public void setExecutionStatus(ExecutionStatus executionStatus){
+    @Override
+    public void setExecutionStatus(ExecutionStatus executionStatus) {
         contextEntity.setExecutionStatus(executionStatus);
     }
 
-    private boolean toLoad(boolean isLocking){
-        if (transaction != null) {
+    private boolean toLoad(boolean isLocking, Transaction transaction) {
+        if (this.transaction != null) {
             throw new IllegalMonitorStateException("Lock already acquired");
         }
-        transaction = transactionManager.openNewTransaction();
+        if (transaction == null) {
+            this.transaction = transactionManager.openNewTransaction();
+        }else {
+            this.transaction = transaction;
+        }
         Optional<ContextEntity> entity = contextRepo.findContext(scenarioId, blockId, transaction, isLocking);
+        if (!isLocking) {
+            this.transaction = null;
+        }
         if (entity.isPresent()) {
             contextEntity = entity.get();
             return true;

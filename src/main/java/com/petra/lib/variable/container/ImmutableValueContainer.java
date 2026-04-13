@@ -33,7 +33,7 @@ class ImmutableValueContainer implements ValueContainer {
     }
 
     @Override
-    public List<ValueModel> getModels() {
+    public List<ValueDto> getModels() {
         return valueContainer.getModels();
     }
 

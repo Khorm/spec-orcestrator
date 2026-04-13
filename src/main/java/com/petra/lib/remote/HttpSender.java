@@ -40,20 +40,14 @@ public class HttpSender implements Sender {
                         HttpMethod.POST, entity, String.class);
 
                 if (response.getStatusCode() == HttpStatus.OK) {
-//                    () -> senderCallback.answer(null)
-                    threadController.executeUnlimitedPoolTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            senderCallback.answer(null);
-                        }
-                    });
+                    threadController.executeUnlimitedPoolTask(()
+                            -> senderCallback.answer(new MessageResponse(response.getStatusCode(), response.getBody())));
 
                 } else {
                     threadController.executeUnlimitedPoolTask(()
-                            -> senderCallback.error(null, new MessageResponse(response.getStatusCode())));
+                            -> senderCallback.error(null, new MessageResponse(response.getStatusCode(), null)));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 threadController.executeUnlimitedPoolTask(()
                         -> senderCallback.error(e, null));
             }
@@ -70,11 +64,9 @@ public class HttpSender implements Sender {
         ResponseEntity<SourceResponseDto> response
                 = restTemplate.exchange("http://" + serviceUrl + ":8080/source_request", HttpMethod.POST, entity, SourceResponseDto.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-//                threadController.executeLimitedPoolTask(() -> senderCallback.answer(response.getBody()));
             return Optional.ofNullable(response.getBody());
 
         } else {
-//            threadController.executeLimitedPoolTask(() -> senderCallback.error(null));
             return Optional.empty();
         }
     }

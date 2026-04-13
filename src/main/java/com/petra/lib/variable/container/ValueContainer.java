@@ -13,7 +13,7 @@ public interface ValueContainer {
 
     void setValue(String name, Object object);
 
-    List<ValueModel> getModels();
+    List<ValueDto> getModels();
 
     List<Value> getValues();
 //    void mixinValueContainer(ValueContainer valueContainer);

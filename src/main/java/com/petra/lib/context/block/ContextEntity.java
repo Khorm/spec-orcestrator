@@ -1,13 +1,13 @@
 package com.petra.lib.context.block;
 
-import com.petra.lib.context.ContextState;
+import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
-import com.petra.lib.context.model.Identifier;
-import com.petra.lib.context.model.RemoteProducer;
+import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.operation.actor.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.container.ValueModel;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.value.Value;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -61,7 +61,7 @@ public class ContextEntity {
                          Identifier producerBlockId,
                          ContextState contextState,
                          ExecutionStatus executionStatus,
-                         List<ValueModel> producerValues, BlockType blockType, List<ValueModel> outValues
+                         List<ValueDto> producerValues, BlockType blockType, List<ValueDto> outValues
     ) {
         this.scenarioId = scenarioId;
         this.state = contextState;
@@ -74,11 +74,11 @@ public class ContextEntity {
     }
 
     public ContextEntity(UUID scenarioId, RemoteProducer producer, BlockType blockType,
-                         ContextState state, ValueContainer inputContextValues, ValueContainer outContextValues) {
+                         ContextState state, ValueContainer outContextValues) {
         this.scenarioId = scenarioId;
         this.producer = producer;
         this.blockType = blockType;
-        this.inputContextValues = inputContextValues;
+        this.inputContextValues = producer.getSendValuesContainer();
         this.state = state;
         this.outContextValues = Optional.ofNullable(outContextValues).orElse(ValueContainerFactory.getSimpleContainer());
     }

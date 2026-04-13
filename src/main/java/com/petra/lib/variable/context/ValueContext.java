@@ -3,7 +3,6 @@ package com.petra.lib.variable.context;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
-import com.petra.lib.variable.container.ValueModel;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
 

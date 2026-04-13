@@ -15,25 +15,25 @@ class ValueContainerImpl implements ValueContainer {
     private final Map<String, Value> valuesByName;
 
 
-    ValueContainerImpl(List<ValueModel> valueModels) {
-        if (valueModels == null || valueModels.isEmpty()) {
+    ValueContainerImpl(List<ValueDto> valueDtos) {
+        if (valueDtos == null || valueDtos.isEmpty()) {
             valuesByName = new HashMap<>();
             valuesById = new HashMap<>();
             return;
         }
 
-        List<Value> values = getValues(valueModels);
+        List<Value> values = getValues(valueDtos);
         valuesById = values.stream().collect(Collectors.toMap(Value::getId, Function.identity()));
         valuesByName = values.stream().collect(Collectors.toMap(Value::getName, Function.identity()));
     }
 
-    ValueContainerImpl(Collection<ValueModel> valueModels) {
+    ValueContainerImpl(Collection<ValueDto> valueDtos) {
         valuesById = new HashMap<>();
         valuesByName = new HashMap<>();
-        for (ValueModel valueModel : valueModels) {
-            Value value = ValueFactory.createValue(valueModel);
-            valuesById.put(valueModel.getId(), value);
-            valuesByName.put(valueModel.getName(), value);
+        for (ValueDto valueDto : valueDtos) {
+            Value value = ValueFactory.createValue(valueDto);
+            valuesById.put(valueDto.getId(), value);
+            valuesByName.put(valueDto.getName(), value);
         }
     }
 
@@ -55,7 +55,7 @@ class ValueContainerImpl implements ValueContainer {
     @Override
     public String toDBJson() {
         ObjectMapper oj = new ObjectMapper();
-        Collection<ValueModel> models = valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
+        Collection<ValueDto> models = valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
 
         try {
             return oj.writeValueAsString(models);
@@ -105,7 +105,7 @@ class ValueContainerImpl implements ValueContainer {
 
 
     @Override
-    public List<ValueModel> getModels() {
+    public List<ValueDto> getModels() {
         return valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
     }
 
@@ -114,7 +114,7 @@ class ValueContainerImpl implements ValueContainer {
         return new ArrayList<>(valuesById.values());
     }
 
-    private List<Value> getValues(List<ValueModel> values) {
+    private List<Value> getValues(List<ValueDto> values) {
         return values.stream().map(ValueFactory::createValue).collect(Collectors.toList());
     }
 

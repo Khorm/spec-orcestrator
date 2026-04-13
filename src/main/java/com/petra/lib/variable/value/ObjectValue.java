@@ -2,8 +2,7 @@ package com.petra.lib.variable.value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.petra.lib.PetraException;
-import com.petra.lib.variable.container.ValueModel;
-import com.petra.lib.variable.enums.Multiplicity;
+import com.petra.lib.variable.container.ValueDto;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
 class ObjectValue extends ValueAbs {
 
 
-    ObjectValue(ValueModel model) {
+    ObjectValue(ValueDto model) {
         super(model);
     }
 
