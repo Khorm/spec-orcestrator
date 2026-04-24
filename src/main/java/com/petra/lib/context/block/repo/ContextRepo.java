@@ -4,6 +4,7 @@ import com.petra.lib.context.block.ContextEntity;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.transaction.Transaction;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,9 +15,8 @@ public interface ContextRepo {
     Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId, Transaction transaction, boolean isBlocking);
     void save(ContextEntity entity, Transaction transaction);
 
-    ContextEntity getNotFinishedContexts(Identifier blockId, Transaction tr);
-//    void updateStateAndValues(ContextEntity entity, ContextState state, ValueContainer outValues);
-//    void updateExecutionStatus(ContextEntity entity,ContextState state, ExecutionStatus executionStatus);
+    List<ContextEntity> getNotFinishedContexts(String serviceName, Integer maxTimeSeconds, Transaction tr);
+
 
 
 }

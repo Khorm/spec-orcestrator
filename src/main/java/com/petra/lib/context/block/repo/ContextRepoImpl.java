@@ -135,20 +135,22 @@ public class ContextRepoImpl implements ContextRepo {
     }
 
     @Override
-    public ContextEntity getNotFinishedContexts(Identifier blockId, Transaction tr) {
+    public List<ContextEntity> getNotFinishedContexts(String serviceName, Integer maxTimeSeconds, Transaction tr) {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate
                     = new NamedParameterJdbcTemplate(Objects.requireNonNull(tr.getDataSource()));
 
-            String sql = "SELECT * FROM block_context WHERE id " +
-                    " WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND" +
-                    " context_state != :status";
+            String sql = "SELECT * FROM block_context " +
+                    " WHERE EXTRACT(EPOCH FROM (ready_at - created_at)) > :maxTimeSeconds " +
+                    " AND ready_at IS NOT NULL AND " +
+                    " context_state != :contextState AND " +
+                    " producer_service_name = :serviceName";
             SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("consumerId", blockId.getId())
-                    .addValue("consumerVersion", blockId.getVersion())
-                    .addValue("status", ContextState.ANSWERED);
+                    .addValue("maxTimeSeconds", maxTimeSeconds)
+                    .addValue("serviceName", serviceName)
+                    .addValue("contextState", ContextState.ANSWERED);
 
-            return namedParameterJdbcTemplate.queryForObject(sql,
-                    params, new LoadedContextRowMapper());
+            return namedParameterJdbcTemplate.query(sql,
+                    params, (RowMapper<ContextEntity>) new LoadedContextRowMapper());
 
     }
 //

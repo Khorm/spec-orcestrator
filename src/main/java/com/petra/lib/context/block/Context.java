@@ -40,7 +40,7 @@ public interface Context {
 
     BlockType getBlockType();
 
-    boolean create(RemoteProducer producer, BlockType blockType,
+    boolean insert(RemoteProducer producer, BlockType blockType,
                    ContextState state, ValueContainer outContextValues, Transaction transaction);
     void load(Transaction transaction);
 }

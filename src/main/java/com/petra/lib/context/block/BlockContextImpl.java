@@ -96,7 +96,7 @@ public class BlockContextImpl implements Context {
         return contextEntity.getProducer().getServiceName();
     }
 
-    public boolean create(RemoteProducer producer, BlockType blockType,
+    public boolean insert(RemoteProducer producer, BlockType blockType,
                           ContextState state, ValueContainer outContextValues, Transaction transaction) {
         contextEntity = new ContextEntity(scenarioId, producer, blockType, state, outContextValues);
         return contextRepo.insertContext(contextEntity, transaction);

@@ -2,10 +2,11 @@ package com.petra.lib.executor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.actor.LocalProducer;
 import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.ContextService;
 import com.petra.lib.context.block.Context;
-import com.petra.lib.context.block.repo.ContextRepo;
+import com.petra.lib.context.block.ContextEntity;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.operation.OperationService;
@@ -19,10 +20,7 @@ import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.container.ValueDto;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,24 +46,6 @@ public class BlockContextExecutor {
         this.consumerMap = consumers.stream().collect(Collectors.toMap(LocalConsumer::getIdentifier, Function.identity()));
         this.contextService = contextService;
     }
-
-//    public void start() {
-//        consumerMap.values().stream()
-//                .map(localConsumer -> {
-//                    ContextEntity entity = contextRepo.getNotFinishedContexts(localConsumer.getIdentifier());
-//                    return contextService.createContext(entity);
-//                })
-//                .forEach(context -> {
-//                    if (context.getBlockType() == BlockType.ACTION) {
-//                        actionOperationService.executeState(context);
-//                    } else if (context.getBlockType() == BlockType.WORKFLOW) {
-//                        workflowOperationService.executeState(context);
-//                    } else {
-//                        throw new IllegalStateException("Wrong block type " + context.getBlockType());
-//                    }
-//                });
-//
-//    }
 
 
     public void startWorkflowByUser(String workflowName, String version, Map<String, Object> params) {
@@ -108,7 +88,7 @@ public class BlockContextExecutor {
         );
         boolean isNewCreated;
         try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
-            isNewCreated = context.create(remoteProducer, executingConsumer.getBlockType(),
+            isNewCreated = context.insert(remoteProducer, executingConsumer.getBlockType(),
                     ContextState.STARTED, outContainer, transaction);
 
         }catch (Exception e){
@@ -124,19 +104,30 @@ public class BlockContextExecutor {
         //выгружает контекст из базы и запускает обработку
         LocalConsumer consumer = consumerMap.get(remoteProducer.getConsumerId());
         Context context = contextService.createContext(consumer.getIdentifier(), scenarioId);
+        return startContext(context, consumer , remoteProducer);
+    }
+
+    public boolean startContext(ContextEntity entity){
+        LocalConsumer consumer = consumerMap.get(entity.getConsumerId());
+        RemoteProducer producer = entity.getProducer();
+        Context context = contextService.createContext(entity);
+        return startContext(context, consumer,producer);
+    }
+
+    private boolean startContext(Context context, LocalConsumer consumer, RemoteProducer remoteProducer) {
         try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
             ValueContainer outContainer = ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables());
-            boolean isNewCreated = context.create(remoteProducer, consumer.getBlockType(),
+            boolean isNewCreated = context.insert(remoteProducer, consumer.getBlockType(),
                     ContextState.STARTED, outContainer, transaction);
 
             context.lockAndLoad(transaction);
             if (context.getCurrentState() != ContextState.STARTED) {
                 transaction.rollback();
-                log.info("[{}] Repeating {} - {}", scenarioId, consumer.getName(), consumer.getBlockType());
+                log.info("[{}] Repeating {} - {}", context.getScenarioId(), consumer.getName(), consumer.getBlockType());
                 return false;
             }
 
-            log.info("[{}] Starting {} - {}", scenarioId, consumer.getName(), consumer.getBlockType());
+            log.info("[{}] Starting {} - {}", context.getScenarioId(), consumer.getName(), consumer.getBlockType());
             if (consumer.getBlockType() == BlockType.ACTION) {
                 actionOperationService.executeState(context);
             } else if (consumer.getBlockType() == BlockType.WORKFLOW) {
@@ -150,8 +141,9 @@ public class BlockContextExecutor {
         }catch (Exception e){
             throw new RuntimeException(e);
         }
-
     }
+
+
 
 
 }
