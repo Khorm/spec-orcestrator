@@ -19,22 +19,19 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class ContextService {
-    TransactionManager transactionManager;
     ContextRepo contextRepo;
     WorkflowContextRepo workflowContextRepo;
 
     public Context createContext(Identifier blockId, UUID scenarioId) {
         return new BlockContextImpl(contextRepo,
-                blockId, scenarioId, transactionManager);
+                blockId, scenarioId);
     }
 
     public Context createContext(ContextEntity contextEntity) {
-        return new BlockContextImpl(contextEntity, contextRepo,
-                transactionManager);
+        return new BlockContextImpl(contextEntity, contextRepo);
     }
 
     public WorkflowContext createWorkflowContext(UUID scenarioId, Identifier workflowId) {
-        return new WorkflowContextImpl(workflowContextRepo, transactionManager,
-                scenarioId, workflowId);
+        return new WorkflowContextImpl(workflowContextRepo, scenarioId, workflowId);
     }
 }

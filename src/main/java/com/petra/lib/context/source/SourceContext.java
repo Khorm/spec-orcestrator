@@ -1,6 +1,6 @@
 package com.petra.lib.context.source;
 
-import com.petra.lib.operation.actor.LocalSource;
+import com.petra.lib.actor.LocalSource;
 import com.petra.lib.variable.container.ValueContainer;
 
 import javax.persistence.EntityManager;

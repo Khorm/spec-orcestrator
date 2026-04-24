@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 
 //@WorkflowHandler(name = "test_source_1")
-@Service("FstAction")
+//@Service("FstAction")
 public class TestActionHandler implements UserActionHandler {
     @Override
     public void execute(UserActionContext variableUserActionContext) {

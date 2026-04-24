@@ -9,25 +9,28 @@ import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Log4j2
 public class WorkflowContextImpl implements WorkflowContext {
 
     WorkflowContextEntity entity;
     final WorkflowContextRepo workflowContextRepo;
-    Transaction transaction;
-    final TransactionManager transactionManager;
     final UUID scenarioId;
     final Identifier workflowId;
 
 
-    public WorkflowContextImpl(WorkflowContextRepo workflowContextRepo, TransactionManager transactionManager,
+    public WorkflowContextImpl(WorkflowContextRepo workflowContextRepo,
                                UUID scenarioId, Identifier workflowId) {
         this.workflowContextRepo = workflowContextRepo;
-        this.transactionManager = transactionManager;
         this.scenarioId = scenarioId;
         this.workflowId = workflowId;
     }
@@ -54,48 +57,28 @@ public class WorkflowContextImpl implements WorkflowContext {
         return entity.getContextValues();
     }
 
-    public boolean create() {
-        transaction = transactionManager.openNewTransaction();
-        entity = new WorkflowContextEntity(workflowId, scenarioId, ValueContainerFactory.getSimpleContainer(),
+    @Override
+    public boolean create(ValueContainer inputValues, Transaction transaction) {
+        entity = new WorkflowContextEntity(workflowId, scenarioId, inputValues,
                 WorkflowContextState.START);
-        boolean result = workflowContextRepo.insertContext(entity, transaction);
-        entity = null;
-        transaction.commit();
-        transaction = null;
-        return result;
-    }
 
-    public boolean lockAndLoad() {
-//        if (transaction != null) {
-//            throw new IllegalMonitorStateException("Lock already acquired");
-//        }
-//        transaction = transactionManager.openNewTransaction();
-//        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, workflowId, transaction);
-//        if (entity.isPresent()) {
-//            this.entity = entity.get();
-//            return true;
-//        } else {
-//            return false;
-//        }
-        return toLoad(true, null);
-    }
-
-    public void unlockAndSave() {
-        workflowContextRepo.save(entity, transaction);
-        transaction.commit();
-        transaction = null;
-        entity = null;
-    }
-
-    public void unlockAndDiscard() {
-        transaction.rollback();
-        transaction = null;
-        entity = null;
+        return workflowContextRepo.insertContext(entity, transaction);
     }
 
     @Override
-    public boolean load() {
-        return toLoad(false, null);
+    public boolean lockAndLoad(Transaction transaction) {
+        return toLoad(true, transaction);
+    }
+
+    @Override
+    public void save(Transaction transaction) {
+        workflowContextRepo.save(entity, transaction);
+
+    }
+
+    @Override
+    public boolean load(Transaction transaction) {
+        return toLoad(false, transaction);
     }
 
     @Override
@@ -113,19 +96,9 @@ public class WorkflowContextImpl implements WorkflowContext {
         return entity.getWorkflowState();
     }
 
-    private boolean toLoad(boolean isLocking, Transaction transaction) {
-        if (this.transaction != null) {
-            throw new IllegalMonitorStateException("Lock already acquired");
-        }
-        if (transaction == null) {
-            this.transaction = transactionManager.openNewTransaction();
-        } else {
-            this.transaction = transaction;
-        }
-        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, workflowId, transaction, isLocking);
-        if (!isLocking) {
-            this.transaction = null;
-        }
+    private boolean toLoad(boolean isLocking, Transaction tr) {
+        Optional<WorkflowContextEntity> entity= workflowContextRepo.findContext(scenarioId, workflowId, tr, isLocking);
+
         if (entity.isPresent()) {
             this.entity = entity.get();
             return true;

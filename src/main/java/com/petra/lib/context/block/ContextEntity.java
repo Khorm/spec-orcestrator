@@ -4,7 +4,7 @@ import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.actor.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.container.ValueDto;

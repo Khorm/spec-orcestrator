@@ -2,6 +2,7 @@ package com.petra.lib.operation.operations.executor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.value.Value;
@@ -17,11 +18,11 @@ public class UserActionContextImpl implements UserActionContext {
     private final ValueContainer outputValues;
 
     public UserActionContextImpl(EntityManager entityManager,
-                                 List<Value> inputValues, ValueContainer outputValues) {
+                                 List<Value> inputValues, List<ValueModel> outputValues) {
         this.entityManager = entityManager;
         this.inputContainer = ValueContainerFactory.getSimpleContainer(inputValues.stream().map(Value::getModel)
                 .collect(Collectors.toList()));
-        this.outputValues = outputValues;
+        this.outputValues = ValueContainerFactory.getSimpleContainer(outputValues);
     }
 
     @Override

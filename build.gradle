@@ -54,6 +54,7 @@ dependencies {
 //	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind'//, version: '2.14.1'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     api 'com.fasterxml.jackson.core:jackson-core:2.20.1'
+    api "com.zaxxer:HikariCP:6.3.3"
 
 
 	compileOnly 'org.projectlombok:lombok:1.18.30'

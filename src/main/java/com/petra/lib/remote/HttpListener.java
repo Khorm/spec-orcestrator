@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+
 public class HttpListener {
 
     private final PetraController petraControllerImpl;
@@ -22,12 +22,12 @@ public class HttpListener {
     }
 
 
-    @RequestMapping(value = "/execute_block", method = RequestMethod.POST,
-            produces = "application/json", consumes = "application/json")
+//    @RequestMapping(value = "/execute_block", method = RequestMethod.POST,
+//            produces = "application/json", consumes = "application/json")
     public ResponseEntity<String> blockRequest(@RequestBody MessageDto blockRequestDto) {
         try {
-            boolean isRepeat = petraControllerImpl.requestBlock(blockRequestDto);
-            if (!isRepeat){
+            boolean isStart = petraControllerImpl.requestBlock(blockRequestDto);
+            if (isStart){
                 return ResponseEntity.ok("OK");
             }else {
                 return ResponseEntity.ok("REPEAT");
@@ -39,8 +39,8 @@ public class HttpListener {
         }
     }
 
-    @RequestMapping(value = "/answer_block", method = RequestMethod.POST,
-            produces = "application/json", consumes = "application/json")
+//    @RequestMapping(value = "/answer_block", method = RequestMethod.POST,
+//            produces = "application/json", consumes = "application/json")
     public ResponseEntity<HttpStatus> blockAnswer(@RequestBody MessageDto answerDto) {
         try {
             petraControllerImpl.blockAnswer(answerDto);
@@ -51,8 +51,8 @@ public class HttpListener {
         }
     }
 
-    @RequestMapping(value = "/source_request", method = RequestMethod.POST,
-            produces = "application/json", consumes = "application/json")
+//    @RequestMapping(value = "/source_request", method = RequestMethod.POST,
+//            produces = "application/json", consumes = "application/json")
     public ResponseEntity<SourceResponseDto> executeSource(@RequestBody SourceRequestDto sourceRequestDto) {
         try {
             SourceResponseDto result = petraControllerImpl.requestSource(sourceRequestDto);

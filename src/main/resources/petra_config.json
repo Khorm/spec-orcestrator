@@ -1,169 +1,416 @@
 {
   "consumers" : [ {
-    "id" : 7,
+    "id" : 3,
+    "version" : "0",
+    "blockType" : "ACTION",
+    "name" : "ThreeAction",
+    "inputModels" : [ {
+      "id" : 5,
+      "name" : "InnerModel",
+      "multiplicity" : "SINGLE"
+    } ],
+    "outputModels" : [ ]
+  }, {
+    "id" : 4,
     "version" : "0",
     "blockType" : "ACTION",
     "name" : "FstAction",
     "inputModels" : [ {
       "id" : 11,
-      "name" : "fst",
-      "multiplicity" : "SINGLE"
-    }, {
-      "id" : 12,
-      "name" : "scd",
+      "name" : "model",
       "multiplicity" : "SINGLE"
     } ],
     "outputModels" : [ {
-      "id" : 19,
-      "name" : "OutFstVal",
+      "id" : 12,
+      "name" : "modelFst",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 13,
+      "name" : "modelScd",
       "multiplicity" : "SINGLE"
     } ]
   }, {
-    "id" : 9,
+    "id" : 5,
     "version" : "0",
     "blockType" : "ACTION",
     "name" : "ScdAction",
     "inputModels" : [ {
-      "id" : 15,
-      "name" : "TstVarone",
+      "id" : 14,
+      "name" : "longForModel",
       "multiplicity" : "SINGLE"
     }, {
-      "id" : 16,
-      "name" : "TstVarTwo",
+      "id" : 15,
+      "name" : "strForModel",
       "multiplicity" : "SINGLE"
     } ],
     "outputModels" : [ {
-      "id" : 20,
-      "name" : "SceOutVar",
+      "id" : 16,
+      "name" : "outModel",
       "multiplicity" : "SINGLE"
     } ]
   }, {
-    "id" : 10,
+    "id" : 1,
     "version" : "0",
     "blockType" : "WORKFLOW",
-    "name" : "FstWorkflow",
+    "name" : "root",
     "inputModels" : [ {
-      "id" : 17,
-      "name" : "FstWorfklowVar",
+      "id" : 1,
+      "name" : "fstIn",
+      "multiplicity" : "COLLECTION"
+    }, {
+      "id" : 2,
+      "name" : "scdIn",
+      "multiplicity" : "COLLECTION"
+    } ],
+    "outputModels" : [ ]
+  }, {
+    "id" : 2,
+    "version" : "0",
+    "blockType" : "WORKFLOW",
+    "name" : "workfl",
+    "inputModels" : [ {
+      "id" : 3,
+      "name" : "inModel",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 9,
+      "name" : "longForSource",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 10,
+      "name" : "stringForSource",
       "multiplicity" : "SINGLE"
     } ],
     "outputModels" : [ {
-      "id" : 18,
-      "name" : "FstOutVar",
+      "id" : 4,
+      "name" : "outModel",
       "multiplicity" : "SINGLE"
     } ]
   } ],
   "sources" : [ {
     "id" : 6,
     "version" : "0",
-    "name" : "TestSource",
+    "name" : "GetModelOneService",
     "inputModels" : [ {
-      "id" : 2,
-      "name" : "LocationId",
+      "id" : 6,
+      "name" : "long",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 7,
+      "name" : "string",
       "multiplicity" : "SINGLE"
     } ],
     "outputModels" : {
-      "id" : 3,
-      "name" : "Truck",
+      "id" : 8,
+      "name" : "model",
       "multiplicity" : "SINGLE"
     }
   } ],
   "producers" : [ {
-    "id" : 10,
+    "id" : 1,
     "version" : "0",
-    "name" : "FstWorkflow",
+    "name" : "root",
     "consumers" : [ {
-      "id" : 7,
+      "id" : 2,
       "version" : "0",
       "serviceName" : "localhost",
-      "workflowId" : 10,
+      "workflowId" : 1,
       "workflowVersion" : "0",
-      "values" : [ {
+      "consumerName" : "workfl",
+      "loadedValues" : [ {
+        "id" : 3,
+        "name" : "inModel",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "SOURCE_LOADER",
+        "extractionString" : "",
+        "inputValueId" : null,
+        "script" : null,
+        "sourceId" : 6,
+        "sourceVersion" : "0",
+        "sourceName" : "GetModelOneService",
+        "sourceServicePath" : "localhost",
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : 6,
+          "sourceValueName" : "long",
+          "sourceValueMultiplicity" : "SINGLE",
+          "producerVariable" : 9,
+          "extractionString" : ""
+        }, {
+          "sourceVariable" : 7,
+          "sourceValueName" : "string",
+          "sourceValueMultiplicity" : "SINGLE",
+          "producerVariable" : 10,
+          "extractionString" : ""
+        } ]
+      }, {
+        "id" : 9,
+        "name" : "longForSource",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "SCRIPT_LOADER",
+        "extractionString" : "",
+        "inputValueId" : null,
+        "script" : "def result = fstIn[0];",
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : null,
+          "sourceValueName" : null,
+          "sourceValueMultiplicity" : null,
+          "producerVariable" : 1,
+          "extractionString" : null
+        } ]
+      }, {
+        "id" : 10,
+        "name" : "stringForSource",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "SCRIPT_LOADER",
+        "extractionString" : "",
+        "inputValueId" : null,
+        "script" : "def result = scdIn[0]",
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : null,
+          "sourceValueName" : null,
+          "sourceValueMultiplicity" : null,
+          "producerVariable" : 2,
+          "extractionString" : null
+        } ]
+      } ],
+      "contextValues" : [ {
+        "id" : 3,
+        "name" : "inModel",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 9,
+        "name" : "longForSource",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 10,
+        "name" : "stringForSource",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 1,
+        "name" : "fstIn",
+        "multiplicity" : "COLLECTION"
+      }, {
+        "id" : 2,
+        "name" : "scdIn",
+        "multiplicity" : "COLLECTION"
+      } ],
+      "nextBlockId" : 3,
+      "previousBlockId" : 1
+    }, {
+      "id" : 3,
+      "version" : "0",
+      "serviceName" : "localhost",
+      "workflowId" : 1,
+      "workflowVersion" : "0",
+      "consumerName" : "ThreeAction",
+      "loadedValues" : [ {
+        "id" : 5,
+        "name" : "InnerModel",
+        "multiplicity" : "SINGLE",
+        "loaderType" : "SCRIPT_LOADER",
+        "extractionString" : "",
+        "inputValueId" : null,
+        "script" : "import com.petra.lib.z_user_package.source_handlers.models.ModelThree;\nimport com.petra.lib.z_user_package.source_handlers.models.ModelTwo;\n\ndef result = new ModelThree();\ndef modelTwoOne= new ModelTwo();\nmodelTwoOne.fst = 321L;\nmodelTwoOne.scd = 'Hello from constructor';\n\ndef modelTwoScd= new ModelTwo();\nmodelTwoScd.fst = fstIn[0];\nmodelTwoScd.scd = scdIn[0]\n\nresult.fst = modelTwoOne;\nresult.scd = modelTwoScd;",
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : [ {
+          "sourceVariable" : null,
+          "sourceValueName" : null,
+          "sourceValueMultiplicity" : null,
+          "producerVariable" : 1,
+          "extractionString" : null
+        }, {
+          "sourceVariable" : null,
+          "sourceValueName" : null,
+          "sourceValueMultiplicity" : null,
+          "producerVariable" : 2,
+          "extractionString" : null
+        } ]
+      } ],
+      "contextValues" : [ {
+        "id" : 5,
+        "name" : "InnerModel",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 4,
+        "name" : "outModel",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 1,
+        "name" : "fstIn",
+        "multiplicity" : "COLLECTION"
+      }, {
+        "id" : 2,
+        "name" : "scdIn",
+        "multiplicity" : "COLLECTION"
+      } ],
+      "nextBlockId" : 1,
+      "previousBlockId" : 2
+    } ],
+    "exitValues" : [ ],
+    "contextValues" : [ {
+      "id" : 1,
+      "name" : "fstIn",
+      "multiplicity" : "COLLECTION"
+    }, {
+      "id" : 2,
+      "name" : "scdIn",
+      "multiplicity" : "COLLECTION"
+    }, {
+      "id" : 4,
+      "name" : "outModel",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 1,
+      "name" : "fstIn",
+      "multiplicity" : "COLLECTION"
+    }, {
+      "id" : 2,
+      "name" : "scdIn",
+      "multiplicity" : "COLLECTION"
+    } ]
+  }, {
+    "id" : 2,
+    "version" : "0",
+    "name" : "workfl",
+    "consumers" : [ {
+      "id" : 4,
+      "version" : "0",
+      "serviceName" : "localhost",
+      "workflowId" : 2,
+      "workflowVersion" : "0",
+      "consumerName" : "FstAction",
+      "loadedValues" : [ {
         "id" : 11,
-        "name" : "fst",
+        "name" : "model",
         "multiplicity" : "SINGLE",
         "loaderType" : "INPUT_LOADER",
         "extractionString" : "",
-        "inputValueId" : 17,
+        "inputValueId" : 3,
         "script" : null,
         "sourceId" : null,
         "sourceVersion" : null,
         "sourceName" : null,
         "sourceServicePath" : null,
         "sourceInputVariableModels" : null
+      } ],
+      "contextValues" : [ {
+        "id" : 11,
+        "name" : "model",
+        "multiplicity" : "SINGLE"
       }, {
-        "id" : 12,
-        "name" : "scd",
-        "multiplicity" : "SINGLE",
-        "loaderType" : "SOURCE_LOADER",
-        "extractionString" : "",
-        "inputValueId" : null,
-        "script" : null,
-        "sourceId" : 6,
-        "sourceVersion" : "0",
-        "sourceName" : "TestSource",
-        "sourceServicePath" : "localhost",
-        "sourceInputVariableModels" : [ {
-          "sourceVariable" : 2,
-          "sourceValueName" : "LocationId",
-          "sourceValueMultiplicity" : "SINGLE",
-          "producerVariable" : 11,
-          "extractionString" : ""
-        } ]
-      } ]
+        "id" : 3,
+        "name" : "inModel",
+        "multiplicity" : "SINGLE"
+      } ],
+      "nextBlockId" : 5,
+      "previousBlockId" : 2
     }, {
-      "id" : 9,
+      "id" : 5,
       "version" : "0",
       "serviceName" : "localhost",
-      "workflowId" : 10,
+      "workflowId" : 2,
       "workflowVersion" : "0",
-      "values" : [ {
-        "id" : 16,
-        "name" : "TstVarTwo",
+      "consumerName" : "ScdAction",
+      "loadedValues" : [ {
+        "id" : 14,
+        "name" : "longForModel",
         "multiplicity" : "SINGLE",
-        "loaderType" : "SOURCE_LOADER",
-        "extractionString" : "driver.id",
-        "inputValueId" : null,
+        "loaderType" : "INPUT_LOADER",
+        "extractionString" : "",
+        "inputValueId" : 12,
         "script" : null,
-        "sourceId" : 6,
-        "sourceVersion" : "0",
-        "sourceName" : "TestSource",
-        "sourceServicePath" : "localhost",
-        "sourceInputVariableModels" : [ {
-          "sourceVariable" : 2,
-          "sourceValueName" : "LocationId",
-          "sourceValueMultiplicity" : "SINGLE",
-          "producerVariable" : 15,
-          "extractionString" : ""
-        } ]
+        "sourceId" : null,
+        "sourceVersion" : null,
+        "sourceName" : null,
+        "sourceServicePath" : null,
+        "sourceInputVariableModels" : null
       }, {
         "id" : 15,
-        "name" : "TstVarone",
+        "name" : "strForModel",
         "multiplicity" : "SINGLE",
         "loaderType" : "INPUT_LOADER",
-        "extractionString" : "id",
-        "inputValueId" : 19,
+        "extractionString" : "",
+        "inputValueId" : 13,
         "script" : null,
         "sourceId" : null,
         "sourceVersion" : null,
         "sourceName" : null,
         "sourceServicePath" : null,
         "sourceInputVariableModels" : null
-      } ]
+      } ],
+      "contextValues" : [ {
+        "id" : 14,
+        "name" : "longForModel",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 15,
+        "name" : "strForModel",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 12,
+        "name" : "modelFst",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 13,
+        "name" : "modelScd",
+        "multiplicity" : "SINGLE"
+      }, {
+        "id" : 3,
+        "name" : "inModel",
+        "multiplicity" : "SINGLE"
+      } ],
+      "nextBlockId" : 2,
+      "previousBlockId" : 4
     } ],
     "exitValues" : [ {
-      "id" : 18,
-      "name" : "FstOutVar",
+      "id" : 4,
+      "name" : "outModel",
       "multiplicity" : "SINGLE",
       "loaderType" : "INPUT_LOADER",
-      "extractionString" : "id",
-      "inputValueId" : 20,
+      "extractionString" : "",
+      "inputValueId" : 16,
       "script" : null,
       "sourceId" : null,
       "sourceVersion" : null,
       "sourceName" : null,
       "sourceServicePath" : null,
       "sourceInputVariableModels" : null
+    } ],
+    "contextValues" : [ {
+      "id" : 3,
+      "name" : "inModel",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 4,
+      "name" : "outModel",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 16,
+      "name" : "outModel",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 12,
+      "name" : "modelFst",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 13,
+      "name" : "modelScd",
+      "multiplicity" : "SINGLE"
+    }, {
+      "id" : 3,
+      "name" : "inModel",
+      "multiplicity" : "SINGLE"
     } ]
   } ]
 }

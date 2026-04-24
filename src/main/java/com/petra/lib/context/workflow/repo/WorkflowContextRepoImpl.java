@@ -18,18 +18,18 @@ import java.util.UUID;
 
 public class WorkflowContextRepoImpl implements WorkflowContextRepo {
 
-    private final TransactionManager transactionManager;
-
-    public WorkflowContextRepoImpl(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
+//    private final TransactionManager transactionManager;
+//
+//    public WorkflowContextRepoImpl(TransactionManager transactionManager) {
+//        this.transactionManager = transactionManager;
+//    }
 
 
     @Override
     public boolean insertContext(WorkflowContextEntity context, Transaction transaction) {
-        return transactionManager.executeInTransaction(tx -> {
+//        return transactionManager.executeInTransaction(tx -> {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate =
-                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transaction.getDataSource()));
 
             Identifier workflowId = context.getWorkflowId();
 
@@ -37,34 +37,38 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
                     "scenario_id, " +
                     "workflow_id, " +
                     "workflow_version, " +
-                    "state " +
+                    "ctx_state, " +
+                    "ctx_values "+
                     ") VALUES (" +
                     ":scenarioId, " +
                     ":workflowId, " +
                     ":workflowVersion, " +
-                    ":state " +
+                    ":state, " +
+                    ":values "+
                     ")";
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("scenarioId", context.getScenarioId())
                     .addValue("workflowId", workflowId.getId())
                     .addValue("workflowVersion", workflowId.getVersion())
-                    .addValue("state", context.getWorkflowState().name());
+                    .addValue("state", context.getWorkflowState().name())
+                    .addValue("values", context.getContextValues().toDBJson());
 
             try {
                 namedParameterJdbcTemplate.update(sql, params);
                 return true;
             } catch (DataIntegrityViolationException e) {
+                e.printStackTrace();
                 return false; // Запись с таким ключом уже существует
             }
-        }, transaction);
+//        }, transaction);
     }
 
 
     @Override
     public Optional<WorkflowContextEntity> findContext(UUID scenarioId, Identifier workflowId, Transaction transaction, boolean isLock) {
-        return transactionManager.executeInTransaction(tx -> {
+//        return transactionManager.executeInTransaction(tx -> {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate =
-                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+                    new NamedParameterJdbcTemplate(Objects.requireNonNull(transaction.getDataSource()));
 
             String sql =
                     " SELECT * " +
@@ -88,15 +92,15 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
             } else {
                 return Optional.of(result.get(0));
             }
-        }, transaction);
+//        }, transaction);
     }
 
     @Override
-    public Optional<WorkflowContextEntity> findFinishedContext(UUID scenarioId) {
+    public Optional<WorkflowContextEntity> findFinishedContext(UUID scenarioId, Transaction tx) {
 
         NamedParameterJdbcTemplate namedParameterJdbcTemplate =
                 new NamedParameterJdbcTemplate(Objects.requireNonNull(
-                        transactionManager.getJpaTransactionManager().getDataSource()));
+                        tx.getDataSource()));
 
         String sql =
                 " SELECT * " +
@@ -119,16 +123,16 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
 
     @Override
     public void save(WorkflowContextEntity entity, Transaction transaction) {
-        transactionManager.executeInTransaction((tx) -> {
+//        transactionManager.executeInTransaction((tx) -> {
 
             Identifier workflowId = entity.getWorkflowId();
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(
-                    Objects.requireNonNull(transactionManager.getJpaTransactionManager().getDataSource()));
+                    Objects.requireNonNull(transaction.getDataSource()));
 
 
             if (entity.isWorkflowStateChanged()) {
                 String updateSql = "UPDATE workflow_context " +
-                        " SET state = :newState " +
+                        " SET ctx_state = :newState " +
                         " WHERE scenario_id = :scenarioId " +
                         " AND workflow_id = :workflowId " +
                         " AND workflow_version = :workflowVersion";
@@ -145,7 +149,7 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
 
             if (entity.isContextValuesUpdated()) {
                 String updateSql = "UPDATE workflow_context " +
-                        " SET scenario_values = :newScenValues " +
+                        " SET ctx_values = :newScenValues " +
                         " WHERE scenario_id = :scenarioId " +
                         " AND workflow_id = :workflowId " +
                         " AND workflow_version = :workflowVersion";
@@ -160,6 +164,6 @@ public class WorkflowContextRepoImpl implements WorkflowContextRepo {
                 template.update(updateSql, updateParams);
             }
 
-        }, transaction);
+//        }, transaction);
     }
 }

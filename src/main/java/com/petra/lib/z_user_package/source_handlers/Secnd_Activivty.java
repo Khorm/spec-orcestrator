@@ -5,7 +5,7 @@ import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 
-@Service("ScdAction")
+//@Service("ScdAction")
 public class Secnd_Activivty implements UserActionHandler {
     @Override
     public void execute(UserActionContext variableUserActionContext) {

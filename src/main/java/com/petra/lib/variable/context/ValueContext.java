@@ -12,42 +12,58 @@ import java.util.stream.Collectors;
 
 public class ValueContext {
 
-    private final ValueContainer valueContextValues;
-
+    //предзагруженные переменные  непосредственно в текущем блоке в лоадерах
     private final ValueContainer blockContextValues;
-    private final VariableCallback variableCallback;
-    private final LoadedValuesManager loadedValuesManager;
-    private final UUID scenarioId;
 
+
+    //переменные, загружающиеся из контекста воркфлоу
+    private final ValueContainer workflowContextValues;
+
+    //лоадеры
     private final Map<Long, ValueLoader> valueLoaders;
 
-    public ValueContext(ValueContainer blockContextValues,
+    //менеджер, который хранить айди всех переменных и айди загруженных переменных
+    private final LoadedValuesManager loadedValuesManager;
+    private final VariableCallback variableCallback;
+
+    private final UUID scenarioId;
+
+
+
+    public ValueContext(ValueContainer workflowContextValues,
                         UUID scenarioId,
                         VariableCallback variableCallback,
                         Collection<ValueLoader> valueLoaders) {
-        this.blockContextValues = blockContextValues;
+        this.workflowContextValues = workflowContextValues;
         this.variableCallback = variableCallback;
-        this.loadedValuesManager = new LoadedValuesManager(valueLoaders.stream()
-                .mapToLong(ValueLoader::getVariableId).boxed().collect(Collectors.toSet()));
+
+        Set<Long> allValues = valueLoaders.stream()
+                .mapToLong(ValueLoader::getVariableId).boxed().collect(Collectors.toSet());
+        allValues.addAll(workflowContextValues.getValues().stream()
+                .mapToLong(Value::getId).boxed().collect(Collectors.toSet()));
+        this.loadedValuesManager = new LoadedValuesManager(allValues,
+                workflowContextValues.getValues().stream()
+                        .mapToLong(Value::getId).boxed().collect(Collectors.toSet()));
+
         this.scenarioId = scenarioId;
         this.valueLoaders = valueLoaders.stream().collect(Collectors.toMap(ValueLoader::getVariableId, Function.identity()));
-        valueContextValues = ValueContainerFactory.getSimpleContainer();
+        blockContextValues = ValueContainerFactory.getSimpleContainer();
     }
 
 
     public synchronized Value getValue(Long valueId) {
-        Value ret = blockContextValues.getValue(valueId);
+        Value ret = workflowContextValues.getValue(valueId);
         if (ret == null) {
-            ret = valueContextValues.getValue(valueId);
+            ret = blockContextValues.getValue(valueId);
         }
         return ret;
     }
 
     public synchronized boolean registerLoadedValue(Value value) {
-        valueContextValues.setValue(value);
+        blockContextValues.setValue(value);
         loadedValuesManager.registerLoadedValue(value.getId());
-        if (loadedValuesManager.areValuesLoaded()) {
-            variableCallback.loaded(valueContextValues);
+        if (loadedValuesManager.isValueAcceptToExecute()) {
+            variableCallback.loaded(blockContextValues);
             return true;
         }
         return false;
@@ -57,8 +73,14 @@ public class ValueContext {
         return valueLoaders.get(valueId);
     }
 
-    public boolean areValuesLoaded(List<Long> valueIds) {
-        return loadedValuesManager.areValuesLoaded(valueIds);
+    /**
+     * Проверяент можно ли загружать переменную или не все паренты еще загружены
+     * @param valueIds
+     * @param requestValueId
+     * @return
+     */
+    public synchronized boolean isValueAcceptToExecute(List<Long> valueIds, Long requestValueId) {
+        return loadedValuesManager.isValueAcceptToExecute(valueIds, requestValueId);
     }
 
     public void error(Exception e) {

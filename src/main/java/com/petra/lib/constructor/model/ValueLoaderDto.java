@@ -7,7 +7,7 @@ import lombok.Getter;
 import java.util.Collection;
 
 @Getter
-public class ValueModelDto {
+public class ValueLoaderDto {
     /**
      * id консумера
      */

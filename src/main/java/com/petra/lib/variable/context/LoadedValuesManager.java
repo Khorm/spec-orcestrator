@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Регистрирует уже загруженые переменные
@@ -14,8 +15,11 @@ import java.util.HashSet;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 class LoadedValuesManager {
-    Collection<Long> loadedValues = new HashSet<>();
-    Collection<Long> allValues;
+    Set<Long> allValues;
+    Set<Long> loadedValues;
+
+    // id Запросов на загрузку
+    Set<Long> requestedValueIds = new HashSet<>();
 
 
     void registerLoadedValue(Long valueId) {
@@ -25,11 +29,19 @@ class LoadedValuesManager {
         loadedValues.add(valueId);
     }
 
-    public boolean areValuesLoaded(Collection<Long> values) {
-        return loadedValues.containsAll(values);
+    public boolean isValueAcceptToExecute(Collection<Long> parents, Long requestValueId) {
+        boolean allParentsReady = loadedValues.containsAll(parents);
+        if (allParentsReady){
+            if (requestedValueIds.contains(requestValueId)){
+                return false;
+            }
+            requestedValueIds.add(requestValueId);
+            return true;
+        }
+        return false;
     }
 
-    boolean areValuesLoaded() {
+    boolean isValueAcceptToExecute() {
         return loadedValues.equals(allValues);
     }
 

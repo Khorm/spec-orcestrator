@@ -1,6 +1,6 @@
 package com.petra.lib.variable.loader.impl;
 
-import com.petra.lib.constructor.model.ValueModelDto;
+import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
@@ -9,7 +9,7 @@ import com.petra.lib.variable.value.Value;
 import java.util.List;
 
 class EmptyLoader extends LoaderAbs {
-    protected EmptyLoader(ThreadController threadController, ValueModelDto valueModel, List<Long> parents, List<ValueLoader> children) {
+    protected EmptyLoader(ThreadController threadController, ValueLoaderDto valueModel, List<Long> parents, List<ValueLoader> children) {
         super(threadController, valueModel, parents, children);
     }
 

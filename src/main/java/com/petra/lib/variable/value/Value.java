@@ -18,4 +18,6 @@ public interface Value {
     String getName();
 
     Multiplicity getMultiplicity();
+
+    Value cloneValue();
 }

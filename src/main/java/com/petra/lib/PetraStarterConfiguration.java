@@ -8,15 +8,24 @@ import com.petra.lib.context.source.SourceUserHandler;
 import com.petra.lib.controller.PetraController;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.remote.HttpListener;
+import com.petra.lib.remote.dto.MessageDto;
+import com.petra.lib.remote.dto.SourceRequestDto;
+import com.petra.lib.remote.dto.SourceResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerResponse;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+
+import static org.springframework.web.servlet.function.RouterFunctions.route;
 
 @AutoConfiguration
 @ConditionalOnClass(PetraController.class)
@@ -33,7 +42,7 @@ public class PetraStarterConfiguration {
 
     @Bean
     public PetraController petraController(JpaTransactionManager transactionManager, PetraProperties petraProperties, Map<String, UserActionHandler> userActionHandlerMap,
-                                     Map<String, SourceUserHandler> sourceUserHandlerMap) throws IOException {
+                                           Map<String, SourceUserHandler> sourceUserHandlerMap) throws IOException {
         System.out.println("PetraTestAware");
         Constructor constructor = new Constructor();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -44,10 +53,37 @@ public class PetraStarterConfiguration {
     }
 
     @Bean(name = "petraHttpServer")
-    public HttpListener httpListener(PetraController petraController){
-        return new HttpListener(petraController);
-    }
+    public RouterFunction<ServerResponse> httpListener(PetraController petraController) {
 
+//        @RestController
+//        class PetraHttpListener extends HttpListener{
+//            public PetraHttpListener(PetraController petraControllerImpl) {
+//                super(petraControllerImpl);
+//            }
+//        }
+
+        HttpListener httpListener = new HttpListener(petraController);
+        return route()
+                .POST("/execute_block", request -> {
+                    ResponseEntity<String> r = httpListener.blockRequest(request.body(MessageDto.class));
+                    if (r.getStatusCode() == HttpStatus.OK) {
+                        return ServerResponse.ok().body(r.getBody());
+                    }
+                    return ServerResponse.status(r.getStatusCode()).build();
+                })
+                .POST("/answer_block", request -> {
+                    ResponseEntity<HttpStatus> r = httpListener.blockAnswer(request.body(MessageDto.class));
+                    return ServerResponse.status(r.getStatusCode()).build();
+                })
+                .POST("source_request", request -> {
+                    ResponseEntity<SourceResponseDto> r = httpListener.executeSource(request.body(SourceRequestDto.class));
+                    if (r.getStatusCode() == HttpStatus.OK) {
+                        return ServerResponse.ok().body(r.getBody());
+                    }
+                    return ServerResponse.status(r.getStatusCode()).build();
+                })
+                .build();
+    }
 
 
 }

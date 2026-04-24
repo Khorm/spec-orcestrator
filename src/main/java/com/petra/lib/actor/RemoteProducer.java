@@ -1,4 +1,4 @@
-package com.petra.lib.operation.actor;
+package com.petra.lib.actor;
 
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;

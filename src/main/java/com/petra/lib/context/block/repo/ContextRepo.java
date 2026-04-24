@@ -14,7 +14,7 @@ public interface ContextRepo {
     Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId, Transaction transaction, boolean isBlocking);
     void save(ContextEntity entity, Transaction transaction);
 
-    ContextEntity getNotFinishedContexts(Identifier blockId);
+    ContextEntity getNotFinishedContexts(Identifier blockId, Transaction tr);
 //    void updateStateAndValues(ContextEntity entity, ContextState state, ValueContainer outValues);
 //    void updateExecutionStatus(ContextEntity entity,ContextState state, ExecutionStatus executionStatus);
 

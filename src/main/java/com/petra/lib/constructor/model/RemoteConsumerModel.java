@@ -12,28 +12,19 @@ public class RemoteConsumerModel {
 
     private Long workflowId;
     private String workflowVersion;
-    private Collection<ValueModelDto> values;
+    private Long nextBlockId;
+    private Long previousBlockId;
+    private String consumerName;
 
+    /**
+     * Коллекция загружаемых переменных
+     */
+    private Collection<ValueLoaderDto> loadedValues;
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public Long getWorkflowId() {
-        return workflowId;
-    }
-
-    public String getWorkflowVersion() {
-        return workflowVersion;
-    }
+    /**
+     * Коллекция всех переменных включая загружаемые
+     */
+    private Collection<ValueModel> contextValues;
 
 
 }

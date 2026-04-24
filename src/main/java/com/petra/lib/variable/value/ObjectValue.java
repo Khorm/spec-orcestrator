@@ -29,4 +29,9 @@ class ObjectValue extends ValueAbs {
         }
     }
 
+    @Override
+    public Value cloneValue() {
+        return new ObjectValue(getModel());
+    }
+
 }

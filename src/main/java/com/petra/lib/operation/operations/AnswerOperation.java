@@ -8,6 +8,10 @@ import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.remote.dto.MessageDto;
+import com.petra.lib.transaction.Transaction;
+import com.petra.lib.transaction.TransactionManager;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,16 +20,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * Отвечает за ответ об успешном или неуспешном выполнении
  */
+@Log4j2
+@RequiredArgsConstructor
 public class AnswerOperation implements Operation {
 
-    private static final Logger log = LogManager.getLogger(AnswerOperation.class);
     private final Sender sender;
+    private final TransactionManager transactionManager;
     private final ContextState CURRENT_STATE = ContextState.ANSWERED;
-
-
-    public AnswerOperation(Sender sender) {
-        this.sender = sender;
-    }
 
     @Override
     public void execute(Context blockContext, OperationService operationService) {
@@ -40,39 +41,43 @@ public class AnswerOperation implements Operation {
                 blockContext.getExecutionStatus()
         );
 
+        log.debug("{} Sending answer {} , producer: {}",
+                blockContext.getScenarioId(), blockContext.getExecutionStatus(),
+                blockContext.getProducer().getServiceName());
+
         SenderCallback senderCallback = new SenderCallback() {
             @Override
             public void answer(MessageResponse messageResponse) {
-                blockContext.lockAndLoad();
-                boolean setStateResult = blockContext.setState(CURRENT_STATE);
-                if (setStateResult){
-                    blockContext.unlockAndSave();
-                }else {
-                    blockContext.unlockAndDiscard();
+                try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
+                    blockContext.lockAndLoad(transaction);
+                    boolean setStateResult = blockContext.setState(CURRENT_STATE);
+                    if (setStateResult) {
+                        blockContext.save(transaction);
+                        transaction.commit();
+                    } else {
+                        transaction.rollback();
+                    }
+                    log.info("Answer sent successfully for scenarioId: {}",
+                            blockContext.getScenarioId());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-                log.info("Answer sent successfully for scenarioId: {}, blockId: {}",
-                        blockContext.getScenarioId(), blockContext.getCurrentBlockId().toString());
 
             }
 
             @Override
             public void error(Exception e, MessageResponse messageResponse) {
-                log.error("Failed to send answer for scenarioId: {}, blockId: {}. Error: {}",
+                log.error("Failed to send answer for scenarioId: {},  Error: {}",
                         blockContext.getScenarioId(),
-                        blockContext.getCurrentBlockId().toString(),
-                        e.getMessage(), e);
+                        e);
                 try {
                     TimeUnit.SECONDS.sleep(2);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                sender.answerBlockExecution(messageDto, blockContext.getProducer().getServiceName(), this);
+//                sender.answerBlockExecution(messageDto, blockContext.getProducer().getServiceName(), this);
             }
         };
-
-        log.debug("Sending answer for scenarioId: {}, producer: {}",
-                blockContext.getScenarioId(), blockContext.getProducer().getServiceName());
-
         sender.answerBlockExecution(messageDto, blockContext.getProducer().getServiceName(), senderCallback);
     }
 

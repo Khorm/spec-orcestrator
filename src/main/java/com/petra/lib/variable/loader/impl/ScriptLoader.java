@@ -1,6 +1,6 @@
 package com.petra.lib.variable.loader.impl;
 
-import com.petra.lib.constructor.model.ValueModelDto;
+import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
@@ -24,7 +24,7 @@ class ScriptLoader extends LoaderAbs {
     Multiplicity multiplicity;
 
 
-    ScriptLoader(ValueModelDto valueModel,
+    ScriptLoader(ValueLoaderDto valueModel,
                  ThreadController threadController,
                  List<Long> parents, List<ValueLoader> children) {
         super(threadController,valueModel, parents, children);
@@ -40,18 +40,20 @@ class ScriptLoader extends LoaderAbs {
         String valuesScript = getParents().stream().map(aLong -> {
             StringBuilder ret = new StringBuilder();
             Value value = context.getValue(aLong);
+
             return ret.append("def ")
                     .append(value.getModel().getName())
-                    .append(" = '")
+                    .append(" = slurper.parseText('")
                     .append(value.getModel().getJsonValue())
-                    .append("' ; ").toString();
+                    .append("') ; ").toString();
 
         }).collect(Collectors.joining());
 
-        String script = " def slurper = new groovy.json.JsonSlurper(); "
+        String script = "import com.fasterxml.jackson.databind.ObjectMapper; " +
+                " def slurper = new groovy.json.JsonSlurper(); "
                 + valuesScript
                 + groovyScript
-                + " ObjectMapper oj = new ObjectMapper(); "
+                + "; def oj = new ObjectMapper(); "
                 + " return oj.writeValueAsString(result); ";
 
         Binding binding = new Binding();

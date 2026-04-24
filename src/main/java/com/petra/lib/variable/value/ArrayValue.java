@@ -27,4 +27,9 @@ class ArrayValue extends ValueAbs{
         throw new PetraException("Trying to get list from Object value " + model.getName());
     }
 
+    @Override
+    public Value cloneValue() {
+        return new ObjectValue(getModel());
+    }
+
 }

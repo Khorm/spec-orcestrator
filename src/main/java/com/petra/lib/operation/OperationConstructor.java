@@ -5,6 +5,7 @@ import com.petra.lib.operation.operations.WorkflowExecutingOperation;
 import com.petra.lib.operation.operations.executor.BlockUserOperation;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.transaction.TransactionManager;
 
 public final class OperationConstructor {
 
@@ -21,8 +22,8 @@ public final class OperationConstructor {
      * @throws IllegalArgumentException если любой из обязательных параметров (кроме userActionHandlerMap) равен null
      */
     public static OperationService createActionOperationService(
-            ThreadController threadController) {
-        return new OperationService(threadController);
+            ThreadController threadController, TransactionManager transactionManager) {
+        return new OperationService(threadController, transactionManager);
     }
 
     /**
@@ -34,7 +35,7 @@ public final class OperationConstructor {
      * @throws IllegalArgumentException если любой из параметров равен null
      */
     public static OperationService createWorkflowOperationService(
-            ThreadController threadController) {
+            ThreadController threadController, TransactionManager transactionManager) {
         if (threadController == null) {
             throw new IllegalArgumentException("ThreadController must not be null");
         }
@@ -45,7 +46,7 @@ public final class OperationConstructor {
 //            throw new IllegalArgumentException("AnswerOperation must not be null");
 //        }
 
-        return new OperationService(threadController);
+        return new OperationService(threadController, transactionManager);
     }
 
 

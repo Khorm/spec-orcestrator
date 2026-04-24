@@ -1,13 +1,12 @@
 package com.petra.lib.context.block;
 
-import com.petra.lib.context.enums.ContextState;
-import com.petra.lib.context.enums.BlockType;
-import com.petra.lib.context.enums.ExecutionStatus;
-import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.actor.RemoteProducer;
 import com.petra.lib.context.block.repo.ContextRepo;
+import com.petra.lib.context.enums.BlockType;
+import com.petra.lib.context.enums.ContextState;
+import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.transaction.Transaction;
-import com.petra.lib.transaction.TransactionManager;
+import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -22,29 +21,24 @@ import java.util.UUID;
 public class BlockContextImpl implements Context {
     private ContextEntity contextEntity;
     private final ContextRepo contextRepo;
-    private Transaction transaction;
     private static final List<ContextState> statesOrder
             = List.of(ContextState.STARTED, ContextState.EXECUTED, ContextState.ANSWERED);
     final Identifier blockId;
     final UUID scenarioId;
-    final TransactionManager transactionManager;
 
 
-    public BlockContextImpl(ContextEntity contextEntity, ContextRepo contextRepo,
-                            TransactionManager transactionManager) {
+    public BlockContextImpl(ContextEntity contextEntity, ContextRepo contextRepo) {
         this.contextRepo = contextRepo;
         this.blockId = contextEntity.getConsumerId();
         this.scenarioId = contextEntity.getScenarioId();
-        this.transactionManager = transactionManager;
         this.contextEntity = contextEntity;
     }
 
     public BlockContextImpl(ContextRepo contextRepo,
-                            Identifier blockId, UUID scenarioId, TransactionManager transactionManager) {
+                            Identifier blockId, UUID scenarioId) {
         this.contextRepo = contextRepo;
         this.blockId = blockId;
         this.scenarioId = scenarioId;
-        this.transactionManager = transactionManager;
     }
 
     @Override
@@ -103,31 +97,20 @@ public class BlockContextImpl implements Context {
     }
 
     public boolean create(RemoteProducer producer, BlockType blockType,
-                          ContextState state, ValueContainer outContextValues) {
-        transaction = transactionManager.openNewTransaction();
-        contextEntity = new ContextEntity(scenarioId,  producer,blockType, state, outContextValues);
-        boolean result = contextRepo.insertContext(contextEntity, transaction);
-        transaction.commit();
-        transaction = null;
-        return result;
+                          ContextState state, ValueContainer outContextValues, Transaction transaction) {
+        contextEntity = new ContextEntity(scenarioId, producer, blockType, state, outContextValues);
+        return contextRepo.insertContext(contextEntity, transaction);
 
     }
 
     @Override
-    public void load() {
-        toLoad(false, null);
+    public void load(Transaction transaction) {
+        toLoad(false, transaction);
     }
 
     @Override
-    public void unlockAndSave() {
+    public void save(Transaction transaction) {
         contextRepo.save(contextEntity, transaction);
-        transaction.commit();
-        transaction = null;
-    }
-
-    @Override
-    public boolean lockAndLoad() {
-        return toLoad(true, null);
     }
 
     @Override
@@ -135,10 +118,6 @@ public class BlockContextImpl implements Context {
         return toLoad(true, transaction);
     }
 
-    public void unlockAndDiscard() {
-        transaction.rollback();
-        transaction = null;
-    }
 
     @Override
     public BlockType getBlockType() {
@@ -150,19 +129,10 @@ public class BlockContextImpl implements Context {
         contextEntity.setExecutionStatus(executionStatus);
     }
 
-    private boolean toLoad(boolean isLocking, Transaction transaction) {
-        if (this.transaction != null) {
-            throw new IllegalMonitorStateException("Lock already acquired");
-        }
-        if (transaction == null) {
-            this.transaction = transactionManager.openNewTransaction();
-        }else {
-            this.transaction = transaction;
-        }
-        Optional<ContextEntity> entity = contextRepo.findContext(scenarioId, blockId, transaction, isLocking);
-        if (!isLocking) {
-            this.transaction = null;
-        }
+    private boolean toLoad(boolean isLocking, Transaction tr) {
+
+        Optional<ContextEntity> entity = contextRepo.findContext(scenarioId, blockId, tr, isLocking);
+
         if (entity.isPresent()) {
             contextEntity = entity.get();
             return true;

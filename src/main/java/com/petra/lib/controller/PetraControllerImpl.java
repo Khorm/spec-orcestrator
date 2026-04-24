@@ -1,15 +1,17 @@
 package com.petra.lib.controller;
 
-import com.petra.lib.context.executor.BlockContextExecutor;
-import com.petra.lib.context.executor.WorkflowAnswerExecutor;
+import com.petra.lib.executor.BlockContextExecutor;
+import com.petra.lib.executor.WorkflowAnswerExecutor;
 import com.petra.lib.context.source.SourceContextExecutor;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
-import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.actor.RemoteProducer;
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.remote.dto.SourceRequestDto;
 import com.petra.lib.remote.dto.SourceResponseDto;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.transaction.Transaction;
+import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
@@ -32,7 +34,7 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     final BlockContextExecutor blockContextExecutor;
     final SourceContextExecutor sourceContextExecutor;
     final WorkflowAnswerExecutor workflowAnswerExecutor;
-
+    final TransactionManager transactionManager;
     final ThreadController threadController;
     final WorkflowContextRepo workflowContextRepo;
     volatile boolean isRunning = true;
@@ -97,11 +99,17 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     @Override
     public Result getResult(UUID scenarioId) {
         if (!isRunning) throw new IllegalStateException();
+        Optional<WorkflowContextEntity> optional ;
 
-        Optional<WorkflowContextEntity> optional = workflowContextRepo.findFinishedContext(scenarioId);
-        if (optional.isEmpty()) {
-            throw new NullPointerException("No result");
+        try(Transaction tr = transactionManager.createNewTransaction(true, null)) {
+            optional = workflowContextRepo.findFinishedContext(scenarioId, tr);
+            if (optional.isEmpty()) {
+                throw new NullPointerException("No result");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
         return new Result(optional.get());
     }
 

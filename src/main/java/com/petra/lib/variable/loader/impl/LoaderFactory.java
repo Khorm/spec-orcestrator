@@ -1,37 +1,51 @@
 package com.petra.lib.variable.loader.impl;
 
+import com.petra.lib.constructor.model.RemoteConsumerModel;
 import com.petra.lib.constructor.model.SourceInputVariableModel;
-import com.petra.lib.constructor.model.ValueModelDto;
+import com.petra.lib.constructor.model.ValueLoaderDto;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.loader.impl.source.RemoteSource;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
 public class LoaderFactory {
 
     static class FactoryContext {
         ThreadController threadController;
         Sender sender;
-        Collection<ValueModelDto> variables;
+        //        RemoteConsumerModel remoteConsumerModel;
         Collection<ValueLoader> createdLoaders = new ArrayList<>();
-        Set<Long> availableParents;
+        /**
+         * Коллекция загружаемых переменных
+         */
+        Collection<ValueLoaderDto> loadValues;
 
-        public FactoryContext(ThreadController threadController, Sender sender, Collection<ValueModelDto> variables) {
+        /**
+         * Коллекция всех переменных включая загружаемые
+         */
+        Collection<ValueModel> contextValues;
+
+        public FactoryContext(ThreadController threadController, Sender sender, Collection<ValueLoaderDto> loadValues,
+                              Collection<ValueModel> contextValues) {
             this.threadController = threadController;
             this.sender = sender;
-            this.variables = variables;
-            this.availableParents = variables.stream()
-                    .mapToLong(ValueModelDto::getId).boxed().collect(Collectors.toSet());
+            this.loadValues = loadValues;
+            this.contextValues = contextValues;
         }
 
-        ValueLoader getOrCreateLoader(ValueModelDto variableToCreate) {
+        ValueLoader getOrCreateLoader(ValueLoaderDto variableToCreate) {
             for (ValueLoader valueLoader : createdLoaders) {
                 if (valueLoader.getVariableId().equals(variableToCreate.getId())) {
                     return valueLoader;
@@ -81,71 +95,67 @@ public class LoaderFactory {
             return sender;
         }
 
-        Collection<ValueModelDto> getVariables() {
-            return variables;
+        Set<Long> getAvailableParentIds(Long childId) {
+            return contextValues
+                    .stream().filter(valueModel -> !valueModel.getId().equals(childId))
+                    .mapToLong(ValueModel::getId).boxed().collect(Collectors.toSet());
         }
 
-        Set<Long> getAvailableParentIds() {
-            return availableParents;
+        List<ValueLoader> getChildren(FactoryContext factoryContext, Long parentId) {
+            return loadValues.stream()
+                    .filter(model -> model.isChildOf(parentId))
+                    .map(factoryContext::getOrCreateLoader)
+                    .collect(Collectors.toList());
+        }
+
+        List<Long> getVariablesParents(ValueLoaderDto valueLoaderDto, FactoryContext factoryContext) {
+            return valueLoaderDto.getSourceInputVariableModels().stream()
+                    .filter(sourceInputVariableModel -> factoryContext
+                            .getAvailableParentIds(valueLoaderDto.getId())
+                            .contains(sourceInputVariableModel.getProducerVariable()))
+                    .mapToLong(SourceInputVariableModel::getProducerVariable).boxed().collect(Collectors.toList());
         }
     }
 
-    public static Collection<ValueLoader> createLoaders(Collection<ValueModelDto> modelDtos, ThreadController threadController,
-                                                        Sender sender) {
-        FactoryContext factoryContext = new FactoryContext(threadController, sender, modelDtos);
-        for (ValueModelDto valueModelDto : modelDtos) {
-            factoryContext.getOrCreateLoader(valueModelDto);
+    public static Collection<ValueLoader> createLoaders(ThreadController threadController,
+                                                        Sender sender, Collection<ValueLoaderDto> loadValues,
+                                                        Collection<ValueModel> contextValues) {
+        FactoryContext factoryContext = new FactoryContext(threadController, sender, loadValues, contextValues);
+        for (ValueLoaderDto valueLoaderDto : loadValues) {
+            factoryContext.getOrCreateLoader(valueLoaderDto);
         }
         return factoryContext.createdLoaders;
     }
 
-    private static ValueLoader createInputLoader(FactoryContext factoryContext, ValueModelDto valueModel) {
+    private static ValueLoader createInputLoader(FactoryContext factoryContext, ValueLoaderDto valueModel) {
         List<Long> parents = new ArrayList<>();
-        if (factoryContext.getAvailableParentIds().contains(valueModel.getInputValueId())) {
+        if (factoryContext.getAvailableParentIds(valueModel.getId()).contains(valueModel.getInputValueId())) {
             parents.add(valueModel.getInputValueId());
         }
-        List<ValueLoader> children = getChildren(factoryContext, valueModel.getId());
+        List<ValueLoader> children = factoryContext.getChildren(factoryContext, valueModel.getId());
 
         return new InputLoader(factoryContext.getThreadController(), valueModel,
                 parents, children);
     }
 
 
-    private static ValueLoader createScriptLoader(FactoryContext factoryContext, ValueModelDto valueModel) {
-        List<Long> parents = getVariablesParents(valueModel, factoryContext);
-        List<ValueLoader> children = getChildren(factoryContext, valueModel.getId());
+    private static ValueLoader createScriptLoader(FactoryContext factoryContext, ValueLoaderDto valueModel) {
+        List<Long> parents = factoryContext.getVariablesParents(valueModel, factoryContext);
+        List<ValueLoader> children = factoryContext.getChildren(factoryContext, valueModel.getId());
         return new ScriptLoader(valueModel, factoryContext.getThreadController(), parents, children);
     }
 
 
     private static ValueLoader createSourceLoader(FactoryContext factoryContext,
-                                                  ValueModelDto valueModelDto) {
-
-        List<Long> parents = getVariablesParents(valueModelDto, factoryContext);
-        List<ValueLoader> children = getChildren(factoryContext, valueModelDto.getId());
+                                                  ValueLoaderDto valueLoaderDto) {
+        List<Long> parents = factoryContext.getVariablesParents(valueLoaderDto, factoryContext);
+        List<ValueLoader> children = factoryContext.getChildren(factoryContext, valueLoaderDto.getId());
         return new RemoteSource(factoryContext.getSender(),
                 factoryContext.getThreadController(),
-                valueModelDto.getSourceInputVariableModels(),
-                valueModelDto,
+                valueLoaderDto.getSourceInputVariableModels(),
+                valueLoaderDto,
                 parents, children);
     }
 
-//    private static ValueLoader createEmptyLoader(ThreadController threadController, ValueModelDto valueModel) {
-//        return new EmptyLoader(threadController, valueModel);
-//    }
-
-    private static List<ValueLoader> getChildren(FactoryContext factoryContext, Long parentId) {
-        return factoryContext.getVariables().stream()
-                .filter(model -> model.isChildOf(parentId))
-                .map(factoryContext::getOrCreateLoader)
-                .collect(Collectors.toList());
-    }
-
-    private static List<Long> getVariablesParents(ValueModelDto valueModelDto, FactoryContext factoryContext) {
-        return valueModelDto.getSourceInputVariableModels().stream()
-                .filter(sourceInputVariableModel -> factoryContext.getAvailableParentIds()
-                        .contains(sourceInputVariableModel.getProducerVariable()))
-                .mapToLong(SourceInputVariableModel::getProducerVariable).boxed().collect(Collectors.toList());
-    }
 
 }

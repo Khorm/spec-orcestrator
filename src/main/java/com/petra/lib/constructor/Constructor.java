@@ -3,16 +3,16 @@ package com.petra.lib.constructor;
 import com.petra.lib.constructor.model.ConstructorModel;
 import com.petra.lib.constructor.model.LocalProducerModel;
 import com.petra.lib.constructor.model.LocalSourceModel;
-import com.petra.lib.context.executor.BlockContextExecutor;
+import com.petra.lib.executor.BlockContextExecutor;
 import com.petra.lib.context.ContextService;
-import com.petra.lib.context.executor.WorkflowAnswerExecutor;
+import com.petra.lib.executor.WorkflowAnswerExecutor;
 import com.petra.lib.controller.PetraController;
 import com.petra.lib.operation.OperationConstructor;
 import com.petra.lib.operation.OperationService;
-import com.petra.lib.operation.actor.ActorFactory;
-import com.petra.lib.operation.actor.LocalProducer;
+import com.petra.lib.actor.ActorFactory;
+import com.petra.lib.actor.LocalProducer;
 import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.operation.actor.LocalSource;
+import com.petra.lib.actor.LocalSource;
 import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
 import com.petra.lib.context.source.SourceContextExecutor;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import static com.petra.lib.context.executor.BlockContextExecutorFactory.createBlockContextExecutor;
+import static com.petra.lib.executor.BlockContextExecutorFactory.createBlockContextExecutor;
 
 public class Constructor {
 
@@ -44,21 +44,21 @@ public class Constructor {
         Sender sender = new HttpSender(threadController);
         ContextRepo contextRepo = RepoFactory.createBlockRepo(transactionManager);
         WorkflowContextRepo workflowContextRepo = RepoFactory.createWorkflowRepo(transactionManager);
-        ContextService contextService = new ContextService(transactionManager, contextRepo, workflowContextRepo);
+        ContextService contextService = new ContextService(contextRepo, workflowContextRepo);
 
 
-        OperationService workflowOperationService = OperationConstructor.createWorkflowOperationService(threadController);
-        OperationService blockOperationService = OperationConstructor.createActionOperationService(threadController);
-        OperationService userWorkflowOperationService = OperationConstructor.createWorkflowOperationService(threadController);
+        OperationService workflowOperationService = OperationConstructor.createWorkflowOperationService(threadController, transactionManager);
+        OperationService blockOperationService = OperationConstructor.createActionOperationService(threadController, transactionManager);
+        OperationService userWorkflowOperationService = OperationConstructor.createWorkflowOperationService(threadController, transactionManager);
 
         Collection<LocalProducer> localProducers = new ArrayList<>();
         for (LocalProducerModel model : constructorModel.getProducers()) {
             localProducers.add(ActorFactory.localProducer(model, petraProperties.getServiceName(), sender,
-                    workflowOperationService,
+                    workflowOperationService, transactionManager,
                     threadController, contextService));
         }
         WorkflowAnswerExecutor workflowAnswerExecutor = new WorkflowAnswerExecutor(localProducers, blockOperationService,
-                contextService,userWorkflowOperationService);
+                contextService,userWorkflowOperationService, transactionManager);
 
         BlockContextExecutor blockContextExecutor = createBlockContextExecutor(workflowOperationService,
                 constructorModel.getConsumers(),blockOperationService, transactionManager, userWorkflowOperationService,
@@ -67,7 +67,7 @@ public class Constructor {
         SourceContextExecutor sourceContextExecutor = createSourceContextExecutor(constructorModel.getSources(),
                 jpaTransactionManager.getEntityManagerFactory(), sourceUserHandlerMap);
 
-        return new PetraControllerImpl(blockContextExecutor, sourceContextExecutor, workflowAnswerExecutor, threadController,
+        return new PetraControllerImpl(blockContextExecutor, sourceContextExecutor, workflowAnswerExecutor,transactionManager, threadController,
                 workflowContextRepo);
     }
 

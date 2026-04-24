@@ -1,6 +1,6 @@
 package com.petra.lib.variable.loader.impl;
 
-import com.petra.lib.constructor.model.ValueModelDto;
+import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.thread.ThreadController;
 import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
@@ -16,7 +16,7 @@ class InputLoader extends LoaderAbs {
     private final Optional<String> extractionString;
 
 
-    InputLoader(ThreadController threadController, ValueModelDto valueModel,
+    InputLoader(ThreadController threadController, ValueLoaderDto valueModel,
                 List<Long> parents, List<ValueLoader> children) {
         super(threadController, valueModel,parents, children);
         this.extractionString = valueModel.getExtractionString() == null || valueModel.getExtractionString().isBlank() ?

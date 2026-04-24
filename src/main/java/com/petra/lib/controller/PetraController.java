@@ -8,6 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface PetraController {
+
+    /**
+     * Execute a Workflow
+     * @param workflowName workflow name
+     * @param version workflow version
+     * @param params workflow parameters
+     */
     void executeWorkflow(String workflowName, String version, Map<String, Object> params);
     void executeWorkflow(String workflowName, String version, Map<String, Object> params, UUID scenarioId);
     Result getResult(UUID scenarioId);

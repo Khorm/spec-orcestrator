@@ -18,16 +18,15 @@ import java.util.UUID;
 
 public class ContextRepoImpl implements ContextRepo {
 
-    private final TransactionManager transactionManager;
-
-
-    public ContextRepoImpl(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
+//    private final TransactionManager transactionManager;
+//
+//
+//    public ContextRepoImpl(TransactionManager transactionManager) {
+//        this.transactionManager = transactionManager;
+//    }
 
     @Override
-    public boolean insertContext(ContextEntity context, Transaction transaction) {
-        return transactionManager.executeInTransaction(tx -> {
+    public boolean insertContext(ContextEntity context, Transaction tx) {
             String sql = "INSERT INTO block_context (scenario_id, consumer_id, consumer_version, consumer_type, " +
                     "context_state, context_execution_status, context_values, " +
                     "producer_id, producer_version, producer_service_name, producer_values) " +
@@ -59,12 +58,11 @@ public class ContextRepoImpl implements ContextRepo {
             } catch (DataIntegrityViolationException e) {
                 return false; // Запись с таким ключом уже существует
             }
-        }, transaction);
     }
 
     @Override
-    public Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId, Transaction transaction, boolean isBlocking) {
-        return transactionManager.executeInTransaction(tx -> {
+    public Optional<ContextEntity> findContext(UUID scenarioId, Identifier consumerId, Transaction tx,
+                                               boolean isBlocking) {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate
                     = new NamedParameterJdbcTemplate(Objects.requireNonNull(tx.getDataSource()));
 
@@ -89,12 +87,10 @@ public class ContextRepoImpl implements ContextRepo {
             } else {
                 return Optional.of(contextEntity.get(0));
             }
-        }, transaction);
     }
 
     @Override
-    public void save(ContextEntity entity, Transaction transaction) {
-        transactionManager.executeInTransaction(tx -> {
+    public void save(ContextEntity entity, Transaction tx) {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate =
                     new NamedParameterJdbcTemplate(Objects
                             .requireNonNull(tx.getDataSource()));
@@ -136,14 +132,12 @@ public class ContextRepoImpl implements ContextRepo {
 
                 namedParameterJdbcTemplate.update(updateSql, updateParams);
             }
-        }, transaction);
     }
 
     @Override
-    public ContextEntity getNotFinishedContexts(Identifier blockId) {
-        return transactionManager.executeInTransaction(transaction -> {
+    public ContextEntity getNotFinishedContexts(Identifier blockId, Transaction tr) {
             NamedParameterJdbcTemplate namedParameterJdbcTemplate
-                    = new NamedParameterJdbcTemplate(Objects.requireNonNull(transaction.getDataSource()));
+                    = new NamedParameterJdbcTemplate(Objects.requireNonNull(tr.getDataSource()));
 
             String sql = "SELECT * FROM block_context WHERE id " +
                     " WHERE consumer_id = :consumerId AND consumer_version = :consumerVersion AND" +
@@ -155,7 +149,6 @@ public class ContextRepoImpl implements ContextRepo {
 
             return namedParameterJdbcTemplate.queryForObject(sql,
                     params, new LoadedContextRowMapper());
-        });
 
     }
 //

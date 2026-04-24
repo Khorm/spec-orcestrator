@@ -2,7 +2,7 @@ package com.petra.lib.variable.loader.impl.source;
 
 import com.petra.lib.PetraException;
 import com.petra.lib.constructor.model.SourceInputVariableModel;
-import com.petra.lib.constructor.model.ValueModelDto;
+import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.remote.dto.SourceRequestDto;
 import com.petra.lib.remote.dto.SourceResponseDto;
@@ -30,7 +30,7 @@ public final class RemoteSource extends LoaderAbs {
     public RemoteSource(Sender sender,
                         ThreadController threadController,
                         Collection<SourceInputVariableModel> sourceInputVariables,
-                        ValueModelDto valueModel,
+                        ValueLoaderDto valueModel,
                         List<Long> parents, List<ValueLoader> children) {
         super(threadController, valueModel, parents, children);
         this.sender = sender;

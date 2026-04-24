@@ -5,7 +5,7 @@ import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.actor.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 
 import java.util.UUID;
@@ -32,19 +32,15 @@ public interface Context {
 
     String getProducerServiceName();
 
-    void unlockAndSave();
+    void save(Transaction transaction);
 
 //    void saveError(Exception e);
 //    void saveRepeat();
-    boolean lockAndLoad();
-
     boolean lockAndLoad(Transaction transaction);
-
-    void unlockAndDiscard();
 
     BlockType getBlockType();
 
     boolean create(RemoteProducer producer, BlockType blockType,
-                   ContextState state, ValueContainer outContextValues);
-    void load();
+                   ContextState state, ValueContainer outContextValues, Transaction transaction);
+    void load(Transaction transaction);
 }

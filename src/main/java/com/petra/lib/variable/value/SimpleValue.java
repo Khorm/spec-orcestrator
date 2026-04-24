@@ -1,5 +1,7 @@
 package com.petra.lib.variable.value;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.PetraException;
 import com.petra.lib.variable.GenericParsers;
 import com.petra.lib.variable.container.ValueDto;
@@ -20,7 +22,18 @@ class SimpleValue extends ValueAbs{
 
     @Override
     public <T> T getParsedValue(Class<T> clazz) {
-        return (T) GenericParsers.getParser(clazz).apply(model.getJsonValue());
+        ObjectMapper oj = new ObjectMapper();
+        try {
+            return oj.readValue(model.getJsonValue(), clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+//        return (T) GenericParsers.getParser(clazz).apply(model.getJsonValue());
+    }
+
+    @Override
+    public Value cloneValue() {
+        return new SimpleValue(getModel());
     }
 
 }

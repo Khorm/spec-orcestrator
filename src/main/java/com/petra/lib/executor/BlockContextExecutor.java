@@ -1,16 +1,18 @@
-package com.petra.lib.context.executor;
+package com.petra.lib.executor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.ContextService;
 import com.petra.lib.context.block.Context;
-import com.petra.lib.context.block.ContextEntity;
 import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.operation.OperationService;
-import com.petra.lib.operation.actor.LocalConsumer;
-import com.petra.lib.operation.actor.RemoteProducer;
+import com.petra.lib.actor.LocalConsumer;
+import com.petra.lib.actor.RemoteProducer;
+import com.petra.lib.transaction.Transaction;
+import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Log4j2
 public class BlockContextExecutor {
-    private final ContextRepo contextRepo;
+    private final TransactionManager transactionManager;
     private final OperationService workflowOperationService;
     private final OperationService actionOperationService;
     private final OperationService userOperationService;
@@ -34,12 +36,12 @@ public class BlockContextExecutor {
     private final ContextService contextService;
 
 
-    public BlockContextExecutor(ContextRepo contextRepo,
+    public BlockContextExecutor(TransactionManager transactionManager,
                                 OperationService workflowOperationService, OperationService userOperationService,
                                 Collection<LocalConsumer> consumers,
                                 OperationService actionOperationService,
                                 ContextService contextService) {
-        this.contextRepo = contextRepo;
+        this.transactionManager = transactionManager;
         this.workflowOperationService = workflowOperationService;
         this.userOperationService = userOperationService;
         this.actionOperationService = actionOperationService;
@@ -47,23 +49,23 @@ public class BlockContextExecutor {
         this.contextService = contextService;
     }
 
-    public void start() {
-        consumerMap.values().stream()
-                .map(localConsumer -> {
-                    ContextEntity entity = contextRepo.getNotFinishedContexts(localConsumer.getIdentifier());
-                    return contextService.createContext(entity);
-                })
-                .forEach(context -> {
-                    if (context.getBlockType() == BlockType.ACTION) {
-                        actionOperationService.executeState(context);
-                    } else if (context.getBlockType() == BlockType.WORKFLOW) {
-                        workflowOperationService.executeState(context);
-                    } else {
-                        throw new IllegalStateException("Wrong block type " + context.getBlockType());
-                    }
-                });
-
-    }
+//    public void start() {
+//        consumerMap.values().stream()
+//                .map(localConsumer -> {
+//                    ContextEntity entity = contextRepo.getNotFinishedContexts(localConsumer.getIdentifier());
+//                    return contextService.createContext(entity);
+//                })
+//                .forEach(context -> {
+//                    if (context.getBlockType() == BlockType.ACTION) {
+//                        actionOperationService.executeState(context);
+//                    } else if (context.getBlockType() == BlockType.WORKFLOW) {
+//                        workflowOperationService.executeState(context);
+//                    } else {
+//                        throw new IllegalStateException("Wrong block type " + context.getBlockType());
+//                    }
+//                });
+//
+//    }
 
 
     public void startWorkflowByUser(String workflowName, String version, Map<String, Object> params) {
@@ -81,15 +83,18 @@ public class BlockContextExecutor {
         }
         if (executingConsumer == null) throw new RuntimeException("No such Workflow");
 
-
+        log.info("Workflow starting by User: {}, id={}", workflowName, scenarioID);
         Context context = contextService.createContext(executingConsumer.getIdentifier(), scenarioID);
         ValueContainer outContainer = ValueContainerFactory.getSimpleContainer(executingConsumer.getOutputVariables());
 
         ObjectMapper mapper = new ObjectMapper();
+        Map<String, ValueModel> consumerValues = executingConsumer.getInputVariables().stream()
+                .collect(Collectors.toMap(ValueModel::getName, Function.identity()));
         Collection<ValueDto> values = new ArrayList<>(params.size());
         params.forEach((s, o) -> {
             try {
-                values.add(new ValueDto(null, s, null, mapper.writeValueAsString(o)));
+                ValueModel thisValue = consumerValues.get(s);
+                values.add(new ValueDto(thisValue.getId(), s, thisValue.getMultiplicityEnm(), mapper.writeValueAsString(o)));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -101,8 +106,14 @@ public class BlockContextExecutor {
                 ValueContainerFactory.getSimpleContainer(values),
                 executingConsumer.getIdentifier()
         );
-        boolean isNewCreated = context.create(remoteProducer, executingConsumer.getBlockType(),
-                ContextState.STARTED, outContainer);
+        boolean isNewCreated;
+        try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
+            isNewCreated = context.create(remoteProducer, executingConsumer.getBlockType(),
+                    ContextState.STARTED, outContainer, transaction);
+
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
         if (!isNewCreated) {
             throw new IllegalArgumentException();
         }
@@ -113,25 +124,32 @@ public class BlockContextExecutor {
         //выгружает контекст из базы и запускает обработку
         LocalConsumer consumer = consumerMap.get(remoteProducer.getConsumerId());
         Context context = contextService.createContext(consumer.getIdentifier(), scenarioId);
+        try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
+            ValueContainer outContainer = ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables());
+            boolean isNewCreated = context.create(remoteProducer, consumer.getBlockType(),
+                    ContextState.STARTED, outContainer, transaction);
 
-        ValueContainer outContainer = ValueContainerFactory.getSimpleContainer(consumer.getOutputVariables());
-        boolean isNewCreated = context.create(remoteProducer, consumer.getBlockType(), ContextState.STARTED, outContainer);
-//        if (!isNewCreated) {
-//            context.load();
-//        }
-        context.lockAndLoad();
-        if (context.getCurrentState() != ContextState.STARTED){
-            return false;
-        }
+            context.lockAndLoad(transaction);
+            if (context.getCurrentState() != ContextState.STARTED) {
+                transaction.rollback();
+                log.info("[{}] Repeating {} - {}", scenarioId, consumer.getName(), consumer.getBlockType());
+                return false;
+            }
 
-        if (consumer.getBlockType() == BlockType.ACTION) {
-            actionOperationService.executeState(context);
-        } else if (consumer.getBlockType() == BlockType.WORKFLOW) {
-            workflowOperationService.executeState(context);
-        } else {
-            throw new IllegalStateException("Wrong block type " + consumer.getBlockType());
+            log.info("[{}] Starting {} - {}", scenarioId, consumer.getName(), consumer.getBlockType());
+            if (consumer.getBlockType() == BlockType.ACTION) {
+                actionOperationService.executeState(context);
+            } else if (consumer.getBlockType() == BlockType.WORKFLOW) {
+                workflowOperationService.executeState(context);
+            } else {
+                transaction.rollback();
+                throw new IllegalStateException("Wrong block type " + consumer.getBlockType());
+            }
+            transaction.commit();
+            return true;
+        }catch (Exception e){
+            throw new RuntimeException(e);
         }
-        return true;
 
     }
 
