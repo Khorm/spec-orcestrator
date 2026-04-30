@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Log4j2
-class TimerThread {
+public class TimerThread extends Thread{
 
     volatile boolean isRunning = true;
     final ContextRepo contextRepo;
@@ -22,11 +22,11 @@ class TimerThread {
     final TransactionManager transactionManager;
     final BlockContextExecutor blockContextExecutor;
 
+    @Override
     public void run() {
         try {
             while (isRunning) {
                 TimeUnit.SECONDS.sleep(TIMER_SECONDS);
-
                 try (Transaction transaction = transactionManager.createNewTransaction(true, null)) {
                     List<ContextEntity> notFinishedList = contextRepo.getNotFinishedContexts(serviceName, TIMER_SECONDS, transaction);
                     for (ContextEntity entity : notFinishedList) {
@@ -39,9 +39,15 @@ class TimerThread {
                     log.error("Error in timer thread", e);
                     throw new RuntimeException(e);
                 }
+
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void stopTimer(){
+        isRunning = false;
+        this.interrupt();
     }
 }

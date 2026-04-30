@@ -29,26 +29,26 @@ public class HttpSender implements Sender {
     }
 
     private void sendToBlock(MessageDto messageDto, String serviceName, SenderCallback senderCallback, String command) {
-        threadController.executeUnlimitedPoolTask(() -> {
+        threadController.executeRequestPoolTask(() -> {
             try {
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 HttpEntity<MessageDto> entity = new HttpEntity<>(messageDto, headers);
 
-                ResponseEntity<String> response
+                ResponseEntity<MessageResponse> response
                         = restTemplate.exchange("http://" + serviceName + ":8080/" + command ,
-                        HttpMethod.POST, entity, String.class);
+                        HttpMethod.POST, entity, MessageResponse.class);
 
                 if (response.getStatusCode() == HttpStatus.OK) {
-                    threadController.executeUnlimitedPoolTask(()
-                            -> senderCallback.answer(new MessageResponse(response.getStatusCode(), response.getBody())));
+                    threadController.executeLimitedPoolTask(()
+                            -> senderCallback.answer(response.getBody()));
 
                 } else {
-                    threadController.executeUnlimitedPoolTask(()
-                            -> senderCallback.error(null, new MessageResponse(response.getStatusCode(), null)));
+                    threadController.executeLimitedPoolTask(()
+                            -> senderCallback.error(null, response.getBody()));
                 }
             } catch (Exception e) {
-                threadController.executeUnlimitedPoolTask(()
+                threadController.executeLimitedPoolTask(()
                         -> senderCallback.error(e, null));
             }
         });

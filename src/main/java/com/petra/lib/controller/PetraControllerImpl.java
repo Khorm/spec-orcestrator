@@ -6,10 +6,12 @@ import com.petra.lib.context.source.SourceContextExecutor;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
 import com.petra.lib.actor.RemoteProducer;
+import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.remote.dto.SourceRequestDto;
 import com.petra.lib.remote.dto.SourceResponseDto;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.timer.TimerThread;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
@@ -30,13 +32,14 @@ import java.util.UUID;
 @Log4j2
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
-public class PetraControllerImpl implements PetraController, HealthIndicator, SmartLifecycle {
+public class PetraControllerImpl implements PetraController, HealthIndicator, SmartLifecycle, RequestController {
     final BlockContextExecutor blockContextExecutor;
     final SourceContextExecutor sourceContextExecutor;
     final WorkflowAnswerExecutor workflowAnswerExecutor;
     final TransactionManager transactionManager;
     final ThreadController threadController;
     final WorkflowContextRepo workflowContextRepo;
+    final TimerThread timer;
     volatile boolean isRunning = true;
 
 
@@ -45,7 +48,8 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
      *
      * @param messageDto
      */
-    public boolean requestBlock(MessageDto messageDto) {
+    @Override
+    public MessageResponse requestBlock(MessageDto messageDto) {
         if (!isRunning) throw new IllegalStateException();
         return blockContextExecutor.startContext(messageDto.getScenarioId(), createProducer(messageDto));
     }
@@ -56,6 +60,7 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
      * @param messageDto
      * @return
      */
+    @Override
     public SourceResponseDto requestSource(SourceRequestDto messageDto) {
         if (!isRunning) throw new IllegalStateException();
         ValueContainer valueContainer = sourceContextExecutor.startContext(messageDto);
@@ -67,6 +72,7 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
      *
      * @param messageDto
      */
+    @Override
     public void blockAnswer(MessageDto messageDto) {
         if (!isRunning) throw new IllegalStateException();
         Identifier blockId = new Identifier(messageDto.getSenderId(), messageDto.getSenderVersion());
@@ -85,9 +91,9 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     }
 
     @Override
-    public void executeWorkflow(String workflowName, String version, Map<String, Object> params) {
+    public UUID executeWorkflow(String workflowName, String version, Map<String, Object> params) {
         if (!isRunning) throw new IllegalStateException();
-        blockContextExecutor.startWorkflowByUser(workflowName, version, params);
+        return blockContextExecutor.startWorkflowByUser(workflowName, version, params);
     }
 
     @Override
@@ -132,12 +138,14 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     @Override
     public void start() {
         isRunning = true;
+        timer.start();
     }
 
     @Override
     public void stop() {
         System.out.println("End signal received. Waiting for tasks to complete");
         isRunning = false;
+        timer.stopTimer();
         // 1. Логика ожидания: например, проверяем счетчик активных задач
         do {
             try {

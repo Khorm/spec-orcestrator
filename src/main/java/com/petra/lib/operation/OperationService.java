@@ -11,6 +11,8 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Отвечает за вызов операций переключающий стейты
@@ -28,13 +30,14 @@ public class OperationService {
     }
 
     private synchronized void executeState(Context blockContext, ContextState state) {
-        if (state == null) return;
-        threadController.executeUnlimitedPoolTask(() -> {
+        if (state == null) throw new NullPointerException("No next states");
+
+        threadController.executeLimitedPoolTask(() -> {
             try {
                 operationsByStates.get(state).execute(blockContext, this);
             } catch (Exception e) {
                 log.error("{} Operation error {}",blockContext.getScenarioId(), e);
-                try (Transaction transaction = transactionManager.createNewTransaction(false, null)) {
+                transactionManager.executeInTransaction(transaction -> {
                     blockContext.lockAndLoad(transaction);
                     boolean stateResult = blockContext.setState(ContextState.EXECUTED);
                     if (stateResult) {
@@ -43,40 +46,18 @@ public class OperationService {
                     blockContext.save(transaction);
                     transaction.commit();
                     executeState(blockContext);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    throw new RuntimeException(ex);
-                }
+                });
             }
         });
     }
 
     public void addOperation(Operation operation) {
         operationsByStates.put(operation.getState(), operation);
-//        executingStates.add(operation.getState());
     }
 
 
     private ContextState getNextState(ContextState currentState) {
         return currentState.getNext();
-//        if (currentState == ContextState.ANSWERED) {
-//            return null;
-//        }
-//
-//        if (currentState == ContextState.STARTED) {
-//            for (ContextState state : executingStates) {
-//                if (state == ContextState.EXECUTED){
-//                    return state;
-//                }
-//            }
-//        }
-//
-//        for (int i = 0; i < executingStates.size() ; i++) {
-//            if (executingStates.get(i) == currentState) {
-//                return executingStates.get(i + 1);
-//            }
-//        }
-//        throw new NullPointerException();
     }
 
 }

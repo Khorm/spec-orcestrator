@@ -15,13 +15,11 @@ public interface PetraController {
      * @param version workflow version
      * @param params workflow parameters
      */
-    void executeWorkflow(String workflowName, String version, Map<String, Object> params);
+    UUID executeWorkflow(String workflowName, String version, Map<String, Object> params);
     void executeWorkflow(String workflowName, String version, Map<String, Object> params, UUID scenarioId);
     Result getResult(UUID scenarioId);
 
-    boolean requestBlock(MessageDto messageDto);
-    SourceResponseDto requestSource(SourceRequestDto messageDto);
-    void blockAnswer(MessageDto messageDto);
+
 
 
 }

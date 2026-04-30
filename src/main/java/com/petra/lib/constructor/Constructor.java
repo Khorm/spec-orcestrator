@@ -10,7 +10,7 @@ import com.petra.lib.controller.PetraController;
 import com.petra.lib.operation.OperationConstructor;
 import com.petra.lib.operation.OperationService;
 import com.petra.lib.actor.ActorFactory;
-import com.petra.lib.actor.LocalProducer;
+import com.petra.lib.actor.producer.LocalProducer;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.actor.LocalSource;
 import com.petra.lib.context.block.repo.ContextRepo;

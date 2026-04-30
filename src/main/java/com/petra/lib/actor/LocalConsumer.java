@@ -11,6 +11,8 @@ import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
+import com.petra.lib.variable.container.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerFactory;
 import com.petra.lib.variable.value.Value;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,6 +24,7 @@ import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 @Log4j2
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -40,9 +43,13 @@ public class LocalConsumer {
     @Getter
     List<ValueModel> outputVariables;
     UserActionHandler userActionHandler;
+    TransactionManager transactionManager;
+
+
 
     LocalConsumer(Identifier identifier, BlockType blockType, String name,
-                  List<ValueModel> inputVariables, List<ValueModel> outputVariables, UserActionHandler userActionHandler) {
+                  List<ValueModel> inputVariables, List<ValueModel> outputVariables, UserActionHandler userActionHandler,
+                  TransactionManager transactionManager) {
         this.identifier = identifier;
         this.blockType = blockType;
         this.name = name;
@@ -50,6 +57,29 @@ public class LocalConsumer {
         this.inputVariables = Collections.unmodifiableList(inputVariables);
         this.outputVariables = Collections.unmodifiableList(outputVariables);
         this.userActionHandler = userActionHandler;
+        this.transactionManager = transactionManager;
+
+    }
+
+    public boolean start(Context context, RemoteProducer remoteProducer, OperationService operationService){
+        return transactionManager.executeInTransaction(tr -> {
+            ValueContainer outContainer = ValueContainerFactory.getSimpleContainer(outputVariables);
+            boolean isNewCreated = context.insert(remoteProducer, blockType,
+                    ContextState.STARTED, outContainer, tr);
+
+
+            context.lockAndLoad(tr);
+            if (context.getCurrentState() != ContextState.STARTED) {
+                tr.rollback();
+                log.info("[{}] Repeating {} - {}", context.getScenarioId(), name, blockType);
+                return false;
+            }
+
+            log.info("[{}] Starting {} - {}", context.getScenarioId(), name, blockType);
+            operationService.executeState(context);
+            context.save(tr);
+            return true;
+        });
     }
 
     public void execute(Context blockContext, OperationService operationService, TransactionManager transactionManager) {

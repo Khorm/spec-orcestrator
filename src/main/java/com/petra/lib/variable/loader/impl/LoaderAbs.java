@@ -41,7 +41,7 @@ public abstract class LoaderAbs implements ValueLoader {
             return;
         }
         log.info("{} Loading variable {}",context.getScenarioId(),valueModel.getName());
-        threadController.executeUnlimitedPoolTask(() -> {
+        threadController.executeLimitedPoolTask(() -> {
             try {
                 Value result = executeLoad(context);
                 boolean isExit = context.registerLoadedValue(result);

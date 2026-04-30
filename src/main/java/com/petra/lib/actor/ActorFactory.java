@@ -1,5 +1,8 @@
 package com.petra.lib.actor;
 
+import com.petra.lib.actor.producer.LocalProducer;
+import com.petra.lib.actor.producer.RemoteConsumer;
+import com.petra.lib.actor.producer.RemoteConsumerLinkedList;
 import com.petra.lib.constructor.model.LocalConsumerModel;
 import com.petra.lib.constructor.model.LocalProducerModel;
 import com.petra.lib.constructor.model.RemoteConsumerModel;
@@ -22,9 +25,10 @@ public class ActorFactory {
                                               ThreadController threadController, ContextService contextService) {
 
 
+        RemoteConsumerLinkedList linkedList = new RemoteConsumerLinkedList(remoteConsumer(currentServiceName, localProducerModel.getConsumers().iterator(),
+                sender, threadController, contextService));
         return new LocalProducer(new Identifier(localProducerModel.getId(), localProducerModel.getVersion()),
-                remoteConsumer(currentServiceName, localProducerModel.getConsumers().iterator(),
-                        sender, threadController, contextService), localProducerModel.getName(),
+                linkedList, localProducerModel.getName(),
                 VariableManagerFactory.createEndLoaders(localProducerModel, threadController, sender),
                 contextService, transactionManager);
     }
@@ -44,10 +48,10 @@ public class ActorFactory {
                 sender);
     }
 
-    public static LocalConsumer localConsumer(LocalConsumerModel localConsumerModel, UserActionHandler userActionHandler) {
+    public static LocalConsumer localConsumer(LocalConsumerModel localConsumerModel, UserActionHandler userActionHandler, TransactionManager transactionManager) {
         Identifier consumerIdentifier = new Identifier(localConsumerModel.getId(), localConsumerModel.getVersion());
         return new LocalConsumer(consumerIdentifier, BlockType.valueOf(localConsumerModel.getBlockType()),
                 localConsumerModel.getName(), localConsumerModel.getInputModels(), localConsumerModel.getOutputModels(),
-                userActionHandler);
+                userActionHandler, transactionManager);
     }
 }

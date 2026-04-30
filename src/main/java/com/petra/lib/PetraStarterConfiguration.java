@@ -6,14 +6,17 @@ import com.petra.lib.constructor.PetraProperties;
 import com.petra.lib.constructor.model.ConstructorModel;
 import com.petra.lib.context.source.SourceUserHandler;
 import com.petra.lib.controller.PetraController;
+import com.petra.lib.controller.RequestController;
 import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.petra.lib.remote.HttpListener;
+import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.remote.dto.SourceRequestDto;
 import com.petra.lib.remote.dto.SourceResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ import static org.springframework.web.servlet.function.RouterFunctions.route;
 
 @AutoConfiguration
 @ConditionalOnClass(PetraController.class)
+@EnableConfigurationProperties(PetraProperties.class)
 public class PetraStarterConfiguration {
 
     @Value("${spring.datasource.url:jdbc:postgresql://192.168.0.10:5432/postgres}")
@@ -53,25 +57,18 @@ public class PetraStarterConfiguration {
     }
 
     @Bean(name = "petraHttpServer")
-    public RouterFunction<ServerResponse> httpListener(PetraController petraController) {
-
-//        @RestController
-//        class PetraHttpListener extends HttpListener{
-//            public PetraHttpListener(PetraController petraControllerImpl) {
-//                super(petraControllerImpl);
-//            }
-//        }
+    public RouterFunction<ServerResponse> httpListener(RequestController petraController) {
 
         HttpListener httpListener = new HttpListener(petraController);
         return route()
-                .POST("/execute_block", request -> {
-                    ResponseEntity<String> r = httpListener.blockRequest(request.body(MessageDto.class));
+                .POST("execute_block", request -> {
+                    ResponseEntity<MessageResponse> r = httpListener.blockRequest(request.body(MessageDto.class));
                     if (r.getStatusCode() == HttpStatus.OK) {
                         return ServerResponse.ok().body(r.getBody());
                     }
                     return ServerResponse.status(r.getStatusCode()).build();
                 })
-                .POST("/answer_block", request -> {
+                .POST("answer_block", request -> {
                     ResponseEntity<HttpStatus> r = httpListener.blockAnswer(request.body(MessageDto.class));
                     return ServerResponse.status(r.getStatusCode()).build();
                 })

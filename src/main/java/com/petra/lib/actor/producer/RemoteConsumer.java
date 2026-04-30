@@ -1,13 +1,19 @@
-package com.petra.lib.actor;
+package com.petra.lib.actor.producer;
 
+import com.petra.lib.actor.RemoteConsumerResultCallback;
 import com.petra.lib.constructor.model.RemoteConsumerModel;
+import com.petra.lib.context.ContextService;
+import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.workflow.WorkflowContext;
 import com.petra.lib.operation.OperationService;
 import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.Sender;
 import com.petra.lib.remote.SenderCallback;
 import com.petra.lib.remote.dto.MessageDto;
+import com.petra.lib.transaction.Transaction;
+import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.ConsumerIdentifier;
+import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
@@ -16,6 +22,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Represents a remote consumer in a workflow.
@@ -34,7 +41,7 @@ public class RemoteConsumer {
     private final String consumerName;
 
 
-    RemoteConsumer(RemoteConsumerModel remoteConsumerModel, ValueContextManager valueContextManager,
+    public RemoteConsumer(RemoteConsumerModel remoteConsumerModel, ValueContextManager valueContextManager,
                    String currentServiceName, RemoteConsumer nextConsumer,
                    Sender sender) {
         this.id = new ConsumerIdentifier(remoteConsumerModel.getId(), remoteConsumerModel.getVersion(),
@@ -49,10 +56,9 @@ public class RemoteConsumer {
 
 
     public void execute(ValueContainer workflowContextVariables, UUID scenarioId,
-                        RemoteConsumerResultCallback skip, OperationService operationService,
-                        RemoteConsumerResultCallback error) {
+                        RemoteConsumerResultCallback skip, OperationService operationService) {
 
-        RemoteConsumer thisConsumer = this;
+//        RemoteConsumer thisConsumer = this;
 
         log.info("{} remote consumer {} variables loading", scenarioId, consumerName);
         valueContextManager.start(workflowContextVariables, scenarioId, new VariableCallback() {
@@ -63,13 +69,13 @@ public class RemoteConsumer {
                 workflowContextVariables.getValues().forEach(loadedAndWorkflowVariables::setValue);
 
                 log.info("{} remote consumer {} variables loaded", scenarioId, consumerName);
-                sendMessage(scenarioId, loadedAndWorkflowVariables, skip, operationService, error);
+                sendMessage(scenarioId, loadedAndWorkflowVariables, skip, operationService);
             }
 
             @Override
             public void error(Exception e) {
                 log.info("{} remote consumer {} variables error", scenarioId, consumerName);
-                error.callback(scenarioId, thisConsumer, operationService);
+                skip.callback(ValueContainerFactory.getSimpleContainer(), id.getConsumerId(), scenarioId, ExecutionStatus.ERROR, operationService);
             }
         });
     }
@@ -89,8 +95,7 @@ public class RemoteConsumer {
 
 
     private void sendMessage(UUID scenarioId, ValueContainer inputValueContainer, RemoteConsumerResultCallback skip,
-                             OperationService operationService,
-                             RemoteConsumerResultCallback error) {
+                             OperationService operationService) {
 
         MessageDto messageDto = new MessageDto(
                 scenarioId,
@@ -110,7 +115,9 @@ public class RemoteConsumer {
             @Override
             public void answer(MessageResponse messageResponse) {
                 if (messageResponse.isRepeat()) {
-                    skip.callback(scenarioId, thisConsumer, operationService);
+                    ValueContainer resultVariableContainer = ValueContainerFactory.getSimpleContainer(messageResponse.getResultValues());
+                    ExecutionStatus repeatStatus = messageResponse.isError() ? ExecutionStatus.ERROR: ExecutionStatus.OK;
+                    skip.callback(resultVariableContainer, id.getConsumerId(), scenarioId, repeatStatus, operationService);
                     log.info("{} remote consumer {} message repeat", scenarioId, consumerName);
                     return;
                 }
@@ -120,7 +127,7 @@ public class RemoteConsumer {
             @Override
             public void error(Exception e, MessageResponse messageResponse) {
                 log.info("{} remote consumer {} message sending error {}", scenarioId, consumerName, e);
-                error.callback(scenarioId, thisConsumer, operationService);
+                skip.callback(ValueContainerFactory.getSimpleContainer(), id.getConsumerId(), scenarioId, ExecutionStatus.ERROR, operationService);
             }
         });
     }

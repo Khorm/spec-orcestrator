@@ -5,7 +5,7 @@ import com.petra.lib.context.ContextService;
 import com.petra.lib.operation.operations.UserAnswerOperation;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.actor.LocalConsumer;
-import com.petra.lib.actor.LocalProducer;
+import com.petra.lib.actor.producer.LocalProducer;
 import com.petra.lib.actor.ActorFactory;
 import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.operation.OperationService;
@@ -65,7 +65,7 @@ public final class BlockContextExecutorFactory {
         AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager);
 
         Map<Identifier, LocalConsumer> userHandlers = new HashMap<>();
-        Collection<LocalConsumer> localConsumers = createLocalConsumers(consumerModels, userActionHandlerMap);
+        Collection<LocalConsumer> localConsumers = createLocalConsumers(consumerModels, userActionHandlerMap, transactionManager);
         for (LocalConsumer model : localConsumers) {
             userHandlers.put(model.getIdentifier(), model);
         }
@@ -83,17 +83,18 @@ public final class BlockContextExecutorFactory {
 
         System.out.println("localConsumers = " + localConsumers.size());
         System.out.println("localProducers = " + localProducers.size());
+        ConsumerCollection consumerCollection = new ConsumerCollection(localConsumers);
         return new BlockContextExecutor(
-                transactionManager, workflowOperationService,userWorkflowOperationService, localConsumers, activityOperationService,
-                contextService
+                workflowOperationService, consumerCollection,userWorkflowOperationService,contextService,
+                activityOperationService
         );
     }
 
     private static Collection<LocalConsumer> createLocalConsumers(Collection<LocalConsumerModel> consumerModels,
-                                                                  Map<String, UserActionHandler> userActionHandlerMap) {
+                                                                  Map<String, UserActionHandler> userActionHandlerMap, TransactionManager manager) {
         Collection<LocalConsumer> localConsumers = new ArrayList<>();
         for (LocalConsumerModel model : consumerModels) {
-            localConsumers.add(ActorFactory.localConsumer(model, userActionHandlerMap.get(model.getName())));
+            localConsumers.add(ActorFactory.localConsumer(model, userActionHandlerMap.get(model.getName()), manager));
         }
         return localConsumers;
     }
