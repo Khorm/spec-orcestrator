@@ -3,6 +3,7 @@ package com.petra.lib.variable.container;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.petra.lib.utils.JsonUtils;
 import com.petra.lib.variable.enums.Multiplicity;
 
 import java.util.Base64;
@@ -75,6 +76,13 @@ public class ValueDto {
 
     public Multiplicity getMultiplicity() {
         return multiplicity;
+    }
+
+    public String getExtractedJsonValue(String extractionString) {
+        if (multiplicity == Multiplicity.COLLECTION) {
+            throw new UnsupportedOperationException("Extraction is not aloud on COLLECTION in variable " + name);
+        }
+        return JsonUtils.getExtractedJsonValue(extractionString, jsonVariable);
     }
 
 }

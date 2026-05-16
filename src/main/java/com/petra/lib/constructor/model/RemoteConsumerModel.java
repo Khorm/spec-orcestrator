@@ -9,6 +9,7 @@ public class RemoteConsumerModel {
     private Long id;
     private String version;
     private String serviceName;
+    private String blockType;
 
     private Long workflowId;
     private String workflowVersion;

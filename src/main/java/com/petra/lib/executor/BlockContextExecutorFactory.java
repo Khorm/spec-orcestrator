@@ -1,26 +1,6 @@
 package com.petra.lib.executor;
 
-import com.petra.lib.constructor.model.LocalConsumerModel;
-import com.petra.lib.context.ContextService;
-import com.petra.lib.operation.operations.UserAnswerOperation;
-import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.actor.LocalConsumer;
-import com.petra.lib.actor.producer.LocalProducer;
-import com.petra.lib.actor.ActorFactory;
-import com.petra.lib.context.block.repo.ContextRepo;
-import com.petra.lib.operation.OperationService;
-import com.petra.lib.operation.operations.AnswerOperation;
-import com.petra.lib.operation.operations.WorkflowExecutingOperation;
-import com.petra.lib.operation.operations.executor.BlockUserOperation;
-import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
-import com.petra.lib.remote.Sender;
-import com.petra.lib.transaction.TransactionManager;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
+@Deprecated
 public final class BlockContextExecutorFactory {
     BlockContextExecutorFactory() {
     }
@@ -48,54 +28,46 @@ public final class BlockContextExecutorFactory {
      * @implNote Метод является статической фабрикой. Каждый вызов возвращает новый независимый экземпляр.
      * Потокобезопасность результирующего объекта зависит от переданных зависимостей.
      */
-    public static BlockContextExecutor createBlockContextExecutor(OperationService workflowOperationService,
-                                                                  Collection<LocalConsumerModel> consumerModels,
-                                                                  OperationService activityOperationService,
-                                                                  TransactionManager transactionManager,
-                                                                  OperationService userWorkflowOperationService,
-                                                                  Sender sender,
-                                                                  Map<String, UserActionHandler> userActionHandlerMap, ContextService contextService,
-                                                                  ContextRepo contextRepo, Collection<LocalProducer> localProducers
-    ) {
+//    public static BlockContextExecutor createBlockContextExecutor(ConsumerCollection consumerCollection) {
 
-        WorkflowExecutingOperation workflowExecutingOperation = new WorkflowExecutingOperation(localProducers);
+//        WorkflowExecutingOperation workflowExecutingOperation = new WorkflowExecutingOperation(localProducers);
+//
+//        UserAnswerOperation userAnswerOperation = new UserAnswerOperation(transactionManager);
+//
+//        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager);
 
-        UserAnswerOperation userAnswerOperation = new UserAnswerOperation(transactionManager);
+//        Map<Identifier, LocalActivity> userHandlers = new HashMap<>();
+//        Collection<LocalConsumer> localConsumers = createLocalConsumers(consumerModels, userActionHandlerMap, transactionManager);
+//        for (LocalActivity model : localConsumers) {
+//            userHandlers.put(model.getIdentifier(), model);
+//        }
 
-        AnswerOperation answerOperation = new AnswerOperation(sender, transactionManager);
+//        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userHandlers);
+//
+//        activityOperationService.addOperation(blockUserOperation);
+//        activityOperationService.addOperation(answerOperation);
+//
+//        workflowOperationService.addOperation(workflowExecutingOperation);
+//        workflowOperationService.addOperation(answerOperation);
+//
+//        userWorkflowOperationService.addOperation(workflowExecutingOperation);
+//        userWorkflowOperationService.addOperation(userAnswerOperation);
 
-        Map<Identifier, LocalConsumer> userHandlers = new HashMap<>();
-        Collection<LocalConsumer> localConsumers = createLocalConsumers(consumerModels, userActionHandlerMap, transactionManager);
-        for (LocalConsumer model : localConsumers) {
-            userHandlers.put(model.getIdentifier(), model);
-        }
+//        System.out.println("localConsumers = " + localConsumers.size());
+//        System.out.println("localProducers = " + localProducers.size());
+//        ConsumerCollection consumerCollection = new ConsumerCollection(localConsumers);
+//        return new BlockContextExecutor(
+//                workflowOperationService, consumerCollection, userWorkflowOperationService, contextService,
+//                activityOperationService
+//        );
+//    }
 
-        BlockUserOperation blockUserOperation = new BlockUserOperation(transactionManager, userHandlers);
-
-        activityOperationService.addOperation(blockUserOperation);
-        activityOperationService.addOperation(answerOperation);
-
-        workflowOperationService.addOperation(workflowExecutingOperation);
-        workflowOperationService.addOperation(answerOperation);
-
-        userWorkflowOperationService.addOperation(workflowExecutingOperation);
-        userWorkflowOperationService.addOperation(userAnswerOperation);
-
-        System.out.println("localConsumers = " + localConsumers.size());
-        System.out.println("localProducers = " + localProducers.size());
-        ConsumerCollection consumerCollection = new ConsumerCollection(localConsumers);
-        return new BlockContextExecutor(
-                workflowOperationService, consumerCollection,userWorkflowOperationService,contextService,
-                activityOperationService
-        );
-    }
-
-    private static Collection<LocalConsumer> createLocalConsumers(Collection<LocalConsumerModel> consumerModels,
-                                                                  Map<String, UserActionHandler> userActionHandlerMap, TransactionManager manager) {
-        Collection<LocalConsumer> localConsumers = new ArrayList<>();
-        for (LocalConsumerModel model : consumerModels) {
-            localConsumers.add(ActorFactory.localConsumer(model, userActionHandlerMap.get(model.getName()), manager));
-        }
-        return localConsumers;
-    }
+//    private static Collection<LocalActivity> createLocalConsumers(Collection<LocalConsumerModel> consumerModels,
+//                                                                  Map<String, UserActivityHandler> userActionHandlerMap, TransactionManager manager) {
+//        Collection<LocalActivity> localConsumers = new ArrayList<>();
+//        for (LocalConsumerModel model : consumerModels) {
+//            localConsumers.add(ActorFactory.localConsumer(model, userActionHandlerMap.get(model.getName()), manager));
+//        }
+//        return localConsumers;
+//    }
 }

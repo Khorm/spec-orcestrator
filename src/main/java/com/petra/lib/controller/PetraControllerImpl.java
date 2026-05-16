@@ -1,11 +1,11 @@
 package com.petra.lib.controller;
 
-import com.petra.lib.executor.BlockContextExecutor;
-import com.petra.lib.executor.WorkflowAnswerExecutor;
-import com.petra.lib.context.source.SourceContextExecutor;
+import com.petra.lib.actor.remote.RemoteProducer;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
-import com.petra.lib.actor.RemoteProducer;
+import com.petra.lib.executor.BlockContextExecutor;
+import com.petra.lib.executor.RepeatException;
+import com.petra.lib.executor.WorkflowAnswerExecutor;
 import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.dto.MessageDto;
 import com.petra.lib.remote.dto.SourceRequestDto;
@@ -15,7 +15,6 @@ import com.petra.lib.timer.TimerThread;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PetraControllerImpl implements PetraController, HealthIndicator, SmartLifecycle, RequestController {
     final BlockContextExecutor blockContextExecutor;
-    final SourceContextExecutor sourceContextExecutor;
     final WorkflowAnswerExecutor workflowAnswerExecutor;
     final TransactionManager transactionManager;
     final ThreadController threadController;
@@ -51,7 +49,8 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     @Override
     public MessageResponse requestBlock(MessageDto messageDto) {
         if (!isRunning) throw new IllegalStateException();
-        return blockContextExecutor.startContext(messageDto.getScenarioId(), createProducer(messageDto));
+        RemoteProducer remoteProducer = createProducer(messageDto);
+        return blockContextExecutor.start(messageDto.getScenarioId(), remoteProducer);
     }
 
     /**
@@ -63,8 +62,14 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
     @Override
     public SourceResponseDto requestSource(SourceRequestDto messageDto) {
         if (!isRunning) throw new IllegalStateException();
-        ValueContainer valueContainer = sourceContextExecutor.startContext(messageDto);
-        return messageDto.toOutput(valueContainer);
+
+        Identifier consumerId = new Identifier(messageDto.getConsumerSourceId(), messageDto.getConsumerSourceVersion());
+        RemoteProducer remoteProducer = new RemoteProducer(null, null, messageDto.getInputValues(), consumerId);
+        MessageResponse response = blockContextExecutor.start(messageDto.getScenarioId(), remoteProducer);
+        return new SourceResponseDto(messageDto.getScenarioId(),
+                messageDto.getConsumerSourceId(),
+                messageDto.getConsumerSourceVersion(),
+                response.getResultValues());
     }
 
     /**
@@ -78,7 +83,7 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
         Identifier blockId = new Identifier(messageDto.getSenderId(), messageDto.getSenderVersion());
         Identifier workflowId = new Identifier(messageDto.getReceiverId(), messageDto.getReceiverVersion());
 
-        workflowAnswerExecutor.handleAnswerFromBlock(ValueContainerFactory.getSimpleContainer(messageDto.getTransmittedValues()),
+        workflowAnswerExecutor.handleAnswerFromBlock(ValueContainerFactory.getSimpleContainerByDtos(messageDto.getTransmittedValues()),
                 blockId, messageDto.getScenarioId(), workflowId, messageDto.getStatus());
     }
 
@@ -87,27 +92,29 @@ public class PetraControllerImpl implements PetraController, HealthIndicator, Sm
         Identifier identifier = new Identifier(messageDto.getSenderId(), messageDto.getSenderVersion());
         Identifier consumerId = new Identifier(messageDto.getReceiverId(), messageDto.getReceiverVersion());
         return new RemoteProducer(identifier, messageDto.getSenderServiceURL(),
-                ValueContainerFactory.getSimpleContainer(messageDto.getTransmittedValues()), consumerId);
+                ValueContainerFactory.getSimpleContainerByDtos(messageDto.getTransmittedValues()), consumerId);
     }
 
     @Override
-    public UUID executeWorkflow(String workflowName, String version, Map<String, Object> params) {
+    public UUID executeWorkflow(String workflowName, String version, Map<String, Object> params) throws RepeatException {
         if (!isRunning) throw new IllegalStateException();
-        return blockContextExecutor.startWorkflowByUser(workflowName, version, params);
+        UUID scenarioID = UUID.randomUUID();
+        blockContextExecutor.startFromUser(scenarioID, workflowName, version, params);
+        return scenarioID;
     }
 
     @Override
-    public void executeWorkflow(String workflowName, String version, Map<String, Object> params, UUID scenarioId) {
+    public void executeWorkflow(String workflowName, String version, Map<String, Object> params, UUID scenarioId) throws RepeatException {
         if (!isRunning) throw new IllegalStateException();
-        blockContextExecutor.startWorkflowByUser(workflowName, version, params, scenarioId);
+        blockContextExecutor.startFromUser(scenarioId, workflowName, version, params);
     }
 
     @Override
     public Result getResult(UUID scenarioId) {
         if (!isRunning) throw new IllegalStateException();
-        Optional<WorkflowContextEntity> optional ;
+        Optional<WorkflowContextEntity> optional;
 
-        try(Transaction tr = transactionManager.createNewTransaction(true, null)) {
+        try (Transaction tr = transactionManager.createNewTransaction(true, null)) {
             optional = workflowContextRepo.findFinishedContext(scenarioId, tr);
             if (optional.isEmpty()) {
                 throw new NullPointerException("No result");

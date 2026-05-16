@@ -1,9 +1,9 @@
-package com.petra.lib.operation.operations.executor;
+package com.petra.lib.actor.local.activity;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-public interface UserActionContext {
+public interface UserActivityContext {
 
     <T> T getValue(String variableName, Class<T> clazz);
 

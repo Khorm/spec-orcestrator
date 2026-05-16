@@ -20,7 +20,7 @@ public class UserAnswerOperation implements Operation {
 
     @Override
     public void execute(Context blockContext, OperationService operationService) {
-        try(Transaction tx = transactionManager.createNewTransaction(false, null)) {
+        try (Transaction tx = transactionManager.createNewTransaction(false, null)) {
             blockContext.load(tx);
             boolean setStateResult = blockContext.setState(CURRENT_STATE);
             if (setStateResult) {
@@ -31,7 +31,7 @@ public class UserAnswerOperation implements Operation {
             }
             log.info("User operation executed {} for scenarioId: {}, blockId: {}", blockContext.getExecutionStatus(),
                     blockContext.getScenarioId(), blockContext.getCurrentBlockId().toString());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

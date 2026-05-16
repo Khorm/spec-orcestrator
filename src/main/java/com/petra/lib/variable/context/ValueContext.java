@@ -1,8 +1,10 @@
 package com.petra.lib.variable.context;
 
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
 import com.petra.lib.variable.container.ValueContainerFactory;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
 
@@ -33,34 +35,34 @@ public class ValueContext {
     public ValueContext(ValueContainer workflowContextValues,
                         UUID scenarioId,
                         VariableCallback variableCallback,
-                        Collection<ValueLoader> valueLoaders) {
+                        Collection<ValueLoader> valueLoaders, Collection<ValueModel> loadValues) {
         this.workflowContextValues = workflowContextValues;
         this.variableCallback = variableCallback;
 
         Set<Long> allValues = valueLoaders.stream()
                 .mapToLong(ValueLoader::getVariableId).boxed().collect(Collectors.toSet());
         allValues.addAll(workflowContextValues.getValues().stream()
-                .mapToLong(Value::getId).boxed().collect(Collectors.toSet()));
+                .mapToLong(ValueDto::getId).boxed().collect(Collectors.toSet()));
         this.loadedValuesManager = new LoadedValuesManager(allValues,
                 workflowContextValues.getValues().stream()
-                        .mapToLong(Value::getId).boxed().collect(Collectors.toSet()));
+                        .mapToLong(ValueDto::getId).boxed().collect(Collectors.toSet()));
 
         this.scenarioId = scenarioId;
         this.valueLoaders = valueLoaders.stream().collect(Collectors.toMap(ValueLoader::getVariableId, Function.identity()));
-        blockContextValues = ValueContainerFactory.getSimpleContainer();
+        blockContextValues = ValueContainerFactory.getSimpleContainerByModels(loadValues);
     }
 
 
-    public synchronized Value getValue(Long valueId) {
-        Value ret = workflowContextValues.getValue(valueId);
+    public synchronized ValueDto getValue(Long valueId) {
+        ValueDto ret = workflowContextValues.getValue(valueId);
         if (ret == null) {
             ret = blockContextValues.getValue(valueId);
         }
         return ret;
     }
 
-    public synchronized boolean registerLoadedValue(Value value) {
-        blockContextValues.setValue(value);
+    public synchronized boolean registerLoadedValue(ValueDto value) {
+        blockContextValues.addValue(value);
         loadedValuesManager.registerLoadedValue(value.getId());
         if (loadedValuesManager.isValueAcceptToExecute()) {
             variableCallback.loaded(blockContextValues);

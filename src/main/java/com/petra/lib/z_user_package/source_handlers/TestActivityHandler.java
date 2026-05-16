@@ -1,21 +1,20 @@
 package com.petra.lib.z_user_package.source_handlers;
 
 //import com.petra.lib.annotation.WorkflowHandler;
-import com.petra.lib.operation.operations.executor.UserActionContext;
-import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
-import org.springframework.stereotype.Service;
+import com.petra.lib.actor.local.activity.UserActivityContext;
+import com.petra.lib.actor.local.activity.UserActivityHandler;
 import org.springframework.transaction.annotation.Isolation;
 
 //@WorkflowHandler(name = "test_source_1")
 //@Service("FstAction")
-public class TestActionHandler implements UserActionHandler {
+public class TestActivityHandler implements UserActivityHandler {
     @Override
-    public void execute(UserActionContext variableUserActionContext) {
+    public void execute(UserActivityContext variableUserActivityContext) {
 
         System.out.println("FstAction");
-        System.out.println("SOURCE USING FstIn " + variableUserActionContext.getValue("fst", Long.class));
-        System.out.println("SOURCE USING ScdIn " + variableUserActionContext.getValue("scd", Truck.class));
-        variableUserActionContext.setValue("OutFstVal", new Location(1L, "Location one"));
+        System.out.println("SOURCE USING FstIn " + variableUserActivityContext.getValue("fst", Long.class));
+        System.out.println("SOURCE USING ScdIn " + variableUserActivityContext.getValue("scd", Truck.class));
+        variableUserActivityContext.setValue("OutFstVal", new Location(1L, "Location one"));
     }
 
     @Override

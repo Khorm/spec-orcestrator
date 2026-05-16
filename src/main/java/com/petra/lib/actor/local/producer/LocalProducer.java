@@ -1,7 +1,12 @@
-package com.petra.lib.actor.producer;
+package com.petra.lib.actor.local.producer;
 
+import com.petra.lib.actor.local.LocalConsumer;
+import com.petra.lib.actor.remote.consumer.RemoteConsumer;
+import com.petra.lib.actor.remote.consumer.RemoteConsumerCondition;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.ContextService;
 import com.petra.lib.context.block.Context;
+import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.context.enums.WorkflowContextState;
@@ -13,48 +18,54 @@ import com.petra.lib.utils.id.ConsumerIdentifier;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
+import com.petra.lib.variable.container.ValueContainerFactory;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContextManager;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class LocalProducer {
+public class LocalProducer implements LocalConsumer {
 
-    @Getter
     Identifier workflowId;
     RemoteConsumerLinkedList remoteConsumerList;
-
-    @Getter
-    private final String workflowName;
+    String workflowName;
+    Collection<ValueModel> contextVariables;
 
     /**
      * Выходные переменные воркфлоу
      */
-    private final ValueContextManager valueContextExitManager;
-    private final ContextService contextService;
-    private final TransactionManager transactionManager;
+    ValueContextManager valueContextExitManager;
+    ContextService contextService;
+    TransactionManager transactionManager;
 
+    @Override
+    public void execute(Context blockContext, OperationService operationService) {
+        Optional<WorkflowContext> workflowContextOpt = contextService.createWorkflowContext(workflowId, blockContext.getScenarioId(), blockContext.getContextInputValues());
 
-
-    public void start(Context context, OperationService operationService) {
-        transactionManager.executeInTransaction(transaction -> {
-            WorkflowContext wc = contextService.fillDefaultWorkflowContext(context.getScenarioId(), workflowId);
-            wc.create(context.getContextInputValues(), transaction);
-        });
-
-        log.info("{} Start executing workflow {}", context.getScenarioId(), workflowName);
-        remoteConsumerList.getFirstConsumer().execute(context.getContextInputValues(), context.getScenarioId(), this::answerFromBlock,
+        log.info("{} Start executing workflow {}", blockContext.getScenarioId(), workflowName);
+        remoteConsumerList.getFirstConsumer().execute(blockContext.getContextInputValues(), blockContext.getScenarioId(), this::answerFromBlock,
                 operationService);
+    }
+
+    @Override
+    public BlockType getBlockType() {
+        return BlockType.WORKFLOW;
+    }
+
+    @Override
+    public Collection<ValueModel> getInputVariables() {
+        return contextVariables;
     }
 
 
@@ -66,12 +77,19 @@ public class LocalProducer {
         }
 
         ConsumerIdentifier answerConsumerId = new ConsumerIdentifier(answerBlockId, workflowId);
-        Optional<RemoteConsumer> nextConsumerInWorkflowOpt = remoteConsumerList.findConsumer(answerConsumerId);
-        if (nextConsumerInWorkflowOpt.isPresent()) {
-            ValueContainer newWorkflowValues = updateWorkflowContextValues(answerContainer, scenarioId);
-            RemoteConsumer nextConsumerInWorkflow = nextConsumerInWorkflowOpt.get();
+        Optional<RemoteConsumer> currentConsumerInWorkflowOpt = remoteConsumerList.findConsumer(answerConsumerId);
+        if (currentConsumerInWorkflowOpt.isPresent()) {
+            RemoteConsumer currentConsumerInWorkflow = currentConsumerInWorkflowOpt.get();
+            ValueContainer newWorkflowValues;
+            if (currentConsumerInWorkflow.getBlockType() != BlockType.CONDITION) {
+                newWorkflowValues = updateWorkflowContextValues(answerContainer, scenarioId);
+            } else {
+                newWorkflowValues = updateWorkflowContextValues(ValueContainerFactory
+                        .getSimpleContainerByDtos(Collections.emptyList()), scenarioId);
+            }
+
             log.info("{} workflow {} get answer {} from block {}", scenarioId, workflowName, execResult,
-                    nextConsumerInWorkflow.getConsumerName());
+                    currentConsumerInWorkflow.getConsumerName());
 
             if (ExecutionStatus.ERROR == execResult) {
                 end(null, scenarioId, false, operationService);
@@ -79,12 +97,18 @@ public class LocalProducer {
             }
 
             //если есть следующий консумер то вызываем его
-            if (nextConsumerInWorkflow.hasNext()){
-                RemoteConsumer nextConsumer = nextConsumerInWorkflow.next();
+            if (currentConsumerInWorkflow.hasNext()) {
+                RemoteConsumer nextConsumer;
+                if (currentConsumerInWorkflow.getBlockType() == BlockType.CONDITION) {
+                    nextConsumer = ((RemoteConsumerCondition) currentConsumerInWorkflow).nextByConsumer(answerContainer);
+                } else {
+                    nextConsumer = currentConsumerInWorkflow.next();
+                }
+
                 nextConsumer.execute(newWorkflowValues, scenarioId, this::answerFromBlock, operationService);
                 return;
             }
-        }else {
+        } else {
             throw new IllegalArgumentException(String.format("%s Not found next consumer", scenarioId));
         }
         end(answerContainer, scenarioId, true, operationService);
@@ -97,7 +121,7 @@ public class LocalProducer {
      * @return
      */
     private boolean isWorkflowDone(UUID scenarioId) {
-        Context workflowContext = contextService.fillDefaultContext(workflowId, scenarioId);
+        Context workflowContext = contextService.loadContext(workflowId, scenarioId);
         try (Transaction transaction = transactionManager.createNewTransaction(true, null)) {
             workflowContext.load(transaction);
         } catch (Exception e) {
@@ -118,7 +142,7 @@ public class LocalProducer {
     private ValueContainer updateWorkflowContextValues(ValueContainer answerContainer, UUID scenarioId) {
 
         try (Transaction tx = transactionManager.createNewTransaction(false, null)) {
-            WorkflowContext workflowContext = contextService.fillDefaultWorkflowContext(scenarioId, workflowId);
+            WorkflowContext workflowContext = contextService.loadWorkflowContext(workflowId, scenarioId);
 
             boolean loaded = workflowContext.lockAndLoad(tx);
             if (!loaded) {
@@ -127,7 +151,9 @@ public class LocalProducer {
             }
 
             ValueContainer contextContainer = workflowContext.getContextValues();
-            answerContainer.getValues().forEach(contextContainer::setValue);
+            for (ValueDto value : answerContainer.getValues()) {
+                contextContainer.setValueJson(value.getId(), value.getJsonValue());
+            }
             workflowContext.setContextValues(contextContainer);
             workflowContext.save(tx);
             return workflowContext.getContextValues();
@@ -139,7 +165,7 @@ public class LocalProducer {
 
 
     private void end(ValueContainer answerContainer, UUID scenarioId, boolean isSuccess, OperationService operationService) {
-        Context context = contextService.fillDefaultContext(workflowId, scenarioId);
+        Context context = contextService.loadContext(workflowId, scenarioId);
         log.info("{} workflow {} finished with success={}", context.getScenarioId(), workflowName, isSuccess);
         if (!isSuccess) {
             transactionManager.executeInTransaction(tr -> {
@@ -153,7 +179,7 @@ public class LocalProducer {
                 }
                 context.save(tr);
 
-                WorkflowContext wfCtx = contextService.fillDefaultWorkflowContext(context.getScenarioId(), workflowId);
+                WorkflowContext wfCtx = contextService.loadWorkflowContext(workflowId, context.getScenarioId());
                 wfCtx.lockAndLoad(tr);
                 wfCtx.setState(WorkflowContextState.ERROR);
                 wfCtx.save(tr);
@@ -179,7 +205,7 @@ public class LocalProducer {
                     }
                     context.save(tr);
 
-                    WorkflowContext wfCtx = contextService.fillDefaultWorkflowContext(context.getScenarioId(), workflowId);
+                    WorkflowContext wfCtx = contextService.loadWorkflowContext(workflowId, context.getScenarioId());
                     wfCtx.lockAndLoad(tr);
                     wfCtx.setState(WorkflowContextState.DONE);
                     wfCtx.save(tr);
@@ -205,7 +231,7 @@ public class LocalProducer {
                     }
                     context.save(tr);
 
-                    WorkflowContext wfCtx = contextService.fillDefaultWorkflowContext(context.getScenarioId(), workflowId);
+                    WorkflowContext wfCtx = contextService.loadWorkflowContext(workflowId, context.getScenarioId());
                     wfCtx.lockAndLoad(tr);
                     wfCtx.setState(WorkflowContextState.ERROR);
                     wfCtx.save(tr);
@@ -217,5 +243,16 @@ public class LocalProducer {
             }
         });
     }
+
+    @Override
+    public Identifier getId() {
+        return workflowId;
+    }
+
+    @Override
+    public String getName() {
+        return workflowName;
+    }
+
 
 }

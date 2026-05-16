@@ -3,20 +3,14 @@ package com.petra.lib.context.workflow;
 import com.petra.lib.context.enums.WorkflowContextState;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
 import com.petra.lib.transaction.Transaction;
-import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.container.ValueContainerFactory;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.jdbc.UncategorizedSQLException;
 
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Log4j2
@@ -97,7 +91,7 @@ public class WorkflowContextImpl implements WorkflowContext {
     }
 
     private boolean toLoad(boolean isLocking, Transaction tr) {
-        Optional<WorkflowContextEntity> entity= workflowContextRepo.findContext(scenarioId, workflowId, tr, isLocking);
+        Optional<WorkflowContextEntity> entity = workflowContextRepo.findContext(scenarioId, workflowId, tr, isLocking);
 
         if (entity.isPresent()) {
             this.entity = entity.get();

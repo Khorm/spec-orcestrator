@@ -8,11 +8,11 @@ import java.util.List;
 
 public final class ValueContainerFactory {
 
-    public static ValueContainer getSimpleContainer() {
-        return new ValueContainerImpl();
-    }
+//    public static ValueContainer getSimpleContainer() {
+//        return new ValueContainerImpl();
+//    }
 
-    public static ValueContainer getSimpleContainer(List<ValueModel> models) {
+    public static ValueContainer getSimpleContainerByModels(Collection<ValueModel> models) {
         if (models != null && !models.isEmpty()) {
             Collection<ValueDto> valueDtos = new ArrayList<>();
             for (ValueModel valueModel : models) {
@@ -25,7 +25,7 @@ public final class ValueContainerFactory {
     }
 
 
-    public static ValueContainer getSimpleContainer(Collection<ValueDto> dtos){
+    public static ValueContainer getSimpleContainerByDtos(Collection<ValueDto> dtos){
         if (dtos != null) {
             return new ValueContainerImpl(dtos);
         }else {
@@ -38,7 +38,7 @@ public final class ValueContainerFactory {
     }
 
     public static ValueContainer getImmutableContainer(List<ValueDto> jsonValues) {
-        return new ImmutableValueContainer(getSimpleContainer(jsonValues));
+        return new ImmutableValueContainer(getSimpleContainerByDtos(jsonValues));
     }
 
 }

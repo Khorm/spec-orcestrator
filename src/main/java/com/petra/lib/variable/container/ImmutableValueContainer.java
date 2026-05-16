@@ -13,33 +13,43 @@ class ImmutableValueContainer implements ValueContainer {
     }
 
     @Override
-    public Value getValue(Long id) {
+    public ValueDto getValue(Long id) {
         return valueContainer.getValue(id);
     }
 
     @Override
-    public Value getValue(String name) {
+    public ValueDto getValue(String name) {
         return valueContainer.getValue(name);
     }
 
     @Override
-    public void setValue(Value value) {
-        throw new PetraException("Value container is immutable");
+    public void addValue(ValueDto value) {
+        throw new IllegalStateException("Cannot modify immutables");
     }
 
     @Override
-    public void setValue(String name, Object object) {
-        throw new PetraException("Value container is immutable");
+    public void setValueJson(Long id, String json) {
+        throw new IllegalStateException("Cannot modify immutables");
     }
 
     @Override
-    public List<ValueDto> getModels() {
-        return valueContainer.getModels();
+    public void setValueJson(String name, String json) {
+        throw new IllegalStateException("Cannot modify immutables");
     }
 
     @Override
-    public List<Value> getValues() {
+    public List<ValueDto> getValues() {
         return valueContainer.getValues();
+    }
+
+    @Override
+    public <T> List<T> getParsedList(String name, Class<T> clazz) {
+        return valueContainer.getParsedList(name, clazz);
+    }
+
+    @Override
+    public <T> T getParsedValue(String name, Class<T> clazz) {
+        return getParsedValue(name, clazz);
     }
 
     @Override

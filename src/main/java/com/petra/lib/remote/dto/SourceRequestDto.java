@@ -36,7 +36,7 @@ public class SourceRequestDto {
         this.scenarioId = scenarioId;
         this.consumerSourceId = consumerSourceId;
         this.consumerSourceVersion = consumerSourceVersion;
-        this.inputValues = inputValues.getModels();
+        this.inputValues = inputValues.getValues();
     }
 
 
@@ -59,11 +59,11 @@ public class SourceRequestDto {
 
     @JsonIgnore
     public ValueContainer getInputValues() {
-        return ValueContainerFactory.getSimpleContainer(inputValues);
+        return ValueContainerFactory.getSimpleContainerByDtos(inputValues);
     }
 
     public SourceResponseDto toOutput(ValueContainer outputValue){
         return new SourceResponseDto(scenarioId,consumerSourceId,consumerSourceVersion,
-                outputValue.getModels());
+                outputValue.getValues());
     }
 }

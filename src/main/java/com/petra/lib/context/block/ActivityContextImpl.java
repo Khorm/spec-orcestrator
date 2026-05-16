@@ -1,15 +1,13 @@
 package com.petra.lib.context.block;
 
-import com.petra.lib.actor.RemoteProducer;
+import com.petra.lib.actor.remote.RemoteProducer;
 import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.transaction.Transaction;
-import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
-import com.petra.lib.variable.container.ValueContainerFactory;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j2;
@@ -17,29 +15,27 @@ import lombok.extern.log4j.Log4j2;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 @Log4j2
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BlockContextImpl implements Context {
+public class ActivityContextImpl implements Context {
     ContextEntity contextEntity;
     final ContextRepo contextRepo;
     static final List<ContextState> statesOrder
             = List.of(ContextState.STARTED, ContextState.EXECUTED, ContextState.ANSWERED);
     final Identifier blockId;
     final UUID scenarioId;
-    TransactionManager tm;
 
 
-    public BlockContextImpl(ContextEntity contextEntity, ContextRepo contextRepo) {
+    public ActivityContextImpl(ContextEntity contextEntity, ContextRepo contextRepo) {
         this.contextRepo = contextRepo;
         this.blockId = contextEntity.getConsumerId();
         this.scenarioId = contextEntity.getScenarioId();
         this.contextEntity = contextEntity;
     }
 
-    public BlockContextImpl(ContextRepo contextRepo,
-                            Identifier blockId, UUID scenarioId) {
+    public ActivityContextImpl(ContextRepo contextRepo,
+                               Identifier blockId, UUID scenarioId) {
         this.contextRepo = contextRepo;
         this.blockId = blockId;
         this.scenarioId = scenarioId;
@@ -100,9 +96,10 @@ public class BlockContextImpl implements Context {
         return contextEntity.getProducer().getServiceName();
     }
 
+    @Override
     public boolean insert(RemoteProducer producer, BlockType blockType,
-                          ContextState state, ValueContainer outContextValues, Transaction transaction) {
-        contextEntity = new ContextEntity(scenarioId, producer, blockType, state, outContextValues);
+                          ContextState state, Transaction transaction) {
+        contextEntity = new ContextEntity(scenarioId, producer, blockType, state);
         return contextRepo.insertContext(contextEntity, transaction);
 
     }

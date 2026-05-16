@@ -2,6 +2,7 @@ package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
@@ -43,7 +44,7 @@ public abstract class LoaderAbs implements ValueLoader {
         log.info("{} Loading variable {}",context.getScenarioId(),valueModel.getName());
         threadController.executeLimitedPoolTask(() -> {
             try {
-                Value result = executeLoad(context);
+                ValueDto result = executeLoad(context);
                 boolean isExit = context.registerLoadedValue(result);
                 log.info("{} Variable {} loaded",context.getScenarioId(), valueModel.getName());
                 if (isExit) return;
@@ -56,7 +57,7 @@ public abstract class LoaderAbs implements ValueLoader {
         });
     }
 
-    protected abstract Value executeLoad(ValueContext context);
+    protected abstract ValueDto executeLoad(ValueContext context);
 
     public ValueLoaderDto getValueModel() {
         return valueModel;

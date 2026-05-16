@@ -1,25 +1,28 @@
 package com.petra.lib.variable.container;
 
-import com.petra.lib.variable.value.Value;
-
 import java.util.List;
 
 public interface ValueContainer {
 
-    Value getValue(Long id);
-    Value getValue(String name);
+    ValueDto getValue(Long id);
 
-    void setValue(Value value);
+    ValueDto getValue(String name);
 
-    void setValue(String name, Object object);
+    void addValue(ValueDto value);
 
-    List<ValueDto> getModels();
+    void setValueJson(Long id, String json);
 
-    List<Value> getValues();
-//    void mixinValueContainer(ValueContainer valueContainer);
+    void setValueJson(String name, String json);
+
+    List<ValueDto> getValues();
+
+    <T> List<T> getParsedList(String name, Class<T> clazz);
+
+    <T> T getParsedValue(String name, Class<T> clazz);
 
     ValueContainer clone();
 
     String toDBJson();
+
     boolean containsValue(String name);
 }

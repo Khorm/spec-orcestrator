@@ -35,16 +35,16 @@ class ScriptLoader extends LoaderAbs {
 
 
     @Override
-    protected Value executeLoad(ValueContext context) {
+    protected ValueDto executeLoad(ValueContext context) {
 
         String valuesScript = getParents().stream().map(aLong -> {
             StringBuilder ret = new StringBuilder();
-            Value value = context.getValue(aLong);
+            ValueDto value = context.getValue(aLong);
 
             return ret.append("def ")
-                    .append(value.getModel().getName())
+                    .append(value.getName())
                     .append(" = slurper.parseText('")
-                    .append(value.getModel().getJsonValue())
+                    .append(value.getJsonValue())
                     .append("') ; ").toString();
 
         }).collect(Collectors.joining());
@@ -59,7 +59,6 @@ class ScriptLoader extends LoaderAbs {
         Binding binding = new Binding();
         GroovyShell shell = new GroovyShell(binding);
         String result = (String) shell.evaluate(script);
-        ValueDto valueDto = new ValueDto(getVariableId(), name, multiplicity, result);
-        return ValueFactory.createValue(valueDto);
+        return new ValueDto(getVariableId(), name, multiplicity, result);
     }
 }

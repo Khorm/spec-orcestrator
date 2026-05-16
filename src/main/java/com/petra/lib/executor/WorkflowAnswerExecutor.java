@@ -1,12 +1,10 @@
 package com.petra.lib.executor;
 
+import com.petra.lib.actor.local.producer.LocalProducer;
 import com.petra.lib.context.ContextService;
 import com.petra.lib.context.block.Context;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.operation.OperationService;
-import com.petra.lib.actor.producer.LocalProducer;
-import com.petra.lib.transaction.Transaction;
-import com.petra.lib.transaction.TransactionManager;
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
 import lombok.AccessLevel;
@@ -19,45 +17,40 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Обслаживает принятие сообщений от блоков внутри воркфлоу
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
 public class WorkflowAnswerExecutor {
-    Map<Identifier, LocalProducer> producerMap;
+    ConsumerCollection producerMap;
     ContextService contextService;
     OperationService blockOperationService;
     OperationService userOperationService;
-    TransactionManager transactionManager;
 
 
-    public WorkflowAnswerExecutor(Collection<LocalProducer> producers, OperationService blockOperationService,
+    public WorkflowAnswerExecutor(ConsumerCollection producerMap, OperationService blockOperationService,
                                   ContextService contextService,
-                                  OperationService userOperationService, TransactionManager transactionManager) {
-        this.producerMap = producers.stream().collect(Collectors.toMap(LocalProducer::getWorkflowId, Function.identity()));
+                                  OperationService userOperationService) {
+        this.producerMap = producerMap;
         this.contextService = contextService;
         this.blockOperationService = blockOperationService;
         this.userOperationService = userOperationService;
-        this.transactionManager = transactionManager;
     }
 
     public void handleAnswerFromBlock(ValueContainer outputValues, Identifier answeredBlockId,
                                       UUID scenarioId, Identifier workflowId, ExecutionStatus executionStatus) {
         try {
-            Context context = contextService.fillDefaultContext(workflowId, scenarioId);
-            try (Transaction transaction = transactionManager.createNewTransaction(true, null)) {
-                context.load(transaction);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            Context context = contextService.loadContext(workflowId, scenarioId);
 
-            LocalProducer localProducer = producerMap.get(workflowId);
-            log.debug("{} answer to {} ", scenarioId, localProducer.getWorkflowName());
+            LocalProducer localProducer = producerMap.getProducer(workflowId);
+            log.debug("{} answer to {} ", scenarioId, localProducer.getName());
             if (context.getProducer().getServiceName().equals("USER")) {
                 localProducer.answerFromBlock(outputValues, answeredBlockId, scenarioId, executionStatus, userOperationService);
             } else {
                 localProducer.answerFromBlock(outputValues, answeredBlockId, scenarioId, executionStatus, blockOperationService);
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        } catch (Exception e) {
             log.error("Error in handling Answer {}", e);
             throw e;
         }

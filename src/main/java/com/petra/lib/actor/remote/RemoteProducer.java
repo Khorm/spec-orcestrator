@@ -1,24 +1,24 @@
-package com.petra.lib.actor;
+package com.petra.lib.actor.remote;
 
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;
 
 public final class RemoteProducer {
-    private final Identifier identifier;
+    private final Identifier producerId;
     private final String serviceName;
     private final ValueContainer sendValuesContainer;
     private final Identifier consumerId;
 
-    public RemoteProducer(Identifier identifier, String serviceName,
+    public RemoteProducer(Identifier producerId, String serviceName,
                           ValueContainer sendValuesContainer, Identifier consumerId) {
-        this.identifier = identifier;
+        this.producerId = producerId;
         this.serviceName = serviceName;
         this.sendValuesContainer = sendValuesContainer;
         this.consumerId = consumerId;
     }
 
-    public Identifier getIdentifier() {
-        return identifier;
+    public Identifier getProducerId() {
+        return producerId;
     }
 
     public String getServiceName() {
@@ -26,11 +26,11 @@ public final class RemoteProducer {
     }
 
     public Long getId() {
-        return identifier.getId();
+        return producerId.getId();
     }
 
     public String getVersion() {
-        return identifier.getVersion();
+        return producerId.getVersion();
     }
 
     public ValueContainer getSendValuesContainer() {

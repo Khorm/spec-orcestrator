@@ -1,14 +1,13 @@
 package com.petra.lib.z_user_package.source_handlers;
 
 
-import com.petra.lib.context.source.SourceUserContext;
-import com.petra.lib.context.source.SourceUserHandler;
+import com.petra.lib.actor.local.source.SourceUserContext;
+import com.petra.lib.actor.local.source.SourceUserHandler;
 import com.petra.lib.z_user_package.source_handlers.models.ModelOne;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Service("GetModelOneService")
 public class Source implements SourceUserHandler {

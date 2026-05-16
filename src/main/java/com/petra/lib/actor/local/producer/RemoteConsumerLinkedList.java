@@ -1,5 +1,6 @@
-package com.petra.lib.actor.producer;
+package com.petra.lib.actor.local.producer;
 
+import com.petra.lib.actor.remote.consumer.RemoteConsumer;
 import com.petra.lib.utils.id.ConsumerIdentifier;
 import lombok.AccessLevel;
 import lombok.Getter;

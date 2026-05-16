@@ -2,6 +2,7 @@ package com.petra.lib.variable.loader.impl;
 
 import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.thread.ThreadController;
+import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.context.ValueContext;
 import com.petra.lib.variable.loader.ValueLoader;
 import com.petra.lib.variable.value.Value;
@@ -14,7 +15,7 @@ class EmptyLoader extends LoaderAbs {
     }
 
     @Override
-    protected Value executeLoad(ValueContext context) {
+    protected ValueDto executeLoad(ValueContext context) {
         return null;
     }
 //    private final long variableId;

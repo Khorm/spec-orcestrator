@@ -1,19 +1,10 @@
 package com.petra.lib.z_user_package.source_handlers.params;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.constructor.Constructor;
-import com.petra.lib.constructor.PetraProperties;
-import com.petra.lib.constructor.model.ConstructorModel;
-import com.petra.lib.context.source.SourceUserHandler;
-import com.petra.lib.controller.PetraController;
-import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -21,9 +12,6 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 @Configuration

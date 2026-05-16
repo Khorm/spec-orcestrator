@@ -1,6 +1,8 @@
 package com.petra.lib.constructor.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.variable.container.ValueDto;
 import com.petra.lib.variable.enums.Multiplicity;
 
@@ -28,5 +30,13 @@ public class ValueModel {
 
     public ValueDto createEmptyModel() {
         return new ValueDto(id, name, getMultiplicityEnm(), null);
+    }
+    public ValueDto createFillModel(Object value) {
+        ObjectMapper om = new ObjectMapper();
+        try {
+            return new ValueDto(id, name, getMultiplicityEnm(), om.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

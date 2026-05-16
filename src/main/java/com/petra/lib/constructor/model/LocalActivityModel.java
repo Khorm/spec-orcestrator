@@ -2,7 +2,7 @@ package com.petra.lib.constructor.model;
 
 import java.util.List;
 
-public class LocalConsumerModel {
+public class LocalActivityModel {
     private Long id;
     private String version;
     private String blockType;

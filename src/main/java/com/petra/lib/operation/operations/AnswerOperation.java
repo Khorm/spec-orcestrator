@@ -12,8 +12,6 @@ import com.petra.lib.transaction.Transaction;
 import com.petra.lib.transaction.TransactionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +32,7 @@ public class AnswerOperation implements Operation {
                 blockContext.getScenarioId(),
                 blockContext.getProducer().getId(),
                 blockContext.getProducer().getVersion(),
-                blockContext.getContextOutValues().getModels(),
+                blockContext.getContextOutValues().getValues(),
                 blockContext.getCurrentBlockId().getId(),
                 blockContext.getCurrentBlockId().getVersion(),
                 blockContext.getProducerServiceName(),
@@ -48,7 +46,7 @@ public class AnswerOperation implements Operation {
         SenderCallback senderCallback = new SenderCallback() {
             @Override
             public void answer(MessageResponse messageResponse) {
-                try(Transaction transaction = transactionManager.createNewTransaction(false, null)) {
+                try (Transaction transaction = transactionManager.createNewTransaction(false, null)) {
                     blockContext.lockAndLoad(transaction);
                     boolean setStateResult = blockContext.setState(CURRENT_STATE);
                     if (setStateResult) {

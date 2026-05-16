@@ -1,4 +1,4 @@
-package com.petra.lib.context.source;
+package com.petra.lib.actor.local.source;
 
 public interface SourceUserHandler {
 

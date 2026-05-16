@@ -1,17 +1,16 @@
 package com.petra.lib.z_user_package.source_handlers;
 
-import com.petra.lib.operation.operations.executor.UserActionContext;
-import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
-import org.springframework.stereotype.Service;
+import com.petra.lib.actor.local.activity.UserActivityContext;
+import com.petra.lib.actor.local.activity.UserActivityHandler;
 import org.springframework.transaction.annotation.Isolation;
 
 //@Service("ScdAction")
-public class Secnd_Activivty implements UserActionHandler {
+public class Secnd_Activivty implements UserActivityHandler {
     @Override
-    public void execute(UserActionContext variableUserActionContext) {
+    public void execute(UserActivityContext variableUserActivityContext) {
         System.out.println("Secon Activity");
-        Long var =variableUserActionContext.getValue("TstVarTwo", Long.class);
-        variableUserActionContext.setValue("SceOutVar",  new Location(var, "Id by " +var));
+        Long var = variableUserActivityContext.getValue("TstVarTwo", Long.class);
+        variableUserActivityContext.setValue("SceOutVar",  new Location(var, "Id by " +var));
     }
 
     @Override

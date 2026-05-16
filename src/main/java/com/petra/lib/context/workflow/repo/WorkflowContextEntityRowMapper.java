@@ -2,7 +2,6 @@ package com.petra.lib.context.workflow.repo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.enums.WorkflowContextState;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.utils.id.Identifier;
@@ -52,9 +51,9 @@ public class WorkflowContextEntityRowMapper implements RowMapper<WorkflowContext
         if (resultValuesJson != null) {
             List<ValueDto> resultValues = oj.readValue(resultValuesJson,
                     oj.getTypeFactory().constructCollectionType(List.class, ValueDto.class));
-            valueContainer = ValueContainerFactory.getSimpleContainer(resultValues);
+            valueContainer = ValueContainerFactory.getSimpleContainerByDtos(resultValues);
         }else {
-            valueContainer = ValueContainerFactory.getSimpleContainer();
+            valueContainer = ValueContainerFactory.getSimpleContainerByModels(List.of());
         }
 
         return new WorkflowContextEntity(workflowId,

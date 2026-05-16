@@ -1,13 +1,14 @@
 package com.petra.lib;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.actor.local.condition.ConditionUserHandler;
 import com.petra.lib.constructor.Constructor;
 import com.petra.lib.constructor.PetraProperties;
 import com.petra.lib.constructor.model.ConstructorModel;
-import com.petra.lib.context.source.SourceUserHandler;
+import com.petra.lib.actor.local.source.SourceUserHandler;
 import com.petra.lib.controller.PetraController;
 import com.petra.lib.controller.RequestController;
-import com.petra.lib.operation.operations.executor.handler.UserActionHandler;
+import com.petra.lib.actor.local.activity.UserActivityHandler;
 import com.petra.lib.remote.HttpListener;
 import com.petra.lib.remote.MessageResponse;
 import com.petra.lib.remote.dto.MessageDto;
@@ -45,15 +46,15 @@ public class PetraStarterConfiguration {
     private String password;
 
     @Bean
-    public PetraController petraController(JpaTransactionManager transactionManager, PetraProperties petraProperties, Map<String, UserActionHandler> userActionHandlerMap,
-                                           Map<String, SourceUserHandler> sourceUserHandlerMap) throws IOException {
+    public PetraController petraController(JpaTransactionManager transactionManager, PetraProperties petraProperties, Map<String, UserActivityHandler> userActionHandlerMap,
+                                           Map<String, SourceUserHandler> sourceUserHandlerMap, Map<String, ConditionUserHandler> conditionUserHandlerMap) throws IOException {
         System.out.println("PetraTestAware");
         Constructor constructor = new Constructor();
         ObjectMapper objectMapper = new ObjectMapper();
         ConstructorModel constructorModel = null;
         constructorModel = objectMapper.readValue(new File("src/main/resources/petra_config.json"), ConstructorModel.class);
         return constructor.construct(constructorModel, transactionManager, petraProperties,
-                userActionHandlerMap, sourceUserHandlerMap);
+                userActionHandlerMap, sourceUserHandlerMap, conditionUserHandlerMap);
     }
 
     @Bean(name = "petraHttpServer")

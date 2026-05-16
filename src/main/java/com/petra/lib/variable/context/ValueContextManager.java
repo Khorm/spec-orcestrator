@@ -1,5 +1,6 @@
 package com.petra.lib.variable.context;
 
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.workflow.WorkflowContext;
 import com.petra.lib.variable.VariableCallback;
 import com.petra.lib.variable.container.ValueContainer;
@@ -28,18 +29,19 @@ public class ValueContextManager {
     Collection<ValueLoader> starterLoaders;
     Collection<ValueLoader> valueLoaders;
     String name;
+    Collection<ValueModel> loadValues;
 
     public void start(ValueContainer workflowContainer,
                       UUID scenarioId, VariableCallback variableCallback) {
         log.info("{} starting value manager in {}", scenarioId, name);
 
         if (starterLoaders.isEmpty()){
-            variableCallback.loaded(ValueContainerFactory.getSimpleContainer());
+            variableCallback.loaded(ValueContainerFactory.getSimpleContainerByModels(loadValues));
             return;
         }
 
         ValueContext valueContext = new ValueContext(workflowContainer,
-                scenarioId,variableCallback, Collections.unmodifiableCollection(valueLoaders));
+                scenarioId,variableCallback, Collections.unmodifiableCollection(valueLoaders), loadValues);
 
         for (ValueLoader valueLoader : starterLoaders){
             valueLoader.load(valueContext);

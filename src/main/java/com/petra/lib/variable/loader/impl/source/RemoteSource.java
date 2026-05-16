@@ -38,17 +38,16 @@ public final class RemoteSource extends LoaderAbs {
     }
 
     @Override
-    protected Value executeLoad(ValueContext context) {
+    protected ValueDto executeLoad(ValueContext context) {
         //парсинг переменных контекста в переменные соурса
-        ValueContainer sourceContainer = ValueContainerFactory.getSimpleContainer();
+        ValueContainer sourceContainer = ValueContainerFactory.getSimpleContainerByModels(List.of());
         for (SourceInputVariableModel sourceInputVariable : sourceInputVariables) {
-            Value toSourceVal = context.getValue(sourceInputVariable.getProducerVariable());
+            ValueDto toSourceVal = context.getValue(sourceInputVariable.getProducerVariable());
             String jsonSourceValue = toSourceVal.getExtractedJsonValue(sourceInputVariable.getExtractionString());
 
             ValueDto valueDto = new ValueDto(sourceInputVariable.getSourceVariable(), sourceInputVariable.getSourceValueName(),
                     sourceInputVariable.getSourceValueMultiplicity(), jsonSourceValue);
-            Value sourceInputValue = ValueFactory.createValue(valueDto);
-            sourceContainer.setValue(sourceInputValue);
+            sourceContainer.addValue(valueDto);
         }
 
 
@@ -63,21 +62,19 @@ public final class RemoteSource extends LoaderAbs {
         return executeNext(answer, context);
     }
 
-    private Value executeNext(Optional<SourceResponseDto> answer, ValueContext context) {
+    private ValueDto executeNext(Optional<SourceResponseDto> answer, ValueContext context) {
         if (answer.isPresent()) {
             try {
                 List<ValueDto> sourceAnswer = answer.get().getConsumerSourceResultValue();
-                Value resultValue;
+                ValueDto resultValue;
                 if (getValueModel().getExtractionString() != null && !getValueModel().getExtractionString().isBlank()) {
                     String json = JsonUtils.getExtractedJsonValue(getValueModel().getExtractionString(),
                             sourceAnswer.get(0).getJsonValue());
-                    ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
+                    resultValue = new ValueDto(getVariableId(), getValueModel().getName(),
                             getValueModel().getMultiplicity(), json);
-                    resultValue = ValueFactory.createValue(valueDto);
                 } else {
-                    ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
+                    resultValue = new ValueDto(getVariableId(), getValueModel().getName(),
                             getValueModel().getMultiplicity(), sourceAnswer.get(0).getJsonValue());
-                    resultValue = ValueFactory.createValue(valueDto);
                 }
                 return resultValue;
             } catch (Exception e) {

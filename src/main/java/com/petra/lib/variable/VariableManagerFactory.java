@@ -45,6 +45,7 @@ public final class VariableManagerFactory {
     private static ValueContextManager createStarter(Collection<ValueLoader> valueLoaders, Collection<ValueModel> contextValues,
                                                      String name) {
         Set<Long> notBlockModels = new HashSet<>();
+        Collection<ValueModel> blockModels = new ArrayList<>();
         for (ValueModel model : contextValues) {
             boolean find = false;
             for (ValueLoader loader : valueLoaders) {
@@ -55,6 +56,8 @@ public final class VariableManagerFactory {
             }
             if (!find){
                 notBlockModels.add(model.getId());
+            }else {
+                blockModels.add(model);
             }
         }
 
@@ -68,7 +71,7 @@ public final class VariableManagerFactory {
             }
         }
 
-        return new ValueContextManager(starterLoaders, valueLoaders,  name);
+        return new ValueContextManager(starterLoaders, valueLoaders,  name, blockModels);
     }
 
 }

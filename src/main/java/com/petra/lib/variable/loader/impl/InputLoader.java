@@ -24,8 +24,8 @@ class InputLoader extends LoaderAbs {
     }
 
     @Override
-    protected Value executeLoad(ValueContext context) {
-        Value producerValue = context.getValue(getValueModel().getInputValueId());
+    protected ValueDto executeLoad(ValueContext context) {
+        ValueDto producerValue = context.getValue(getValueModel().getInputValueId());
         if (producerValue.getMultiplicity() != getValueModel().getMultiplicity()) {
             throw new IllegalArgumentException("Wrong producer multiplicity for value " + getValueModel().getName());
         }
@@ -33,12 +33,11 @@ class InputLoader extends LoaderAbs {
         if (extractionString.isPresent()) {
             newJsonValue = producerValue.getExtractedJsonValue(extractionString.get());
         } else {
-            newJsonValue = producerValue.getModel().getJsonValue();
+            newJsonValue = producerValue.getJsonValue();
         }
-        ValueDto valueDto = new ValueDto(getVariableId(), getValueModel().getName(),
-                getValueModel().getMultiplicity(),newJsonValue);
 
-        return ValueFactory.createValue(valueDto);
+        return new ValueDto(getVariableId(), getValueModel().getName(),
+                getValueModel().getMultiplicity(),newJsonValue);
     }
 
 }

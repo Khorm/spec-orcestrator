@@ -2,6 +2,7 @@ package com.petra.lib.variable.container;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.variable.value.Value;
 import com.petra.lib.variable.value.ValueFactory;
 
@@ -15,7 +16,7 @@ class ValueContainerImpl implements ValueContainer {
     private final Map<String, Value> valuesByName;
 
 
-    ValueContainerImpl(List<ValueDto> valueDtos) {
+    ValueContainerImpl(Collection<ValueDto> valueDtos) {
         if (valueDtos == null || valueDtos.isEmpty()) {
             valuesByName = new HashMap<>();
             valuesById = new HashMap<>();
@@ -27,29 +28,47 @@ class ValueContainerImpl implements ValueContainer {
         valuesByName = values.stream().collect(Collectors.toMap(Value::getName, Function.identity()));
     }
 
-    ValueContainerImpl(Collection<ValueDto> valueDtos) {
-        valuesById = new HashMap<>();
+    ValueContainerImpl(ValueModel... variableModels) {
         valuesByName = new HashMap<>();
-        for (ValueDto valueDto : valueDtos) {
-            Value value = ValueFactory.createValue(valueDto);
-            valuesById.put(valueDto.getId(), value);
-            valuesByName.put(valueDto.getName(), value);
+        valuesById = new HashMap<>();
+        if (variableModels == null || List.of(variableModels).isEmpty()) {
+            return;
         }
+
+        Collection<Value> values = Arrays.stream(variableModels)
+                .map(ValueFactory::createValue).collect(Collectors.toList());
+
+
+        values.forEach(value -> {
+            valuesById.put(value.getId(), value);
+            valuesByName.put(value.getName(), value);
+        });
+
     }
+
+//    ValueContainerImpl(Collection<ValueDto> valueDtos) {
+//        valuesById = new HashMap<>();
+//        valuesByName = new HashMap<>();
+//        for (ValueDto valueDto : valueDtos) {
+//            Value value = ValueFactory.createValue(valueDto);
+//            valuesById.put(valueDto.getId(), value);
+//            valuesByName.put(valueDto.getName(), value);
+//        }
+//    }
 
     ValueContainerImpl() {
         valuesByName = new HashMap<>();
         valuesById = new HashMap<>();
     }
 
-    public void mixinValueContainer(ValueContainer valueContainer) {
-        if (valueContainer == null) return;
-        mixinValues(valueContainer.getValues());
-    }
+//    public void mixinValueContainer(ValueContainer valueContainer) {
+//        if (valueContainer == null) return;
+//        mixinValues(valueContainer.getValues());
+//    }
 
     @Override
     public ValueContainer clone() {
-        return ValueContainerFactory.getSimpleContainer(getModels());
+        return ValueContainerFactory.getSimpleContainerByDtos(getValues());
     }
 
     @Override
@@ -70,51 +89,86 @@ class ValueContainerImpl implements ValueContainer {
     }
 
 
-    private void mixinValues(List<Value> values) {
-        values = values.stream().filter(value -> !valuesById.containsKey(value.getId())).collect(Collectors.toList());
-        Map<Long, Value> newValuesById = values.stream().collect(Collectors.toMap(Value::getId, Function.identity()));
-        valuesById.putAll(newValuesById);
-        Map<String, Value> newValuesByName = values.stream().collect(Collectors.toMap(Value::getName, Function.identity()));
-        valuesByName.putAll(newValuesByName);
+//    private void mixinValues(List<Value> values) {
+//        values = values.stream().filter(value -> !valuesById.containsKey(value.getId())).collect(Collectors.toList());
+//        Map<Long, Value> newValuesById = values.stream().collect(Collectors.toMap(Value::getId, Function.identity()));
+//        valuesById.putAll(newValuesById);
+//        Map<String, Value> newValuesByName = values.stream().collect(Collectors.toMap(Value::getName, Function.identity()));
+//        valuesByName.putAll(newValuesByName);
+//    }
+
+
+//    @Override
+//    public Value getValue(Long id) {
+//        return valuesById.get(id);
+//    }
+//
+//    @Override
+//    public Value getValue(String name) {
+//        return valuesByName.get(name);
+//    }
+
+//    @Override
+//    public void addValue(Value value) {
+//        valuesById.put(value.getId(), value);
+//        valuesByName.put(value.getName(), value);
+//    }
+
+//    @Override
+//    public void addValue(ValueDto value) {
+//        Value v = ValueFactory.createValue(value);
+//        valuesById.put(value.getId(), v);
+//        valuesByName.put(value.getName(), v);
+//    }
+
+
+    @Override
+    public ValueDto getValue(Long id) {
+        return valuesById.get(id).getModel();
+    }
+
+    @Override
+    public ValueDto getValue(String name) {
+        return valuesByName.get(name).getModel();
+    }
+
+    @Override
+    public void addValue(ValueDto value) {
+        valuesByName.put(value.getName(), ValueFactory.createValue(value));
+    }
+
+    @Override
+    public void setValueJson(Long id, String json) {
+        valuesById.get(id).setJsonValue(json);
+    }
+
+    @Override
+    public void setValueJson(String name, String json) {
+        valuesByName.get(name).setJsonValue(json);
     }
 
 
     @Override
-    public Value getValue(Long id) {
-        return valuesById.get(id);
-    }
-
-    @Override
-    public Value getValue(String name) {
-        return valuesByName.get(name);
-    }
-
-    @Override
-    public void setValue(Value value) {
-        valuesById.put(value.getId(), value);
-        valuesByName.put(value.getName(), value);
-    }
-
-    @Override
-    public void setValue(String name, Object object) {
-        valuesByName.get(name).setValue(object);
-//        oldVal.setValue(object);
-//        Value newVal = ValueFactory.createValue(oldVal.getId(), oldVal.getName(), oldVal.getMultiplicity(), object);
-//        setValue(newVal);
-    }
-
-
-    @Override
-    public List<ValueDto> getModels() {
+    public List<ValueDto> getValues() {
         return valuesById.values().stream().map(Value::getModel).collect(Collectors.toList());
     }
 
     @Override
-    public List<Value> getValues() {
-        return new ArrayList<>(valuesById.values());
+    public <T> List<T> getParsedList(String name, Class<T> clazz) {
+        return valuesByName.get(name).getParsedList(clazz);
     }
 
-    private List<Value> getValues(List<ValueDto> values) {
+    @Override
+    public <T> T getParsedValue(String name, Class<T> clazz) {
+        return valuesByName.get(name).getParsedValue(clazz);
+    }
+
+//    @Override
+//    public List<Value> getValues() {
+//        return new ArrayList<>(valuesById.values());
+//    }
+
+    private List<Value> getValues(Collection<ValueDto> values) {
         return values.stream().map(ValueFactory::createValue).collect(Collectors.toList());
     }
 

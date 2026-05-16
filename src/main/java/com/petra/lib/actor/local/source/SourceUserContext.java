@@ -1,5 +1,7 @@
-package com.petra.lib.context.source;
+package com.petra.lib.actor.local.source;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.variable.container.ValueContainer;
 
 import javax.persistence.EntityManager;
@@ -17,22 +19,27 @@ public class SourceUserContext {
     }
 
     public <T> T getValue(String name, Class<T> clazz) {
-        return inputValues.getValue(name).getParsedValue(clazz);
+        return inputValues.getParsedValue(name, clazz);
     }
 
     public <T> List<T> getListValue(String name, Class<T> clazz) {
-        return inputValues.getValue(name).getParsedList(clazz);
+        return inputValues.getParsedList(name, clazz);
     }
 
     public void setValue(String name, Object value) {
-        outputValues.setValue(name, value);
+        ObjectMapper om = new ObjectMapper();
+        try {
+            outputValues.setValueJson(name, om.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public EntityManager getEntityManager() {
         return entityManager;
     }
 
-    ValueContainer getOutputValues(){
+    public ValueContainer getOutputValues(){
         return outputValues;
     }
 }

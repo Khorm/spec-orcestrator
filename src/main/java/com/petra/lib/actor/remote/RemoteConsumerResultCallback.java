@@ -1,6 +1,5 @@
-package com.petra.lib.actor;
+package com.petra.lib.actor.remote;
 
-import com.petra.lib.actor.producer.RemoteConsumer;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.operation.OperationService;
 import com.petra.lib.utils.id.Identifier;
