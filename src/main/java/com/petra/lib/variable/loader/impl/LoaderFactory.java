@@ -1,6 +1,5 @@
 package com.petra.lib.variable.loader.impl;
 
-import com.petra.lib.constructor.model.RemoteConsumerModel;
 import com.petra.lib.constructor.model.SourceInputVariableModel;
 import com.petra.lib.constructor.model.ValueLoaderDto;
 import com.petra.lib.constructor.model.ValueModel;

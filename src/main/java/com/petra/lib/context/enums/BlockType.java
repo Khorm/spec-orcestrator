@@ -1,8 +1,10 @@
 package com.petra.lib.context.enums;
 
 public enum BlockType {
-    ACTIVITY,
     WORKFLOW,
+    ACTIVITY,
+    SOURCE,
     CONDITION,
-    SOURCE
+    START,
+    END
 }

@@ -1,6 +1,6 @@
 package com.petra.lib.context;
 
-import com.petra.lib.actor.remote.RemoteProducer;
+import com.petra.lib.actor.workflow.RemoteProducer;
 import com.petra.lib.context.block.ActivityContextImpl;
 import com.petra.lib.context.block.Context;
 import com.petra.lib.context.block.ContextEntity;

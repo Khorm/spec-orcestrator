@@ -1,7 +1,7 @@
 package com.petra.lib.executor;
 
 import com.petra.lib.actor.local.LocalConsumer;
-import com.petra.lib.actor.remote.RemoteProducer;
+import com.petra.lib.actor.workflow.RemoteProducer;
 import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.ContextService;
 import com.petra.lib.context.block.Context;

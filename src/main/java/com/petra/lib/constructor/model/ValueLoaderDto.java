@@ -6,12 +6,15 @@ import lombok.Getter;
 
 import java.util.Collection;
 
+/**
+ * аналогично ValueModel из GUI
+ */
 @Getter
 public class ValueLoaderDto {
     /**
      * id консумера
      */
-    private Long id;
+    private Long valueId;
     private String name;
     private String multiplicity;
     private String loaderType;
@@ -20,7 +23,7 @@ public class ValueLoaderDto {
     /**
      * Настройки для INPUT
      */
-    private Long inputValueId;
+    private Long producerVariableId;
 
 
     /**
@@ -36,10 +39,12 @@ public class ValueLoaderDto {
     private String sourceName;
     private String sourceServicePath;
 
+    private Collection<ValueLoaderDto> loadSourceValues;
+
     /**
      * Параметры(продюсеры) для SOURCE и SCRIPT
      */
-    private Collection<SourceInputVariableModel> sourceInputVariableModels;
+//    private Collection<SourceInputVariableModel> sourceInputVariableModels;
 
 
     public LoaderType getLoaderType() {
@@ -53,14 +58,14 @@ public class ValueLoaderDto {
 
     public boolean isChildOf(Long variableId){
         if (getLoaderType() == LoaderType.SOURCE_LOADER || getLoaderType() == LoaderType.SCRIPT_LOADER){
-            for (SourceInputVariableModel variable : sourceInputVariableModels){
-                if (variable.getProducerVariable().equals(variableId)){
+            for (ValueLoaderDto variable : loadSourceValues){
+                if (variable.getProducerVariableId().equals(variableId)){
                     return true;
                 }
             }
         }
 
-        if (getLoaderType() == LoaderType.INPUT_LOADER && inputValueId.equals(variableId)){
+        if (getLoaderType() == LoaderType.INPUT_LOADER && producerVariableId.equals(variableId)){
             return true;
         }
 

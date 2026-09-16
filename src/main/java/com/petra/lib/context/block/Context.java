@@ -5,7 +5,7 @@ import com.petra.lib.context.enums.ContextState;
 import com.petra.lib.context.enums.ExecutionStatus;
 import com.petra.lib.transaction.Transaction;
 import com.petra.lib.utils.id.Identifier;
-import com.petra.lib.actor.remote.RemoteProducer;
+import com.petra.lib.actor.workflow.RemoteProducer;
 import com.petra.lib.variable.container.ValueContainer;
 
 import java.util.UUID;

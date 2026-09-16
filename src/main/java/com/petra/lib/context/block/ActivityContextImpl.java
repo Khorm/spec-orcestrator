@@ -1,6 +1,6 @@
 package com.petra.lib.context.block;
 
-import com.petra.lib.actor.remote.RemoteProducer;
+import com.petra.lib.actor.workflow.RemoteProducer;
 import com.petra.lib.context.block.repo.ContextRepo;
 import com.petra.lib.context.enums.BlockType;
 import com.petra.lib.context.enums.ContextState;

@@ -28,10 +28,11 @@ public class ValueModel {
         return multiplicity;
     }
 
-    public ValueDto createEmptyModel() {
-        return new ValueDto(id, name, getMultiplicityEnm(), null);
-    }
-    public ValueDto createFillModel(Object value) {
+//    public ValueDto createEmptyDto() {
+//        return new ValueDto(id, name, getMultiplicityEnm(), null);
+//    }
+
+    public ValueDto createFillDto(Object value) {
         ObjectMapper om = new ObjectMapper();
         try {
             return new ValueDto(id, name, getMultiplicityEnm(), om.writeValueAsString(value));

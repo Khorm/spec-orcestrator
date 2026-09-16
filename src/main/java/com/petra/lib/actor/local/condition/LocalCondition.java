@@ -3,6 +3,7 @@ package com.petra.lib.actor.local.condition;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petra.lib.actor.local.LocalConsumer;
+import com.petra.lib.actor.remote.consumer.RemoteCondition;
 import com.petra.lib.constructor.model.ValueModel;
 import com.petra.lib.context.block.Context;
 import com.petra.lib.context.enums.BlockType;
@@ -27,12 +28,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.petra.lib.actor.remote.consumer.RemoteCondition.conditionResultValueName;
+
 @Log4j2
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LocalCondition implements LocalConsumer {
 
     Identifier identifier;
-    String VALUE_NAME = "result";
 
     @Getter
     List<ValueModel> inputVariables;
@@ -77,7 +79,7 @@ public class LocalCondition implements LocalConsumer {
             ObjectMapper om = new ObjectMapper();
             ValueDto valueDto;
             try {
-                valueDto = new ValueDto(-1L, VALUE_NAME, Multiplicity.SINGLE,om.writeValueAsString(userContext.getAcceptNumber()));
+                valueDto = new ValueDto(-1L, conditionResultValueName, Multiplicity.SINGLE,om.writeValueAsString(userContext.getAcceptNumber()));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -111,7 +113,7 @@ public class LocalCondition implements LocalConsumer {
     private ValueDto getValueDto(String valuesScript) {
         String resultScript = "import com.fasterxml.jackson.databind.ObjectMapper; " +
                 " def slurper = new groovy.json.JsonSlurper(); " +
-                " def result; "
+                " def " + conditionResultValueName + "; "
                 + valuesScript
                 + script
                 + "; def oj = new ObjectMapper(); "
@@ -120,6 +122,6 @@ public class LocalCondition implements LocalConsumer {
         Binding binding = new Binding();
         GroovyShell shell = new GroovyShell(binding);
         String result = (String) shell.evaluate(resultScript);
-        return new ValueDto(0L, "result", Multiplicity.SINGLE, result);
+        return new ValueDto(0L, conditionResultValueName, Multiplicity.SINGLE, result);
     }
 }

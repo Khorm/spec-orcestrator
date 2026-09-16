@@ -1,6 +1,6 @@
 package com.petra.lib.controller;
 
-import com.petra.lib.actor.remote.RemoteProducer;
+import com.petra.lib.actor.workflow.RemoteProducer;
 import com.petra.lib.context.workflow.WorkflowContextEntity;
 import com.petra.lib.context.workflow.repo.WorkflowContextRepo;
 import com.petra.lib.executor.BlockContextExecutor;

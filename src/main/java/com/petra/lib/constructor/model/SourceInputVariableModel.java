@@ -2,6 +2,7 @@ package com.petra.lib.constructor.model;
 
 import com.petra.lib.variable.enums.Multiplicity;
 
+@Deprecated
 public class SourceInputVariableModel {
     private Long sourceVariable;
     private Long producerVariable;

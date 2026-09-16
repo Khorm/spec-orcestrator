@@ -26,10 +26,13 @@ import java.util.stream.Collectors;
 @Log4j2
 public class ValueContextManager {
 
+    //начальные лоадеры
     Collection<ValueLoader> starterLoaders;
+
+    //все лоадеры
     Collection<ValueLoader> valueLoaders;
     String name;
-    Collection<ValueModel> loadValues;
+    List<ValueModel> loadValues;
 
     public void start(ValueContainer workflowContainer,
                       UUID scenarioId, VariableCallback variableCallback) {
@@ -46,6 +49,10 @@ public class ValueContextManager {
         for (ValueLoader valueLoader : starterLoaders){
             valueLoader.load(valueContext);
         }
+    }
+
+    public List<ValueModel> getLoadValues() {
+        return Collections.unmodifiableList(loadValues);
     }
 
 }

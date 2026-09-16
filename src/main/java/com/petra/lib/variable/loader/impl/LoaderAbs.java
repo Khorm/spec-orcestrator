@@ -12,7 +12,9 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
 
-
+/**
+ * Загрузчик переменной
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
 public abstract class LoaderAbs implements ValueLoader {
@@ -59,13 +61,13 @@ public abstract class LoaderAbs implements ValueLoader {
 
     protected abstract ValueDto executeLoad(ValueContext context);
 
-    public ValueLoaderDto getValueModel() {
-        return valueModel;
-    }
-
-    public List<Long> getParents() {
-        return parents;
-    }
+//    public ValueLoaderDto getValueModel() {
+//        return valueModel;
+//    }
+//
+//    public List<Long> getParents() {
+//        return parents;
+//    }
 
     public Long getVariableId() {
         return valueModel.getId();

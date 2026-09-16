@@ -1,4 +1,4 @@
-package com.petra.lib.actor.remote;
+package com.petra.lib.actor.workflow;
 
 import com.petra.lib.utils.id.Identifier;
 import com.petra.lib.variable.container.ValueContainer;

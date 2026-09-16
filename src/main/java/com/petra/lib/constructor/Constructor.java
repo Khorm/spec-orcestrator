@@ -88,16 +88,16 @@ public class Constructor {
                                                         Sender sender, TransactionManager transactionManager,
                                                         Map<String, UserActivityHandler> userActionHandlerMap,
                                                         ThreadController threadController, ContextService contextService,
-                                                        Map<String, ConditionUserHandler> conditionUserHandlerMap,
+                                                        Map<String, ConditionUserHandler> conditionUserHandlerMap, OperationService operationService,
                                                         Map<String, SourceUserHandler> sourceUserHandlerMap) {
         Collection<LocalProducer> localProducers = new ArrayList<>();
         for (LocalProducerModel model : constructorModel.getWorkflows()) {
             localProducers.add(ActorFactory.localProducer(model, petraProperties.getServiceName(), sender,
-                    transactionManager, threadController, contextService));
+                    transactionManager, operationService, threadController, contextService));
         }
 
         Collection<LocalActivity> localActivities = new ArrayList<>();
-        for (LocalActivityModel model : constructorModel.getActivities()) {
+        for (LocalConsumerModel model : constructorModel.getConsumers()) {
             localActivities.add(ActorFactory.localActivity(model, userActionHandlerMap.get(model.getName()),
                     transactionManager));
         }
